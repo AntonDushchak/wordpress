@@ -1,0 +1,54 @@
+# WordPress core files (не нужны в репозитории)
+wp-admin/
+wp-includes/
+wp-content/uploads/
+wp-content/cache/
+wp-content/upgrade/
+wp-content/backup-db/
+wp-content/backups/
+wp-content/blogs.dir/
+wp-content/advanced-cache.php
+wp-content/wp-cache-config.php
+wp-content/plugins/hello.php
+
+# Database
+*.sql
+*.sql.gz
+
+# Configuration files
+wp-config.php
+wp-config-local.php
+
+# Logs
+*.log
+wp-content/uploads/neo-dashboard.log
+
+# Docker
+docker-compose.override.yml
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Security
+wp-content/advanced-cache.php
+wp-content/wp-cache-config.php
+wp-content/wp-config.php
+
+# Keep our plugins
+!wp-content/plugins/neo-dashboard/
+!wp-content/plugins/neo-dashboard-examples/
+!wp-content/plugins/plugin-template/

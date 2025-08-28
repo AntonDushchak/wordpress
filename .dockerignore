@@ -1,0 +1,35 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Logs
+*.log
+wp-content/uploads/neo-dashboard.log
+
+# Cache
+wp-content/cache/
+wp-content/w3tc-config/
+
+# Uploads (большие файлы)
+wp-content/uploads/
+
+# Database
+*.sql
+*.sql.gz
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary
+*.tmp
+*.temp
