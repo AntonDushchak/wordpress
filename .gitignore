@@ -52,3 +52,4 @@ wp-content/wp-config.php
 !wp-content/plugins/neo-dashboard/
 !wp-content/plugins/neo-dashboard-examples/
 !wp-content/plugins/plugin-template/
+!wp-content/plugins/neo-worker-is/
