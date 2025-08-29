@@ -456,9 +456,9 @@
         background-color: #4a5568;
     }
 }
-#neo-calendar {
-    max-width: 1200px;
-    margin: 20px auto;
+#neo-calendar { 
+    max-width: 1200px; 
+    margin: 20px auto; 
     padding: 20px;
 }
 
@@ -469,52 +469,79 @@
     padding: 20px;
 }
 
+#event-form { 
+    margin-top: 20px; 
+    display: flex; 
+    gap: 10px; 
+}
+
 /* Стили для форм календаря */
 .calendar-form {
-    background: white;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     padding: 20px;
     margin-bottom: 20px;
 }
 
 .calendar-form h4 {
-    color: #333;
+    color: #495057;
     margin-bottom: 20px;
     font-weight: 600;
 }
 
-.calendar-form .form-label {
+.form-label {
     font-weight: 500;
-    color: #555;
+    color: #495057;
+    margin-bottom: 8px;
 }
 
-.calendar-form .form-control {
-    border: 1px solid #ddd;
+.form-control {
     border-radius: 6px;
+    border: 1px solid #ced4da;
     padding: 8px 12px;
-    transition: border-color 0.3s ease;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-.calendar-form .form-control:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+.form-control:focus {
+    border-color: #007cba;
+    box-shadow: 0 0 0 0.2rem rgba(0, 124, 186, 0.25);
 }
 
-.calendar-form .btn {
-    padding: 8px 16px;
+.btn {
     border-radius: 6px;
     font-weight: 500;
-    transition: all 0.3s ease;
+    padding: 8px 16px;
+    transition: all 0.15s ease-in-out;
 }
 
-.calendar-form .btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+.btn-primary {
+    background-color: #007cba;
+    border-color: #007cba;
 }
 
-#event-form {
-    margin-top: 20px;
-    display: flex;
-    gap: 10px;
+.btn-primary:hover {
+    background-color: #005a87;
+    border-color: #005a87;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background-color: #1e7e34;
+    border-color: #1e7e34;
+}
+
+.btn-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
 }
