@@ -1,33 +1,59 @@
-/* Neo Calendar - Custom Styles */
+/* Neo Calendar - Основные стили */
 
-/* Анимации для карточек */
-.card {
-    transition: all 0.3s ease;
-    border: 1px solid rgba(0,0,0,.125);
+/* Основной контейнер календаря */
+#neo-calendar { 
+    max-width: 1200px; 
+    margin: 20px auto; 
+    padding: 20px;
 }
 
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,.1);
+#calendar {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
 }
 
-/* Стили для заголовков */
-.card-header h2,
-.card-header h3 {
-    margin: 0;
+/* Стили для форм календаря */
+.calendar-form {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.calendar-form h4 {
     color: #495057;
+    margin-bottom: 20px;
+    font-weight: 600;
 }
 
-.card-header h2 i,
-.card-header h3 i {
-    margin-right: 8px;
-    color: #007cba;
+/* Стили для форм */
+.form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    padding: 8px 12px;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+    border-color: #007cba;
+    box-shadow: 0 0 0 0.2rem rgba(0, 124, 186, 0.25);
 }
 
 /* Стили для кнопок */
 .btn {
     border-radius: 6px;
     font-weight: 500;
+    padding: 8px 16px;
+    transition: all 0.15s ease-in-out;
 }
 
 .btn-primary {
@@ -40,10 +66,25 @@
     border-color: #005a87;
 }
 
-/* Стили для форм */
-.form-control:focus {
-    border-color: #007cba;
-    box-shadow: 0 0 0 0.2rem rgba(0, 124, 186, 0.25);
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    background-color: #1e7e34;
+    border-color: #1e7e34;
+}
+
+.btn-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
 }
 
 /* Стили для уведомлений */
@@ -56,6 +97,36 @@
     background-color: #e7f3ff;
     color: #0c5460;
     border-left: 4px solid #17a2b8;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+/* Стили для карточек */
+.card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,.125);
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,.1);
+}
+
+.card-header h2,
+.card-header h3 {
+    margin: 0;
+    color: #495057;
+}
+
+.card-header h2 i,
+.card-header h3 i {
+    margin-right: 8px;
+    color: #007cba;
 }
 
 /* Стили для виджета */
@@ -94,17 +165,6 @@
     font-size: 0.9rem;
 }
 
-/* Адаптивность */
-@media (max-width: 768px) {
-    .card-body {
-        padding: 1rem;
-    }
-    
-    .widget-stats h4 {
-        font-size: 1.5rem;
-    }
-}
-
 /* Анимации появления */
 .fade-in-up {
     animation: fadeInUp 0.6s ease-out;
@@ -121,427 +181,12 @@
     }
 }
 
-/* Состояние сохранения */
-.saved-success {
-    animation: savedSuccess 0.3s ease-in-out;
-}
-
-@keyframes savedSuccess {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.02); }
-    100% { transform: scale(1); }
-}
-
-/* Стили для уведомлений */
-.notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-    padding: 15px 20px;
-    border-radius: 8px;
-    color: white;
-    font-weight: 500;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    transform: translateX(100%);
-    transition: transform 0.3s ease;
-}
-
-.notification.show {
-    transform: translateX(0);
-}
-
-.notification.success {
-    background-color: #28a745;
-}
-
-.notification.error {
-    background-color: #dc3545;
-}
-
-.notification.info {
-    background-color: #17a2b8;
-}
-
-/* Стили для загрузки */
-.loading {
-    opacity: 0.7;
-    pointer-events: none;
-}
-
-.loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 20px;
-    height: 20px;
-    margin: -10px 0 0 -10px;
-    border: 2px solid #f3f3f3;
-    border-top: 2px solid #007cba;
-    border-radius: 50%;
+/* Анимация для кнопки обновления */
+.spin {
     animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
-}
-
-/* Стили для tooltips */
-.tooltip {
-    position: relative;
-    cursor: help;
-}
-
-.tooltip::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #333;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    white-space: nowrap;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    z-index: 1000;
-}
-
-.tooltip:hover::after {
-    opacity: 1;
-    visibility: visible;
-    transform: translateX(-50%) translateY(-5px);
-}
-
-/* Стили для модальных окон */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-}
-
-.modal-overlay.show {
-    opacity: 1;
-    visibility: visible;
-}
-
-.modal-content {
-    background: white;
-    border-radius: 12px;
-    padding: 30px;
-    max-width: 500px;
-    width: 90%;
-    transform: scale(0.9);
-    transition: transform 0.3s ease;
-}
-
-.modal-overlay.show .modal-content {
-    transform: scale(1);
-}
-
-/* Стили для таблиц */
-.table-responsive {
-    overflow-x: auto;
-}
-
-.table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.table th,
-.table td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.table th {
-    background-color: #f8f9fa;
-    font-weight: 600;
-    color: #495057;
-}
-
-.table tbody tr:hover {
-    background-color: #f8f9fa;
-}
-
-/* Стили для пагинации */
-.pagination {
-    display: flex;
-    list-style: none;
-    padding: 0;
-    margin: 20px 0;
-    justify-content: center;
-}
-
-.pagination li {
-    margin: 0 5px;
-}
-
-.pagination a,
-.pagination span {
-    display: block;
-    padding: 8px 12px;
-    border: 1px solid #dee2e6;
-    border-radius: 6px;
-    text-decoration: none;
-    color: #007cba;
-    transition: all 0.3s ease;
-}
-
-.pagination a:hover {
-    background-color: #007cba;
-    color: white;
-    border-color: #007cba;
-}
-
-.pagination .current {
-    background-color: #007cba;
-    color: white;
-    border-color: #007cba;
-}
-
-/* Стили для прогресс-баров */
-.progress {
-    height: 8px;
-    background-color: #e9ecef;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.progress-bar {
-    height: 100%;
-    background-color: #007cba;
-    transition: width 0.6s ease;
-}
-
-/* Стили для бейджей */
-.badge {
-    display: inline-block;
-    padding: 4px 8px;
-    font-size: 12px;
-    font-weight: 600;
-    border-radius: 4px;
-    text-transform: uppercase;
-}
-
-.badge-primary {
-    background-color: #007cba;
-    color: white;
-}
-
-.badge-success {
-    background-color: #28a745;
-    color: white;
-}
-
-.badge-warning {
-    background-color: #ffc107;
-    color: #212529;
-}
-
-.badge-danger {
-    background-color: #dc3545;
-    color: white;
-}
-
-/* Стили для карточек статистики */
-.stats-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 12px;
-    padding: 20px;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.stats-card h3 {
-    margin: 0 0 10px 0;
-    font-size: 2.5rem;
-    font-weight: bold;
-}
-
-.stats-card p {
-    margin: 0;
-    opacity: 0.9;
-    font-size: 14px;
-}
-
-/* Стили для временной шкалы */
-.timeline {
-    position: relative;
-    padding-left: 30px;
-}
-
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 15px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background-color: #dee2e6;
-}
-
-.timeline-item {
-    position: relative;
-    margin-bottom: 20px;
-}
-
-.timeline-item::before {
-    content: '';
-    position: absolute;
-    left: -22px;
-    top: 5px;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: #007cba;
-    border: 2px solid white;
-}
-
-/* Стили для загрузки */
-.skeleton {
-    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-    background-size: 200% 100%;
-    animation: loading 1.5s infinite;
-}
-
-@keyframes loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
-}
-
-/* Стили для темной темы */
-@media (prefers-color-scheme: dark) {
-    .card {
-        background-color: #2d3748;
-        border-color: #4a5568;
-        color: #e2e8f0;
-    }
-    
-    .card-header h2,
-    .card-header h3 {
-        color: #e2e8f0;
-    }
-    
-    .form-control {
-        background-color: #4a5568;
-        border-color: #718096;
-        color: #e2e8f0;
-    }
-    
-    .table th {
-        background-color: #4a5568;
-        color: #e2e8f0;
-    }
-    
-    .table tbody tr:hover {
-        background-color: #4a5568;
-    }
-}
-#neo-calendar { 
-    max-width: 1200px; 
-    margin: 20px auto; 
-    padding: 20px;
-}
-
-#calendar {
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    padding: 20px;
-}
-
-#event-form { 
-    margin-top: 20px; 
-    display: flex; 
-    gap: 10px; 
-}
-
-/* Стили для форм календаря */
-.calendar-form {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-.calendar-form h4 {
-    color: #495057;
-    margin-bottom: 20px;
-    font-weight: 600;
-}
-
-.form-label {
-    font-weight: 500;
-    color: #495057;
-    margin-bottom: 8px;
-}
-
-.form-control {
-    border-radius: 6px;
-    border: 1px solid #ced4da;
-    padding: 8px 12px;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
-
-.form-control:focus {
-    border-color: #007cba;
-    box-shadow: 0 0 0 0.2rem rgba(0, 124, 186, 0.25);
-}
-
-.btn {
-    border-radius: 6px;
-    font-weight: 500;
-    padding: 8px 16px;
-    transition: all 0.15s ease-in-out;
-}
-
-.btn-primary {
-    background-color: #007cba;
-    border-color: #007cba;
-}
-
-.btn-primary:hover {
-    background-color: #005a87;
-    border-color: #005a87;
-}
-
-.btn-success {
-    background-color: #28a745;
-    border-color: #28a745;
-}
-
-.btn-success:hover {
-    background-color: #1e7e34;
-    border-color: #1e7e34;
-}
-
-.btn-outline-secondary {
-    color: #6c757d;
-    border-color: #6c757d;
-}
-
-.btn-outline-secondary:hover {
-    background-color: #6c757d;
-    border-color: #6c757d;
-    color: white;
 }

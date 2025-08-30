@@ -1,461 +1,263 @@
 /**
  * Neo Calendar - JavaScript
- * Обработчики событий и AJAX функционал
+ * Основной функционал для календаря
  */
 
 (function($) {
     'use strict';
 
-    // Ждем загрузки DOM
     $(document).ready(function() {
-        
-        // Инициализация плагина
-        initNeoCalendar();
-        
-        // Обработчик формы настроек
-        $('#neo-calendar-settings-form').on('submit', handleSettingsSubmit);
-        
-        // Обновление preview в реальном времени
-        $('#plugin-name, #plugin-description, #plugin-version').on('input', updatePreview);
-        
-        // Обработчик кнопки обновления виджета
-        $(document).on('click', '.refresh-btn', refreshWidget);
-        
-        // Анимация появления элементов
-        animateElements();
-        
-        // Инициализация tooltips
-        initTooltips();
+        console.log('FullCalendar:', window.FullCalendar);
+        // --- Календарь ---
+        if ($('#calendar').length && typeof FullCalendar !== 'undefined') {
+            const calendarEl = document.getElementById('calendar');
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: function(fetchInfo, successCallback) {
+                    loadEventsFromDB(fetchInfo.start, fetchInfo.end, successCallback);
+                },
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                editable: true,
+                selectable: true,
+                eventClick: function(info) {
+                    if (confirm('Ereignis "' + info.event.title + '" löschen?')) {
+                        deleteEventFromDB(info.event.id);
+                    }
+                }
+            });
+            calendar.render();
+            window.neoCalendar = calendar;
+        }
+
+        // --- Виджет (работает всегда) ---
+        initWidgetHandlers();
     });
 
-    /**
-     * Инициализация плагина
-     */
-    function initNeoCalendar() {
-        console.log('Neo Calendar initialized! 🚀');
-        console.log('Document ready state:', document.readyState);
-        console.log('jQuery version:', $.fn.jquery);
-        
-        // Показываем приветственное сообщение
-        showWelcomeMessage();
-        
-        // Добавляем классы для анимации
-        $('.card').addClass('fade-in-up');
-        
-        // FullCalendar теперь загружается напрямую в HTML
-        console.log('Neo Calendar initialized! FullCalendar will be loaded directly in HTML.');
+    function initWidgetHandlers() {
+        // Кнопка добавления рабочего времени в виджете
+        $(document).on('click', '#widget-add-work-time-btn', function(e) {
+            e.preventDefault();
+            const date = $('#widget-work-date').val();
+            const timeFrom = $('#widget-work-time-from').val();
+            const timeTo = $('#widget-work-time-to').val();
+            if (!date || !timeFrom || !timeTo) { alert('Bitte füllen Sie alle Felder aus!'); return; }
+            if (timeFrom >= timeTo) { alert('Die Zeit "von" muss kleiner als die Zeit "bis" sein!'); return; }
+            saveEventToDB('arbeitsstunde', '', date+'T'+timeFrom+':00', date+'T'+timeTo+':00', '');
+            $('#widget-work-date').val(new Date().toISOString().split('T')[0]);
+            $('#widget-work-time-from').val('09:00');
+            $('#widget-work-time-to').val('18:00');
+        });
+
+        // Кнопка показа формы отпуска в виджете
+        $(document).on('click', '#widget-show-vacation-form-btn', function(e) {
+            e.preventDefault();
+            alert('Für die Eingabe von Urlaub gehen Sie bitte in den Kalender-Bereich.');
+        });
     }
 
-    /**
-     * Обработка отправки формы настроек
-     */
-    function handleSettingsSubmit(e) {
-        e.preventDefault();
-        
-        const form = $(this);
-        const submitBtn = form.find('button[type="submit"]');
-        const originalText = submitBtn.text();
-        
-        // Показываем состояние загрузки
-        submitBtn.prop('disabled', true).text('Сохранение...');
-        
-        // Собираем данные формы
-        const formData = {
-            action: 'neo_calendar_action',
-            nonce: neoCalendarAjax.nonce,
-            message: 'Settings saved successfully!',
-            settings: {
-                name: $('#plugin-name').val(),
-                description: $('#plugin-description').val(),
-                version: $('#plugin-version').val()
-            }
-        };
-        
-        // Отправляем AJAX запрос
-        $.post(neoCalendarAjax.ajaxurl, formData)
-            .done(function(response) {
-                if (response.success) {
-                    showNotification('Настройки успешно сохранены!', 'success');
-                    
-                    // Обновляем заголовок страницы
-                    $('.card-header h3').text('Настройки - ' + formData.settings.name);
-                    
-                    // Анимация успеха
-                    form.addClass('saved-success');
-                    setTimeout(() => form.removeClass('saved-success'), 2000);
-                } else {
-                    showNotification('Ошибка при сохранении: ' + response.data, 'error');
+    function saveEventToDB(type, title, start, end, meta) {
+        if (typeof neoCalendarAjax === 'undefined') { alert('AJAX configuration error'); return; }
+        const formData = new FormData();
+        formData.append('action', 'neo_calendar_save_event');
+        formData.append('nonce', neoCalendarAjax.nonce);
+        formData.append('type', type);
+        formData.append('title', title);
+        formData.append('start', start);
+        formData.append('end', end);
+        formData.append('meta', meta);
+
+        fetch(neoCalendarAjax.ajaxurl, { method:'POST', body: formData })
+        .then(r=>r.json())
+        .then(data=>{
+            if (data.success) {
+                if (window.neoCalendar) {
+                    window.neoCalendar.refetchEvents();
                 }
-            })
-            .fail(function(xhr, status, error) {
-                showNotification('Ошибка соединения: ' + error, 'error');
-            })
-            .always(function() {
-                // Восстанавливаем кнопку
-                submitBtn.prop('disabled', false).text(originalText);
+                alert('Ereignis hinzugefügt!');
+            } else {
+                alert('Fehler beim Speichern: '+data.data);
+            }
+        })
+        .catch(err => alert('Fehler beim Speichern: '+err.message));
+    }
+
+    function loadEventsFromDB(start, end, successCallback) {
+        const formData = new FormData();
+        formData.append('action','neo_calendar_get_events');
+        formData.append('nonce', neoCalendarAjax.nonce);
+        formData.append('start', start.toISOString());
+        formData.append('end', end.toISOString());
+        fetch(neoCalendarAjax.ajaxurl, {method:'POST', body:formData})
+            .then(r=>r.json())
+            .then(data => successCallback(data.success ? data.data : []))
+            .catch(()=>successCallback([]));
+    }
+
+    function deleteEventFromDB(eventId) {
+        const formData = new FormData();
+        formData.append('action','neo_calendar_delete_event');
+        formData.append('nonce', neoCalendarAjax.nonce);
+        formData.append('event_id', eventId);
+        fetch(neoCalendarAjax.ajaxurl, {method:'POST', body:formData})
+            .then(r=>r.json())
+            .then(data=>{
+                if(data.success && window.neoCalendar){
+                    window.neoCalendar.getEventById(eventId)?.remove();
+                }
             });
     }
-
     /**
-     * Обновление виджета
+     * Функция добавления рабочего времени
      */
-    function refreshWidget() {
-        const btn = $(this);
-        const originalHtml = btn.html();
-        
-        // Показываем состояние загрузки
-        btn.prop('disabled', true).html('<i class="bi bi-arrow-clockwise spin"></i> Обновление...');
-        
-        // Имитируем задержку обновления
-        setTimeout(function() {
-            // Обновляем данные виджета
-            updateWidgetData();
-            
-            // Восстанавливаем кнопку
-            btn.prop('disabled', false).html(originalHtml);
-            
-            // Показываем уведомление
-            showNotification('Виджет обновлен!', 'success');
-        }, 1500);
-    }
+    function addWorkTime() {
+        const date = document.getElementById('work-date').value;
+        const timeFrom = document.getElementById('work-time-from').value;
+        const timeTo = document.getElementById('work-time-to').value;
 
-    /**
-     * Обновление данных виджета
-     */
-    function updateWidgetData() {
-        // Здесь можно добавить логику обновления данных
-        // Например, обновить статистику, счетчики и т.д.
-        
-        // Анимация обновления
-        $('.widget-stats').addClass('updated');
-        setTimeout(() => $('.widget-stats').removeClass('updated'), 1000);
-    }
-
-    /**
-     * Обновление preview в реальном времени
-     */
-    function updatePreview() {
-        const name = $('#plugin-name').val() || 'Название плагина';
-        const description = $('#plugin-description').val() || 'Описание плагина';
-        const version = $('#plugin-version').val() || '1.0.0';
-        
-        // Обновляем preview
-        $('#preview-name').text(name);
-        $('#preview-description').text(description);
-        $('#preview-version').text('v' + version);
-        
-        // Анимация обновления
-        $('#preview-card').addClass('preview-updated');
-        setTimeout(() => $('#preview-card').removeClass('preview-updated'), 500);
-    }
-
-    /**
-     * Анимация появления элементов
-     */
-    function animateElements() {
-        // Анимация для карточек
-        $('.card').each(function(index) {
-            const card = $(this);
-            setTimeout(() => {
-                card.addClass('fade-in-up');
-            }, index * 100);
-        });
-        
-        // Анимация для статистики
-        $('.widget-stats h4').each(function() {
-            const number = $(this);
-            const finalValue = parseInt(number.text());
-            animateNumber(number, 0, finalValue, 1000);
-        });
-    }
-
-    /**
-     * Анимация чисел
-     */
-    function animateNumber(element, start, end, duration) {
-        const startTime = performance.now();
-        
-        function updateNumber(currentTime) {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            
-            const current = Math.floor(start + (end - start) * progress);
-            element.text(current);
-            
-            if (progress < 1) {
-                requestAnimationFrame(updateNumber);
-            }
+        if (!date || !timeFrom || !timeTo) {
+            alert('Bitte füllen Sie alle Felder aus!');
+            return;
         }
-        
-        requestAnimationFrame(updateNumber);
-    }
 
-    /**
-     * Инициализация tooltips
-     */
-    function initTooltips() {
-        $('[data-tooltip]').each(function() {
-            const element = $(this);
-            const tooltip = element.attr('data-tooltip');
-            
-            // Добавляем класс для tooltip
-            element.addClass('tooltip');
-        });
-    }
-
-    /**
-     * Показ приветственного сообщения
-     */
-    function showWelcomeMessage() {
-        const welcomeHtml = `
-            <div class="alert alert-info alert-dismissible fade show" role="alert">
-                <i class="bi bi-info-circle me-2"></i>
-                Добро пожаловать в Neo Calendar! 🎉
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        `;
-        
-        $('.card-body').first().prepend(welcomeHtml);
-        
-        // Автоматически скрываем через 5 секунд
-        setTimeout(() => {
-            $('.alert').fadeOut();
-        }, 5000);
-    }
-
-    /**
-     * Показ уведомлений
-     */
-    function showNotification(message, type = 'info') {
-        // Удаляем существующие уведомления
-        $('.notification').remove();
-        
-        const notification = $(`
-            <div class="notification ${type}">
-                <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
-                ${message}
-            </div>
-        `);
-        
-        $('body').append(notification);
-        
-        // Показываем уведомление
-        setTimeout(() => notification.addClass('show'), 100);
-        
-        // Скрываем через 3 секунды
-        setTimeout(() => {
-            notification.removeClass('show');
-            setTimeout(() => notification.remove(), 300);
-        }, 3000);
-    }
-
-    /**
-     * Открытие модального окна
-     */
-    function openModal(content) {
-        const modal = $(`
-            <div class="modal-overlay">
-                <div class="modal-content">
-                    ${content}
-                    <button class="btn btn-secondary mt-3" onclick="closeModal()">Закрыть</button>
-                </div>
-            </div>
-        `);
-        
-        $('body').append(modal);
-        
-        setTimeout(() => modal.addClass('show'), 100);
-    }
-
-    /**
-     * Закрытие модального окна
-     */
-    function closeModal() {
-        $('.modal-overlay').removeClass('show');
-        setTimeout(() => $('.modal-overlay').remove(), 300);
-    }
-
-    /**
-     * Экспорт данных
-     */
-    function exportData(format = 'json') {
-        const data = {
-            plugin: 'Neo Calendar',
-            version: '1.0.0',
-            exportDate: new Date().toISOString(),
-            settings: {
-                name: $('#plugin-name').val(),
-                description: $('#plugin-description').val(),
-                version: $('#plugin-version').val()
-            }
-        };
-        
-        if (format === 'json') {
-            downloadFile(JSON.stringify(data, null, 2), 'neo-calendar-settings.json', 'application/json');
-        } else if (format === 'csv') {
-            const csv = convertToCSV(data);
-            downloadFile(csv, 'neo-calendar-settings.csv', 'text/csv');
+        if (timeFrom >= timeTo) {
+            alert('Die Zeit "von" muss kleiner als die Zeit "bis" sein!');
+            return;
         }
+
+        const startDateTime = date + 'T' + timeFrom + ':00';
+        const endDateTime = date + 'T' + timeTo + ':00';
+
+        // Сохраняем в базу данных
+        saveEventToDB('arbeitsstunde', '', startDateTime, endDateTime, '');
     }
 
     /**
-     * Конвертация в CSV
+     * Функция добавления отпуска
      */
-    function convertToCSV(data) {
-        const rows = [];
-        
-        // Добавляем заголовки
-        rows.push(['Key', 'Value']);
-        
-        // Добавляем данные
-        Object.entries(data).forEach(([key, value]) => {
-            if (typeof value === 'object') {
-                Object.entries(value).forEach(([subKey, subValue]) => {
-                    rows.push([`${key}.${subKey}`, subValue]);
-                });
-            } else {
-                rows.push([key, value]);
+    function addVacation() {
+        const dateFrom = document.getElementById('vacation-date-from').value;
+        const dateTo = document.getElementById('vacation-date-to').value;
+
+        if (!dateFrom || !dateTo) {
+            alert('Bitte füllen Sie alle Felder aus!');
+            return;
+        }
+
+        if (dateFrom > dateTo) {
+            alert('Das Datum "von" muss kleiner oder gleich dem Datum "bis" sein!');
+            return;
+        }
+
+        // Для отпуска end дата должна быть +1 день, так как FullCalendar не включает последний день
+        const endDate = new Date(dateTo);
+        endDate.setDate(endDate.getDate() + 1);
+        const endDateStr = endDate.toISOString().split('T')[0];
+
+        // Сохраняем в базу данных
+        saveEventToDB('urlaub', '', dateFrom, endDateStr, '');
+    }
+
+    /**
+     * Функция сохранения события в базу данных
+     */
+    function saveEventToDB(type, title, start, end, meta) {
+        if (typeof neoCalendarAjax === 'undefined') {
+            alert('AJAX configuration error. Please refresh the page.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('action', 'neo_calendar_save_event');
+        formData.append('nonce', neoCalendarAjax.nonce);
+        formData.append('type', type);
+        formData.append('title', title);
+        formData.append('start', start);
+        formData.append('end', end);
+        formData.append('meta', meta);
+
+        fetch(neoCalendarAjax.ajaxurl, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok: ' + response.status);
             }
-        });
-        
-        return rows.map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
-    }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Обновляем календарь
+                window.neoCalendar.refetchEvents();
 
-    /**
-     * Скачивание файла
-     */
-    function downloadFile(content, filename, contentType) {
-        const blob = new Blob([content], { type: contentType });
-        const url = URL.createObjectURL(blob);
-        
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        URL.revokeObjectURL(url);
-    }
+                // Обновляем сообщение о пустом календаре
+                setTimeout(() => {
+                    updateNoEventsMessage(window.neoCalendar);
+                }, 500);
 
-    /**
-     * Импорт данных
-     */
-    function importData(file) {
-        const reader = new FileReader();
-        
-        reader.onload = function(e) {
-            try {
-                const data = JSON.parse(e.target.result);
-                
-                // Проверяем структуру данных
-                if (data.plugin === 'Neo Calendar' && data.settings) {
-                    // Заполняем форму
-                    $('#plugin-name').val(data.settings.name || '');
-                    $('#plugin-description').val(data.settings.description || '');
-                    $('#plugin-version').val(data.settings.version || '');
-                    
-                    // Обновляем preview
-                    updatePreview();
-                    
-                    showNotification('Данные успешно импортированы!', 'success');
-                } else {
-                    showNotification('Неверный формат файла!', 'error');
+                // Очищаем форму
+                if (type === 'arbeitsstunde') {
+                    document.getElementById('work-date').value = new Date().toISOString().split('T')[0];
+                    document.getElementById('work-time-from').value = '09:00';
+                    document.getElementById('work-time-to').value = '18:00';
+                } else if (type === 'urlaub') {
+                    document.getElementById('vacation-date-from').value = new Date().toISOString().split('T')[0];
+                    document.getElementById('vacation-date-to').value = new Date().toISOString().split('T')[0];
+                    // Возвращаемся к форме рабочего времени
+                    document.getElementById('vacation-form').style.display = 'none';
+                    document.getElementById('work-time-form').style.display = 'block';
                 }
-            } catch (error) {
-                showNotification('Ошибка при чтении файла: ' + error.message, 'error');
-            }
-        };
-        
-        reader.readAsText(file);
-    }
 
-    /**
-     * Сброс настроек
-     */
-    function resetSettings() {
-        if (confirm('Вы уверены, что хотите сбросить все настройки?')) {
-            // Сбрасываем форму
-            $('#neo-calendar-settings-form')[0].reset();
-            
-            // Обновляем preview
-            updatePreview();
-            
-            showNotification('Настройки сброшены!', 'info');
-        }
-    }
-
-    /**
-     * Поиск по настройкам
-     */
-    function searchSettings(query) {
-        const searchTerm = query.toLowerCase();
-        
-        $('.form-group').each(function() {
-            const group = $(this);
-            const label = group.find('label').text().toLowerCase();
-            const input = group.find('input, textarea, select');
-            
-            if (label.includes(searchTerm) || input.val().toLowerCase().includes(searchTerm)) {
-                group.show();
-                group.addClass('search-highlight');
+                alert('Ereignis hinzugefügt!');
             } else {
-                group.hide();
-                group.removeClass('search-highlight');
+                alert('Fehler beim Speichern: ' + data.data);
             }
+        })
+        .catch(error => {
+            alert('Fehler beim Speichern des Ereignisses: ' + error.message);
         });
-        
-        // Убираем подсветку через 2 секунды
-        setTimeout(() => {
-            $('.search-highlight').removeClass('search-highlight');
-        }, 2000);
-    }
-
-    /**
-     * Валидация формы
-     */
-    function validateForm() {
-        let isValid = true;
-        const errors = [];
-        
-        // Проверяем обязательные поля
-        const requiredFields = ['plugin-name', 'plugin-description', 'plugin-version'];
-        
-        requiredFields.forEach(fieldId => {
-            const field = $('#' + fieldId);
-            const value = field.val().trim();
-            
-            if (!value) {
-                field.addClass('is-invalid');
-                isValid = false;
-                errors.push(`Поле "${field.prev('label').text()}" обязательно для заполнения`);
-            } else {
-                field.removeClass('is-invalid');
-            }
-        });
-        
-        // Проверяем версию
-        const version = $('#plugin-version').val();
-        if (version && !/^\d+\.\d+\.\d+$/.test(version)) {
-            $('#plugin-version').addClass('is-invalid');
-            isValid = false;
-            errors.push('Версия должна быть в формате X.Y.Z');
-        }
-        
-        return { isValid, errors };
     }
 
 
 
     // Экспортируем функции для глобального использования
     window.NeoCalendar = {
-        openModal,
-        closeModal,
-        exportData,
-        importData,
-        resetSettings,
-        searchSettings,
-        validateForm
+        refreshWidget,
+        updateWidgetData,
+        initCalendar,
+        initWidgetHandlers,
+        addWorkTime,
+        addVacation,
+        saveEventToDB,
+        deleteEventFromDB,
+        loadEventsFromDB,
+        updateNoEventsMessage
     };
 
 })(jQuery);
+
+// Альтернативная инициализация для случаев, когда jQuery загружается позже
+if (typeof jQuery === 'undefined') {
+    // Ждем загрузки jQuery
+    function waitForJQuery() {
+        if (typeof jQuery !== 'undefined') {
+            console.log('jQuery загружен, инициализируем Neo Calendar');
+            // Перезапускаем основной скрипт
+            jQuery(document).ready(function() {
+                if (typeof window.NeoCalendar !== 'undefined') {
+                    console.log('Neo Calendar уже инициализирован');
+                } else {
+                    console.log('Переинициализируем Neo Calendar');
+                    // Здесь можно добавить повторную инициализацию если нужно
+                }
+            });
+        } else {
+            setTimeout(waitForJQuery, 100);
+        }
+    }
+    waitForJQuery();
+}
