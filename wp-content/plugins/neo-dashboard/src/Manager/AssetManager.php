@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace NeoDashboard\Core\Manager;
@@ -7,129 +8,153 @@ use NeoDashboard\Core\Router;
 use NeoDashboard\Core\Logger;
 
 /**
- * AssetManager v3.2.0
+ * AssetManager v3.4.0
  * -------------------------------------------------
- *  • Keine Verwendung von wp_print_styles()/scripts
- *  • Lädt nur dedizierte Plugin-Assets (Bootstrap,
- *    Icons, Dashboard-Core, Notifications)
- *  • REST-Config inline (NeoDash-Objekt)
- *  • Hooks für Plugin-Zusatz-Assets bleiben erhalten
+ *  • Использует стандартные WordPress хуки wp_enqueue_script/style
+ *  • Автоматическое определение зависимостей
+ *  • Hooks для плагинов остаются сохранены
+ *  • REST-Config через wp_localize_script
+ *  • Исправлены проблемы с timing и определением страниц
  */
 class AssetManager
 {
     private const BOOTSTRAP_VERSION = '5.3.2';
     private const ICONS_VERSION     = '1.10.5';
+    
+    private static array $assets_registered = [];
 
-    /**
-     * Initiale Hook-Registrierung.
-     */
     public function register(): void
     {
-        Logger::info('AssetManager:register – lean mode');
-
-        add_action('neo_dashboard_head',   [ $this, 'printHeadAssets' ],   5);
-        add_action('neo_dashboard_footer', [ $this, 'printFooterAssets' ], 5);
-        add_filter('show_admin_bar',       [ $this, 'maybeHideAdminBar' ]);
+        add_action('wp_enqueue_scripts', [$this, 'enqueueAssets'], 5);
+        add_action('admin_enqueue_scripts', [$this, 'enqueueAssets'], 5);
+        add_action('neo_dashboard_head', [$this, 'printHeadAssets'], 5);
+        add_action('neo_dashboard_footer', [$this, 'printFooterAssets'], 5);
+        add_filter('show_admin_bar', [$this, 'maybeHideAdminBar']);
     }
 
-    /* ------------------------------------------------------------------ *
-     * <head> – Styles
-     * ------------------------------------------------------------------ */
-    public function printHeadAssets(): void
+    public function enqueueAssets(): void
     {
-        if ( ! $this->isDashboardPage() ) {
+        $section = get_query_var(Router::QUERY_VAR_SECTION, '');
+
+        if (isset(self::$assets_registered[$section])) {
             return;
         }
 
         $base = plugin_dir_url(NEO_DASHBOARD_PLUGIN_FILE);
 
         // Bootstrap CSS
-        printf(
-            '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@%s/dist/css/bootstrap.min.css" />' . PHP_EOL,
-            esc_attr(self::BOOTSTRAP_VERSION)
+        wp_enqueue_style(
+            'neo-dashboard-bootstrap',
+            "https://cdn.jsdelivr.net/npm/bootstrap@" . self::BOOTSTRAP_VERSION . "/dist/css/bootstrap.min.css",
+            [],
+            self::BOOTSTRAP_VERSION
         );
 
         // Bootstrap Icons
-        printf(
-            '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@%s/font/bootstrap-icons.css" />' . PHP_EOL,
-            esc_attr(self::ICONS_VERSION)
+        wp_enqueue_style(
+            'neo-dashboard-bootstrap-icons',
+            "https://cdn.jsdelivr.net/npm/bootstrap-icons@" . self::ICONS_VERSION . "/font/bootstrap-icons.css",
+            [],
+            self::ICONS_VERSION
         );
 
-        // Dashboard-Core CSS
-        printf(
-            '<link rel="stylesheet" href="%1$sassets/dashboard.css?v=%2$s" />' . PHP_EOL,
-            esc_url($base),
-            esc_attr(NEO_DASHBOARD_VERSION)
-        );
-
-        // Plugin-Spezifische Styles
-        do_action(
-            'neo_dashboard_enqueue_plugin_assets_css',
-            get_query_var(Router::QUERY_VAR_SECTION, '')
-        );
-    }
-
-    /* ------------------------------------------------------------------ *
-     * </body> – Scripts
-     * ------------------------------------------------------------------ */
-    public function printFooterAssets(): void
-    {
-        if ( ! $this->isDashboardPage() ) {
-            return;
+        // Core CSS
+        if ($this->fileExists('assets/dashboard.css')) {
+            wp_enqueue_style(
+                'neo-dashboard-core',
+                $base . 'assets/dashboard.css',
+                ['neo-dashboard-bootstrap'],
+                NEO_DASHBOARD_VERSION
+            );
         }
 
-        $base = plugin_dir_url(NEO_DASHBOARD_PLUGIN_FILE);
+        // Bootstrap JS
+        wp_enqueue_script(
+            'neo-dashboard-bootstrap',
+            "https://cdn.jsdelivr.net/npm/bootstrap@" . self::BOOTSTRAP_VERSION . "/dist/js/bootstrap.bundle.min.js",
+            ['jquery'],
+            self::BOOTSTRAP_VERSION,
+            true
+        );
 
-        // -------------------------------------------------------------
-        // Inline-Konfig (REST-URL + Nonce) – ersetzt wp_localize_script
-        // -------------------------------------------------------------
-        $config = [
+        // Core JS
+        if ($this->fileExists('assets/js/dashboard.js')) {
+            wp_enqueue_script(
+                'neo-dashboard-core',
+                $base . 'assets/js/dashboard.js',
+                ['neo-dashboard-bootstrap', 'jquery'],
+                NEO_DASHBOARD_VERSION,
+                true
+            );
+        }
+
+        // Notifications
+        if ($this->fileExists('assets/js/notifications.js')) {
+            wp_enqueue_script(
+                'neo-dashboard-notifications',
+                $base . 'assets/js/notifications.js',
+                ['neo-dashboard-core'],
+                NEO_DASHBOARD_VERSION,
+                true
+            );
+        }
+
+        wp_localize_script('neo-dashboard-core', 'NeoDash', [
             'restUrl' => rest_url('neo-dashboard/v1'),
             'nonce'   => wp_create_nonce('wp_rest'),
-        ];
-        printf(
-            '<script>var NeoDash = %s;</script>' . PHP_EOL,
-            wp_json_encode($config, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT)
-        );
+        ]);
 
-        // Bootstrap Bundle JS
-        printf(
-            '<script src="https://cdn.jsdelivr.net/npm/bootstrap@%s/dist/js/bootstrap.bundle.min.js"></script>' . PHP_EOL,
-            esc_attr(self::BOOTSTRAP_VERSION)
-        );
+        // Хуки для плагинов НЕ вызываем здесь - только в printHeadAssets и printFooterAssets
+        // do_action('neo_dashboard_enqueue_plugin_assets', $section);
 
-        // Dashboard-Core JS
-        printf(
-            '<script src="%1$sassets/js/dashboard.js?v=%2$s"></script>' . PHP_EOL,
-            esc_url($base),
-            esc_attr(NEO_DASHBOARD_VERSION)
-        );
-
-        // Notifications-Modul
-        printf(
-            '<script src="%1$sassets/js/notifications.js?v=%2$s"></script>' . PHP_EOL,
-            esc_url($base),
-            esc_attr(NEO_DASHBOARD_VERSION)
-        );
-
-        // Plugin-Spezifische Scripts
-        do_action(
-            'neo_dashboard_enqueue_plugin_assets_js',
-            get_query_var(Router::QUERY_VAR_SECTION, '')
-        );
+        self::$assets_registered[$section] = true;
     }
 
-    /* ------------------------------------------------------------------ *
-     * Utilities
-     * ------------------------------------------------------------------ */
-    private function isDashboardPage(): bool
+    public function printHeadAssets(): void
     {
-        return is_page('neo-dashboard')
-            || '' !== get_query_var(Router::QUERY_VAR_SECTION, '');
+        $section = get_query_var(Router::QUERY_VAR_SECTION, '');
+        $this->enqueueAssets();
+        
+        // Загружаем ассеты плагинов только если есть конкретная секция
+        if ($section !== '') {
+            do_action('neo_dashboard_enqueue_plugin_assets_css', $section);
+        }
+        
+        if (function_exists('wp_print_styles')) {
+            wp_print_styles();
+        }
+    }
+
+    public function printFooterAssets(): void
+    {
+        $section = get_query_var(Router::QUERY_VAR_SECTION, '');
+        $this->enqueueAssets();
+        
+        // Загружаем ассеты плагинов только если есть конкретная секция
+        if ($section !== '') {
+            do_action('neo_dashboard_enqueue_plugin_assets_js', $section);
+        }
+        
+        if (function_exists('wp_print_scripts')) {
+            wp_print_scripts();
+        }
+    }
+
+    private function fileExists(string $relative_path): bool
+    {
+        return file_exists(plugin_dir_path(NEO_DASHBOARD_PLUGIN_FILE) . $relative_path);
     }
 
     public function maybeHideAdminBar(bool $show): bool
     {
         return $this->isDashboardPage() ? false : $show;
+    }
+
+    private function isDashboardPage(): bool
+    {
+        $section = get_query_var(Router::QUERY_VAR_SECTION, '');
+        $pagename = get_query_var('pagename', '');
+
+        return $section !== '' || $pagename === 'neo-dashboard' || strpos($_SERVER['REQUEST_URI'] ?? '', '/neo-dashboard') === 0;
     }
 }
