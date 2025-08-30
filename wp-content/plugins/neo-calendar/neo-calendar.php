@@ -62,6 +62,22 @@ add_action('plugins_loaded', static function () {
         ]);
     });
 
+    add_action('neo_dashboard_enqueue_widget_assets_js', function () {
+        wp_enqueue_script(
+            'widget-neo-calendar-js',
+            plugin_dir_url(__FILE__) . 'assets/js/widget-neo-calendar.js',
+            ['jquery'],
+            '1.0.0',
+            true
+        );
+
+        // Передаем AJAX данные в JavaScript
+        wp_localize_script('widget-neo-calendar-js', 'neoCalendarAjax', [
+            'ajaxurl' => admin_url('admin-ajax.php'),
+            'nonce'   => wp_create_nonce('neo_calendar_nonce'),
+        ]);
+    });
+
     // 3) Регистрируем элементы dashboard
     add_action('neo_dashboard_init', static function () {
 
