@@ -60,7 +60,7 @@ if ( ! defined( 'ABSPATH' ) ) {
             <?php endforeach; ?>
         </ul>
         <div class="border-top p-3">
-            <?php echo \NeoDashboard\Core\Helper::render_nav_user_menu( $user ); ?>
+            <?php echo \NeoDashboard\Core\render_nav_user_menu( $user ); ?>
         </div>
     </div>
 </div>

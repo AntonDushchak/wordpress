@@ -104,9 +104,6 @@ class AssetManager
             'nonce'   => wp_create_nonce('wp_rest'),
         ]);
 
-        // Хуки для плагинов НЕ вызываем здесь - только в printHeadAssets и printFooterAssets
-        // do_action('neo_dashboard_enqueue_plugin_assets', $section);
-
         self::$assets_registered[$section] = true;
     }
 
@@ -115,9 +112,11 @@ class AssetManager
         $section = get_query_var(Router::QUERY_VAR_SECTION, '');
         $this->enqueueAssets();
         
-        // Загружаем ассеты плагинов только если есть конкретная секция
         if ($section !== '') {
             do_action('neo_dashboard_enqueue_plugin_assets_css', $section);
+        }
+        else if ($section === '') {
+            do_action('neo_dashboard_enqueue_widget_assets_css');
         }
         
         if (function_exists('wp_print_styles')) {
@@ -130,9 +129,11 @@ class AssetManager
         $section = get_query_var(Router::QUERY_VAR_SECTION, '');
         $this->enqueueAssets();
         
-        // Загружаем ассеты плагинов только если есть конкретная секция
         if ($section !== '') {
             do_action('neo_dashboard_enqueue_plugin_assets_js', $section);
+        }
+        else if ($section === '') {
+            do_action('neo_dashboard_enqueue_widget_assets_js');
         }
         
         if (function_exists('wp_print_scripts')) {

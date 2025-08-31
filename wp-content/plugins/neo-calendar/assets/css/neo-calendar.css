@@ -1,0 +1,132 @@
+/* Neo Calendar Styles */
+
+/* Основные стили календаря */
+#neo-calendar {
+    padding: 20px;
+}
+
+.calendar-form {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+/* Стили для модального окна */
+#editEventModal .modal-dialog {
+    max-width: 800px;
+}
+
+#editEventModal .form-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Стили для поля описания */
+#edit-event-description {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Стили для отключенных полей */
+#edit-event-employee:disabled,
+#edit-event-type:disabled {
+    background-color: #f8f9fa !important;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* Стили для календаря */
+.fc {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.fc-event {
+    cursor: pointer;
+}
+
+.fc-event:hover {
+    opacity: 0.8;
+}
+
+/* Скрытие header mb-3 */
+.fc-header-toolbar {
+    margin-bottom: 0 !important;
+}
+
+/* Стили для виджета */
+.widget-card {
+    background: transparent;
+    box-shadow: none;
+}
+
+.widget-card .form-label {
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+.widget-card .form-control {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+}
+
+.widget-card .btn {
+    font-size: 0.875rem;
+    padding: 0.375rem 0.75rem;
+}
+
+/* Стили для flatpickr */
+.flatpickr-input {
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+}
+
+.flatpickr-input:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Стили для кнопок переключения форм */
+.btn-toggle-form {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-toggle-form:hover {
+    transform: translateY(-1px);
+}
+
+.btn-outline-secondary {
+    margin-right: 1%;
+}
+
+/* Стили для информационного сообщения */
+#no-events-message {
+    border-left: 4px solid #0dcaf0;
+}
+
+/* Адаптивные стили */
+@media (max-width: 768px) {
+    .calendar-form {
+        padding: 15px;
+    }
+    
+    .fc-header-toolbar {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .fc-toolbar-chunk {
+        display: flex;
+        justify-content: center;
+    }
+}
+
+header.mb-3 {
+    display: none;
+}
