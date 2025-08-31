@@ -31,7 +31,7 @@ class Bootstrap
         // Activation: Custom roles erstellen
         register_activation_hook(
             NEO_DASHBOARD_PLUGIN_FILE,
-            'neo_dashboard_add_roles'
+            [Roles::class, 'addRoles']
         );
 
         // Deactivation: Rewrite-Rules flushen und Custom roles entfernen
@@ -39,7 +39,7 @@ class Bootstrap
             NEO_DASHBOARD_PLUGIN_FILE,
             function(): void {
                 flush_rewrite_rules();
-                neo_dashboard_remove_roles();
+                Roles::removeRoles();
             }
         );
 
@@ -50,6 +50,9 @@ class Bootstrap
 
         // Runtime-Init: Router, Dashboard & Assets konfigurieren
         add_action('init', [self::class, 'init']);
+
+        // Standard-WordPress-Rollen entfernen
+        add_action('init', [Roles::class, 'removeDefaultRoles']);
 
         add_action('init', function() {
             remove_action('admin_print_styles', 'print_emoji_styles');
