@@ -53,7 +53,7 @@ class Bootstrap
 
         // Standard-WordPress-Rollen entfernen
         add_action('init', [Roles::class, 'removeDefaultRoles']);
-
+      
         add_action('init', function() {
             remove_action('admin_print_styles', 'print_emoji_styles');
             remove_action('wp_head', 'print_emoji_detection_script', 7);
