@@ -1,7 +1,7 @@
 (function ($) {
     'use strict';
 
-    function saveEventToDB(type, title, start, end, meta) {
+    function saveEventToDB(type, title, start, end, description) {
         if (typeof neoCalendarAjax === 'undefined') { alert('AJAX configuration error'); return; }
         const formData = new FormData();
         formData.append('action', 'neo_calendar_save_event');
@@ -10,7 +10,7 @@
         formData.append('title', title);
         formData.append('start', start);
         formData.append('end', end);
-        formData.append('meta', meta);
+        formData.append('description', description);
 
         fetch(neoCalendarAjax.ajaxurl, { method: 'POST', body: formData })
             .then(r => r.json())
@@ -26,7 +26,6 @@
             })
             .catch(err => alert('Fehler beim Speichern: ' + err.message));
     }
-
 
     function addWorkTime(dateEl, fromEl, toEl) {
         const date = dateEl.value;
@@ -49,7 +48,6 @@
         saveEventToDB('arbeitsstunde', '', startDateTime, endDateTime, '');
     }
 
-
     function addVacation(dateFromEl, dateToEl) {
         const dateFrom = dateFromEl.value;
         const dateTo = dateToEl.value;
@@ -71,7 +69,23 @@
         saveEventToDB('urlaub', '', dateFrom, endDateStr, '');
     }
 
-    // Функция для переключения форм в виджете
+    function addEvent(dateEl, timeEl, titleEl) {
+        const date = dateEl.value;
+        const time = timeEl.value;
+        const title = titleEl.value;
+
+        if (!date || !time || !title) {
+            alert('Bitte füllen Sie alle Felder aus!');
+            return;
+        }
+
+        const startDateTime = date + 'T' + time + ':00';
+        const endDateTime = date + 'T' + time + ':00'; // Für Veranstaltung verwenden wir dieselbe Zeit
+
+        saveEventToDB('veranstaltung', title, startDateTime, endDateTime, '');
+    }
+
+    // Funktion zum Umschalten von Formularen im Widget
     function toggleWidgetForms() {
         const workForm = document.getElementById('widget-work-form');
         const vacationForm = document.getElementById('widget-vacation-form');
@@ -81,14 +95,14 @@
         
         if (workForm && vacationForm && addWorkBtn && addVacationBtn && toggleBtn) {
             if (workForm.style.display !== 'none') {
-                // Показываем форму отпуска
+                // Zeige Urlaubsformular
                 workForm.style.display = 'none';
                 vacationForm.style.display = 'flex';
                 addWorkBtn.style.display = 'none';
                 addVacationBtn.style.display = 'inline-block';
                 toggleBtn.innerHTML = '<i class="bi bi-arrow-left"></i> Zurück';
             } else {
-                // Показываем форму рабочего времени
+                // Zeige Arbeitszeitformular
                 workForm.style.display = 'flex';
                 vacationForm.style.display = 'none';
                 addWorkBtn.style.display = 'inline-block';
@@ -98,25 +112,42 @@
         }
     }
 
-    // Функция для переключения на форму отпуска в основной форме
+    // Funktion zum Umschalten auf Urlaubsformular in der Hauptform
     function showVacationForm() {
         const workForm = document.getElementById('work-time-form');
         const vacationForm = document.getElementById('vacation-form');
+        const eventForm = document.getElementById('event-form');
         
-        if (workForm && vacationForm) {
+        if (workForm && vacationForm && eventForm) {
             workForm.style.display = 'none';
             vacationForm.style.display = 'block';
+            eventForm.style.display = 'none';
         }
     }
 
-    // Функция для возврата к форме рабочего времени в основной форме
+    // Funktion zum Zurückkehren zur Arbeitszeitformular in der Hauptform
     function showWorkForm() {
         const workForm = document.getElementById('work-time-form');
         const vacationForm = document.getElementById('vacation-form');
+        const eventForm = document.getElementById('event-form');
         
-        if (workForm && vacationForm) {
+        if (workForm && vacationForm && eventForm) {
             workForm.style.display = 'block';
             vacationForm.style.display = 'none';
+            eventForm.style.display = 'none';
+        }
+    }
+
+    // Funktion zum Anzeigen der Veranstaltungsformular
+    function showEventForm() {
+        const workForm = document.getElementById('work-time-form');
+        const vacationForm = document.getElementById('vacation-form');
+        const eventForm = document.getElementById('event-form');
+        
+        if (workForm && vacationForm && eventForm) {
+            workForm.style.display = 'none';
+            vacationForm.style.display = 'none';
+            eventForm.style.display = 'block';
         }
     }
 
@@ -131,12 +162,16 @@
             console.warn(`Element with id "${elementId}" not found`);
             return;
         }
-    
+        
+        if (el._flatpickr) return;
+
         flatpickr(el, {
             enableTime: true,
             noCalendar: true,
             dateFormat: "H:i",
-            time_24hr: true
+            time_24hr: true,
+            minuteIncrement: 15,
+            allowInput: false,
         });
     }
 
@@ -144,9 +179,11 @@
         saveEventToDB,
         addWorkTime,
         addVacation,
+        addEvent,
         toggleWidgetForms,
         showVacationForm,
         showWorkForm,
+        showEventForm,
         initTimePicker
     };
 })(jQuery);

@@ -1,103 +1,103 @@
-# Neo Calendar - Формы переключения
+# Neo Calendar - Formular-Umschaltung
 
-## Описание
+## Beschreibung
 
-Плагин Neo Calendar теперь поддерживает переключение между формами рабочего времени и отпуска. При нажатии на кнопку "Urlaub" форма автоматически переключается, позволяя пользователям легко переходить между различными типами событий.
+Das Neo Calendar Plugin unterstützt jetzt das Umschalten zwischen Arbeitszeit- und Urlaubsformularen. Beim Klicken auf den "Urlaub"-Button wechselt das Formular automatisch und ermöglicht es Benutzern, einfach zwischen verschiedenen Ereignistypen zu wechseln.
 
-## Функциональность
+## Funktionalität
 
-### Основная форма
-- **Форма рабочего времени** (по умолчанию видна)
-  - Поля для даты, времени начала и окончания
-  - Кнопка "Hinzufügen" для добавления рабочего времени
-  - Кнопка "Urlaub" для переключения на форму отпуска
+### Hauptformular
+- **Arbeitszeitformular** (standardmäßig sichtbar)
+  - Felder für Datum, Start- und Endzeit
+  - "Hinzufügen"-Button für Arbeitszeit
+  - "Urlaub"-Button zum Umschalten zum Urlaubsformular
 
-- **Форма отпуска** (скрыта по умолчанию)
-  - Поля для даты начала и окончания отпуска
-  - Кнопка "Hinzufügen" для добавления отпуска
-  - Кнопка "Zurück" для возврата к форме рабочего времени
+- **Urlaubsformular** (standardmäßig ausgeblendet)
+  - Felder für Urlaubsstart- und -enddatum
+  - "Hinzufügen"-Button für Urlaub
+  - "Zurück"-Button zum Zurückkehren zum Arbeitszeitformular
 
-### Виджет
-- **Форма рабочего времени** (по умолчанию видна)
-  - Компактные поля для даты и времени
-  - Кнопка "Hinzufügen" для добавления рабочего времени
-  - Кнопка "Urlaub" для переключения на форму отпуска
+### Widget
+- **Arbeitszeitformular** (standardmäßig sichtbar)
+  - Kompakte Felder für Datum und Zeit
+  - "Hinzufügen"-Button für Arbeitszeit
+  - "Urlaub"-Button zum Umschalten zum Urlaubsformular
 
-- **Форма отпуска** (скрыта по умолчанию)
-  - Поля для даты начала и окончания отпуска
-  - Кнопка "Urlaub hinzufügen" для добавления отпуска
-  - Кнопка "Zurück" для возврата к форме рабочего времени
+- **Urlaubsformular** (standardmäßig ausgeblendet)
+  - Felder für Urlaubsstart- und -enddatum
+  - "Urlaub hinzufügen"-Button für Urlaub
+  - "Zurück"-Button zum Zurückkehren zum Arbeitszeitformular
 
 ## JavaScript API
 
-### Основные функции
+### Hauptfunktionen
 ```javascript
-// Показать форму отпуска
+// Urlaubsformular anzeigen
 window.NeoCalendar.showVacationForm()
 
-// Показать форму рабочего времени
+// Arbeitszeitformular anzeigen
 window.NeoCalendar.showWorkForm()
 
-// Переключить формы в виджете
+// Formulare im Widget umschalten
 window.NeoCalendar.toggleWidgetForms()
 
-// Добавить рабочее время
+// Arbeitszeit hinzufügen
 window.NeoCalendar.addWorkTime(dateElement, fromElement, toElement)
 
-// Добавить отпуск
+// Urlaub hinzufügen
 window.NeoCalendar.addVacation(dateFromElement, dateToElement)
 ```
 
-## CSS классы
+## CSS-Klassen
 
-### Основные стили
-- `.calendar-form` - стили для форм
-- `.btn-toggle-form` - стили для кнопок переключения
-- `.widget-card` - стили для виджета
+### Hauptstile
+- `.calendar-form` - Stile für Formulare
+- `.btn-toggle-form` - Stile für Umschalt-Buttons
+- `.widget-card` - Stile für Widget
 
-### Анимации
-- Плавные переходы между формами
-- Эффекты наведения для кнопок
-- Анимации появления/исчезновения
+### Animationen
+- Sanfte Übergänge zwischen Formularen
+- Hover-Effekte für Buttons
+- Ein-/Ausblend-Animationen
 
-## Структура файлов
+## Dateistruktur
 
 ```
 neo-calendar/
-├── neo-calendar.php              # Основной PHP файл
+├── neo-calendar.php              # Haupt-PHP-Datei
 ├── assets/
 │   ├── css/
-│   │   └── neo-calendar.css     # Стили
+│   │   └── neo-calendar.css     # Stile
 │   └── js/
-│       ├── neo-calendar.js       # Основной JavaScript
-│       ├── neo-calendar-common.js # Общие функции
-│       └── widget-neo-calendar.js # JavaScript виджета
-└── test-forms.html               # Тестовый файл
+│       ├── neo-calendar.js       # Haupt-JavaScript
+│       ├── neo-calendar-common.js # Gemeinsame Funktionen
+│       └── widget-neo-calendar.js # Widget-JavaScript
+└── test-forms.html               # Testdatei
 ```
 
-## Использование
+## Verwendung
 
-### В WordPress
-1. Активируйте плагин Neo Calendar
-2. Перейдите в Neo Dashboard
-3. Используйте кнопки "Urlaub" для переключения между формами
+### In WordPress
+1. Aktivieren Sie das Neo Calendar Plugin
+2. Wechseln Sie zu Neo Dashboard
+3. Verwenden Sie die "Urlaub"-Buttons zum Umschalten zwischen Formularen
 
-### Тестирование
-1. Откройте `test-forms.html` в браузере
-2. Проверьте переключение между формами
-3. Убедитесь, что все кнопки работают корректно
+### Testing
+1. Öffnen Sie `test-forms.html` im Browser
+2. Testen Sie das Umschalten zwischen Formularen
+3. Stellen Sie sicher, dass alle Buttons korrekt funktionieren
 
-## Особенности
+## Besonderheiten
 
-- **Автоматическое переключение** - формы переключаются мгновенно
-- **Сохранение состояния** - текущая форма остается активной
-- **Адаптивный дизайн** - работает на всех устройствах
-- **Bootstrap совместимость** - использует стандартные Bootstrap классы
-- **Иконки Bootstrap Icons** - современный внешний вид
+- **Automatisches Umschalten** - Formulare wechseln sofort
+- **Zustandserhaltung** - Aktuelles Formular bleibt aktiv
+- **Responsive Design** - Funktioniert auf allen Geräten
+- **Bootstrap-Kompatibilität** - Verwendet Standard-Bootstrap-Klassen
+- **Bootstrap Icons** - Modernes Aussehen
 
-## Поддержка
+## Support
 
-При возникновении проблем:
-1. Проверьте консоль браузера на наличие ошибок JavaScript
-2. Убедитесь, что все файлы загружены корректно
-3. Проверьте, что jQuery загружен перед плагином
+Bei Problemen:
+1. Überprüfen Sie die Browser-Konsole auf JavaScript-Fehler
+2. Stellen Sie sicher, dass alle Dateien korrekt geladen werden
+3. Überprüfen Sie, dass jQuery vor dem Plugin geladen wird

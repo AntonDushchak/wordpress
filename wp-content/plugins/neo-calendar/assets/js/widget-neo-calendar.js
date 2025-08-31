@@ -2,7 +2,7 @@
     'use strict';
 
     $(document).ready(function () {
-        // Кнопка добавления рабочего времени
+        // Button zum Hinzufügen von Arbeitszeit
         const addWorkTimeBtn = document.getElementById('widget-add-work-time-btn');
         if (addWorkTimeBtn) {
             addWorkTimeBtn.addEventListener('click', function () {
@@ -14,7 +14,7 @@
             });
         }
 
-        // Кнопка добавления отпуска
+        // Button zum Hinzufügen von Urlaub
         const addVacationBtn = document.getElementById('widget-add-vacation-btn');
         if (addVacationBtn) {
             addVacationBtn.addEventListener('click', function () {
@@ -25,7 +25,7 @@
             });
         }
 
-        // Кнопка переключения на форму отпуска
+        // Button zum Umschalten auf Urlaubsformular
         const showVacationBtn = document.getElementById('widget-show-vacation-form-btn');
         if (showVacationBtn) {
             showVacationBtn.addEventListener('click', function () {
@@ -33,7 +33,7 @@
             });
         }
 
-        // Инициализация time picker'ов для виджета
+        // Initialisierung der Time-Picker für Widget
         const from = document.getElementById("widget-work-time-from");
         const to = document.getElementById("widget-work-time-to");
     
@@ -41,7 +41,7 @@
             window.NeoCalendar.initTimePicker("widget-work-time-from");
             window.NeoCalendar.initTimePicker("widget-work-time-to");
         } else {
-            console.log("Элементы time picker'а не найдены:", { from, to });
+            console.log("Time-Picker-Elemente nicht gefunden:", { from, to });
         }
     });
 
