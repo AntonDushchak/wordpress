@@ -36,6 +36,22 @@ add_action('plugins_loaded', static function () {
             [],
             '1.0.0'
         );
+
+        wp_enqueue_style(
+            'flatpickr-css',
+            'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css',
+            [],
+            '4.6.13'
+        );
+    });
+
+    add_action('neo_dashboard_enqueue_widget_assets_css', function () {
+        wp_enqueue_style(
+            'flatpickr-css',
+            'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css',
+            [],
+            '4.6.13'
+        );
     });
 
     // FullCalendar JS
@@ -55,14 +71,48 @@ add_action('plugins_loaded', static function () {
             '1.0.0',
             true
         );
+
+        wp_enqueue_script(
+            'flatpickr-js',
+            'https://cdn.jsdelivr.net/npm/flatpickr',
+            [],
+            '4.6.13',
+            true
+        );
+
+        wp_enqueue_script(
+            'neo-calendar-common-js',
+            plugin_dir_url(__FILE__) . 'assets/js/neo-calendar-common.js',
+            ['jquery', 'flatpickr-js'],
+            '1.0.0',
+            true
+        );
+
         // Передаем AJAX данные в JavaScript
         wp_localize_script('neo-calendar-js', 'neoCalendarAjax', [
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce'   => wp_create_nonce('neo_calendar_nonce'),
+            'current_user_id' => get_current_user_id(),
         ]);
     });
 
     add_action('neo_dashboard_enqueue_widget_assets_js', function () {
+        wp_enqueue_script(
+            'flatpickr-js',
+            'https://cdn.jsdelivr.net/npm/flatpickr',
+            [],
+            '4.6.13',
+            true
+        );
+
+        wp_enqueue_script(
+            'neo-calendar-common-js',
+            plugin_dir_url(__FILE__) . 'assets/js/neo-calendar-common.js',
+            ['jquery', 'flatpickr-js'],
+            '1.0.0',
+            true
+        );
+
         wp_enqueue_script(
             'widget-neo-calendar-js',
             plugin_dir_url(__FILE__) . 'assets/js/widget-neo-calendar.js',
@@ -212,24 +262,29 @@ add_action('plugins_loaded', static function () {
             wp_send_json_error('Database table does not exist. Please deactivate and reactivate the plugin.');
         }
 
-        $where_clause = "WHERE user_id = %d";
-        $where_values = [$user_id];
+        $where_clause = [];
+        $where_values = [];
 
         if (!empty($start_date)) {
-            $where_clause .= " AND start >= %s";
+            $where_clause[] = "start >= %s";
             $where_values[] = $start_date;
         }
 
         if (!empty($end_date)) {
-            $where_clause .= " AND end <= %s";
+            $where_clause[] = "end <= %s";
             $where_values[] = $end_date;
         }
 
+        $sql_where = '';
+        if (!empty($where_clause)) {
+            $sql_where = 'WHERE ' . implode(' AND ', $where_clause);
+        }
+
         $sql = $wpdb->prepare(
-            "SELECT id, type, title, start, end, meta, user_name 
-              FROM $table_name 
-              $where_clause 
-              ORDER BY start ASC",
+            "SELECT id, type, title, start, end, meta, user_name, user_id 
+       FROM $table_name 
+       $sql_where
+       ORDER BY start ASC",
             $where_values
         );
 
@@ -279,7 +334,9 @@ add_action('plugins_loaded', static function () {
                 'backgroundColor' => $color,
                 'borderColor' => $color,
                 'textColor' => '#ffffff',
-                'allDay' => $allDay
+                'allDay' => $allDay,
+                'user_id' => $event->user_id,
+                'is_owner' => ($event->user_id == $user_id)
             ];
 
             $formatted_events[] = $formatted_event;
@@ -392,7 +449,7 @@ function neo_calendar_welcome_callback()
                                 <button type="button" class="btn btn-primary me-2" id="add-work-time-btn">
                                     <i class="bi bi-plus-circle"></i> Hinzufügen
                                 </button>
-                                <button type="button" class="btn btn-outline-secondary" id="show-vacation-form-btn">
+                                <button type="button" class="btn btn-outline-secondary btn-toggle-form" id="show-vacation-form-btn">
                                     <i class="bi bi-calendar-x"></i> Urlaub
                                 </button>
                             </div>
@@ -415,7 +472,7 @@ function neo_calendar_welcome_callback()
                                 <button type="button" class="btn btn-success me-2" id="add-vacation-btn">
                                     <i class="bi bi-plus-circle"></i> Hinzufügen
                                 </button>
-                                <button type="button" class="btn btn-outline-secondary" id="back-to-work-form-btn">
+                                <button type="button" class="btn btn-outline-secondary btn-toggle-form" id="back-to-work-form-btn">
                                     <i class="bi bi-arrow-left"></i> Zurück
                                 </button>
                             </div>
@@ -443,8 +500,9 @@ function neo_calendar_welcome_callback()
 function neo_calendar_widget_callback()
 {
 ?>
-    <div class="card">
-        <div class="row">
+    <div class="card widget-card" style="border-color: transparent;">
+        <!-- Форма рабочего времени (по умолчанию видна) -->
+        <div class="row" id="widget-work-form">
             <div class="col-md-4">
                 <label for="widget-work-date" class="form-label">Datum</label>
                 <input type="date" class="form-control" id="widget-work-date" value="<?php echo date('Y-m-d'); ?>">
@@ -458,13 +516,29 @@ function neo_calendar_widget_callback()
                 <input type="time" class="form-control" id="widget-work-time-to" value="18:00">
             </div>
         </div>
+
+        <!-- Форма отпуска (скрыта по умолчанию) -->
+        <div class="row" id="widget-vacation-form" style="display: none;">
+            <div class="col-md-6">
+                <label for="widget-vacation-date-from" class="form-label">Datum von</label>
+                <input type="date" class="form-control" id="widget-vacation-date-from" value="<?php echo date('Y-m-d'); ?>">
+            </div>
+            <div class="col-md-6">
+                <label for="widget-vacation-date-to" class="form-label">Datum bis</label>
+                <input type="date" class="form-control" id="widget-vacation-date-to" value="<?php echo date('Y-m-d'); ?>">
+            </div>
+        </div>
+
         <hr>
         <div class="row">
             <div class="col-12">
                 <button type="button" class="btn btn-primary me-2" id="widget-add-work-time-btn">
                     <i class="bi bi-plus-circle"></i> Hinzufügen
                 </button>
-                <button type="button" class="btn btn-outline-secondary" id="widget-show-vacation-form-btn">
+                <button type="button" class="btn btn-success me-2" id="widget-add-vacation-btn" style="display: none;">
+                    <i class="bi bi-plus-circle"></i> Urlaub hinzufügen
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-toggle-form" id="widget-show-vacation-form-btn">
                     <i class="bi bi-calendar-x"></i> Urlaub
                 </button>
             </div>

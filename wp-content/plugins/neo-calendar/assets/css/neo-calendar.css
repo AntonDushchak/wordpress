@@ -16,17 +16,26 @@
 
 /* Стили для форм календаря */
 .calendar-form {
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
+    background: white;
+    border: 1px solid #e9ecef;
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .calendar-form h4 {
     color: #495057;
     margin-bottom: 20px;
     font-weight: 600;
+}
+
+/* Стили для виджета */
+.widget-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e9ecef;
 }
 
 /* Стили для форм */
@@ -39,31 +48,32 @@
 .form-control {
     border-radius: 6px;
     border: 1px solid #ced4da;
-    padding: 8px 12px;
-    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    padding: 10px 12px;
+    transition: border-color 0.2s ease;
 }
 
 .form-control:focus {
-    border-color: #007cba;
-    box-shadow: 0 0 0 0.2rem rgba(0, 124, 186, 0.25);
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+    outline: none;
 }
 
 /* Стили для кнопок */
 .btn {
     border-radius: 6px;
     font-weight: 500;
-    padding: 8px 16px;
-    transition: all 0.15s ease-in-out;
+    padding: 10px 16px;
+    transition: all 0.2s ease;
 }
 
 .btn-primary {
-    background-color: #007cba;
-    border-color: #007cba;
+    background-color: #007bff;
+    border-color: #007bff;
 }
 
 .btn-primary:hover {
-    background-color: #005a87;
-    border-color: #005a87;
+    background-color: #0056b3;
+    border-color: #0056b3;
 }
 
 .btn-success {
@@ -87,10 +97,23 @@
     color: white;
 }
 
+/* Стили для строк и колонок */
+.row {
+    margin-bottom: 1rem;
+}
+
+.col-md-3,
+.col-md-4,
+.col-md-6 {
+    margin-bottom: 0.5rem;
+}
+
 /* Стили для уведомлений */
 .alert {
-    border-radius: 8px;
+    border-radius: 6px;
     border: none;
+    padding: 12px 16px;
+    margin-top: 1rem;
 }
 
 .alert-info {
@@ -99,94 +122,75 @@
     border-left: 4px solid #17a2b8;
 }
 
-/* Адаптивность */
-@media (max-width: 768px) {
-    .card-body {
-        padding: 1rem;
-    }
+.alert-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border-left: 4px solid #ffc107;
 }
 
-/* Стили для карточек */
-.card {
-    transition: all 0.3s ease;
-    border: 1px solid rgba(0,0,0,.125);
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border-left: 4px solid #28a745;
 }
 
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,.1);
+.alert-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border-left: 4px solid #dc3545;
 }
 
-.card-header h2,
-.card-header h3 {
-    margin: 0;
-    color: #495057;
+/* Анимации и эффекты */
+.calendar-form,
+.widget-card {
+    animation: fadeIn 0.3s ease-out;
 }
 
-.card-header h2 i,
-.card-header h3 i {
-    margin-right: 8px;
-    color: #007cba;
-}
-
-/* Стили для виджета */
-.widget-stats {
-    text-align: center;
-}
-
-.widget-stats h4 {
-    font-size: 2rem;
-    font-weight: bold;
-    margin: 0;
-}
-
-.widget-stats small {
-    font-size: 0.875rem;
-    color: #6c757d;
-}
-
-/* Анимация для иконок */
-.bi {
-    transition: transform 0.2s ease;
-}
-
-.btn:hover .bi {
-    transform: scale(1.1);
-}
-
-/* Стили для sidebar группы */
-.sidebar-group {
-    font-weight: 600;
-    color: #495057;
-}
-
-.sidebar-subitem {
-    padding-left: 1.5rem;
-    font-size: 0.9rem;
-}
-
-/* Анимации появления */
-.fade-in-up {
-    animation: fadeInUp 0.6s ease-out;
-}
-
-@keyframes fadeInUp {
+@keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(30px);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
     }
 }
 
-/* Анимация для кнопки обновления */
-.spin {
-    animation: spin 1s linear infinite;
+/* Стили для мобильных устройств */
+@media (max-width: 768px) {
+    .widget-card .card-body {
+        padding: 1rem;
+    }
+    
+    .btn {
+        padding: 8px 14px;
+        font-size: 0.9rem;
+    }
+    
+    .form-control {
+        padding: 8px 12px;
+    }
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+/* Стили для темной темы */
+@media (prefers-color-scheme: dark) {
+    .widget-card {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+    
+    .form-control {
+        background: #4a5568;
+        border-color: #718096;
+        color: #e2e8f0;
+    }
+    
+    .form-control:focus {
+        background: #4a5568;
+        border-color: #007bff;
+    }
+    
+    .form-label {
+        color: #e2e8f0;
+    }
 }
