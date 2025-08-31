@@ -28,10 +28,19 @@ class Bootstrap
             [ \NeoDashboard\Core\Installer::class, 'activate' ]
         );
 
-        // Deactivation: Rewrite-Rules flushen
+        // Activation: Custom roles erstellen
+        register_activation_hook(
+            NEO_DASHBOARD_PLUGIN_FILE,
+            'neo_dashboard_add_roles'
+        );
+
+        // Deactivation: Rewrite-Rules flushen und Custom roles entfernen
         register_deactivation_hook(
             NEO_DASHBOARD_PLUGIN_FILE,
-            'flush_rewrite_rules'
+            function(): void {
+                flush_rewrite_rules();
+                neo_dashboard_remove_roles();
+            }
         );
 
         // Bootstrap in Deinem Haupt-Plugin-File (z.B. my-plugin.php)
