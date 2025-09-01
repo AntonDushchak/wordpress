@@ -1,0 +1,289 @@
+/**
+ * Neo Umfrage - Основные стили для фронтенда
+ * Версия: 1.0.0
+ */
+
+/* Основной контейнер опроса */
+.neo-umfrage-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Заголовок опроса */
+.neo-umfrage-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+    border-bottom: 2px solid #0073aa;
+    padding-bottom: 10px;
+}
+
+/* Описание опроса */
+.neo-umfrage-description {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 30px;
+    line-height: 1.6;
+    text-align: center;
+}
+
+/* Контейнер вопроса */
+.neo-umfrage-question {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 6px;
+    border-left: 4px solid #0073aa;
+}
+
+/* Текст вопроса */
+.neo-umfrage-question-text {
+    font-size: 18px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+/* Контейнер вариантов ответов */
+.neo-umfrage-options {
+    margin-top: 15px;
+}
+
+/* Вариант ответа */
+.neo-umfrage-option {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+}
+
+/* Радио кнопка и чекбокс */
+.neo-umfrage-option input[type="radio"],
+.neo-umfrage-option input[type="checkbox"] {
+    margin-right: 10px;
+    transform: scale(1.2);
+}
+
+/* Лейбл для варианта ответа */
+.neo-umfrage-option label {
+    font-size: 16px;
+    color: #555;
+    cursor: pointer;
+    flex: 1;
+    line-height: 1.4;
+}
+
+/* Поле ввода текста */
+.neo-umfrage-text-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.neo-umfrage-text-input:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+/* Текстовая область */
+.neo-umfrage-textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    font-size: 16px;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.3s ease;
+}
+
+.neo-umfrage-textarea:focus {
+    outline: none;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+/* Кнопки */
+.neo-umfrage-button {
+    background: #0073aa;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-right: 10px;
+}
+
+.neo-umfrage-button:hover {
+    background: #005a87;
+}
+
+.neo-umfrage-button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.neo-umfrage-button-secondary {
+    background: #6c757d;
+}
+
+.neo-umfrage-button-secondary:hover {
+    background: #545b62;
+}
+
+/* Контейнер кнопок */
+.neo-umfrage-buttons {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+/* Прогресс бар */
+.neo-umfrage-progress {
+    width: 100%;
+    height: 8px;
+    background: #eee;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.neo-umfrage-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #0073aa, #00a0d2);
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+/* Сообщения */
+.neo-umfrage-message {
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.neo-umfrage-message-success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.neo-umfrage-message-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.neo-umfrage-message-warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.neo-umfrage-message-info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* Индикатор загрузки */
+.neo-umfrage-loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #0073aa;
+    border-radius: 50%;
+    animation: neo-umfrage-spin 1s linear infinite;
+    margin-right: 10px;
+}
+
+@keyframes neo-umfrage-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .neo-umfrage-container {
+        margin: 10px;
+        padding: 15px;
+    }
+    
+    .neo-umfrage-title {
+        font-size: 20px;
+    }
+    
+    .neo-umfrage-question {
+        padding: 15px;
+    }
+    
+    .neo-umfrage-buttons {
+        text-align: center;
+    }
+    
+    .neo-umfrage-button {
+        display: block;
+        width: 100%;
+        margin-bottom: 10px;
+        margin-right: 0;
+    }
+}
+
+/* Анимации */
+.neo-umfrage-fade-in {
+    animation: neo-umfrage-fadeIn 0.5s ease-in;
+}
+
+@keyframes neo-umfrage-fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Скрытые элементы */
+.neo-umfrage-hidden {
+    display: none !important;
+}
+
+/* Валидация */
+.neo-umfrage-error {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1) !important;
+}
+
+.neo-umfrage-error-message {
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+/* Виджет */
+.neo-umfrage-widget {
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.neo-umfrage-widget h3 {
+    margin-top: 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
