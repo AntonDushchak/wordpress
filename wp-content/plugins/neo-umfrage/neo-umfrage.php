@@ -41,20 +41,51 @@ add_action('plugins_loaded', static function () {
             [],
             NEO_UMFRAGE_VERSION
         );
-        wp_enqueue_style(
-            'neo-umfrage-admin-css',
-            NEO_UMFRAGE_PLUGIN_URL . 'assets/css/neo-umfrage-admin.css',
-            [],
-            NEO_UMFRAGE_VERSION
-        );
     });
 
     // Подключаем JS для плагина
     add_action('neo_dashboard_enqueue_plugin_assets_js', function () {
+        // Основной координатор (загружается первым)
         wp_enqueue_script(
-            'neo-umfrage-admin-js',
-            NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage-admin.js',
+            'neo-umfrage-js',
+            NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage.js',
             ['jquery'],
+            NEO_UMFRAGE_VERSION,
+            true
+        );
+
+        // Модальные окна и формы
+        wp_enqueue_script(
+            'neo-umfrage-modals-js',
+            NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage-modals.js',
+            ['jquery', 'neo-umfrage-js'],
+            NEO_UMFRAGE_VERSION,
+            true
+        );
+
+        // Работа с анкетами
+        wp_enqueue_script(
+            'neo-umfrage-surveys-js',
+            NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage-surveys.js',
+            ['jquery', 'neo-umfrage-js'],
+            NEO_UMFRAGE_VERSION,
+            true
+        );
+
+        // Работа с шаблонами
+        wp_enqueue_script(
+            'neo-umfrage-templates-js',
+            NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage-templates.js',
+            ['jquery', 'neo-umfrage-js'],
+            NEO_UMFRAGE_VERSION,
+            true
+        );
+
+        // Статистика
+        wp_enqueue_script(
+            'neo-umfrage-statistics-js',
+            NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage-statistics.js',
+            ['jquery', 'neo-umfrage-js'],
             NEO_UMFRAGE_VERSION,
             true
         );
@@ -63,7 +94,7 @@ add_action('plugins_loaded', static function () {
         $current_user = wp_get_current_user();
         $user_roles = $current_user->roles;
         
-        wp_localize_script('neo-umfrage-admin-js', 'neoUmfrageAjax', [
+        wp_localize_script('neo-umfrage-js', 'neoUmfrageAjax', [
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('neo_umfrage_nonce'),
             'userRoles' => $user_roles,
@@ -107,17 +138,21 @@ add_action('plugins_loaded', static function () {
                 'icon'  => 'bi-clipboard-check',
                 'pos'   => 26,
             ],
-            'templates' => [
-                'label' => 'Vorlagen',
-                'icon'  => 'bi-file-earmark-text',
-                'pos'   => 27,
-            ],
+            
             'statistics' => [
                 'label' => 'Statistik',
                 'icon'  => 'bi-graph-up',
                 'pos'   => 28,
             ],
         ];
+
+        if(current_user_can('manage_options')) {
+            $sections['templates'] = [
+                'label' => 'Vorlagen',
+                'icon'  => 'bi-file-earmark-text',
+                    'pos'   => 27,
+                ];
+            }
 
         foreach ($sections as $slug => $data) {
             $full_slug = 'neo-umfrage/' . $slug;
@@ -746,26 +781,26 @@ class NeoUmfrage {
  */
 function neo_umfrage_main_section_callback() {
     ?>
-    <div class="neo-umfrage-admin-container">
-        <div class="neo-umfrage-admin-header">
-            <h1 class="neo-umfrage-admin-title">Neo Umfrage</h1>
-            <p class="neo-umfrage-admin-subtitle">System zur Verwaltung von Umfragen und Befragungen</p>
+    <div class="neo-umfrage-container">
+        <div class="neo-umfrage-header">
+            <h1 class="neo-umfrage-title">Neo Umfrage</h1>
+            <p class="neo-umfrage-subtitle">System zur Verwaltung von Umfragen und Befragungen</p>
         </div>
-        <div class="neo-umfrage-admin-card">
-            <div class="neo-umfrage-admin-card-body">
+        <div class="neo-umfrage-card">
+            <div class="neo-umfrage-card-body">
                 <p>Willkommen bei Neo Umfrage! Verwenden Sie das Seitenmenü zur Navigation durch die Bereiche.</p>
-                <div class="neo-umfrage-admin-stats" id="main-stats">
-                    <div class="neo-umfrage-admin-stat-card">
-                        <div class="neo-umfrage-admin-stat-number" id="total-surveys">-</div>
-                        <div class="neo-umfrage-admin-stat-label">Gesamt Umfragen</div>
+                <div class="neo-umfrage-stats" id="main-stats">
+                    <div class="neo-umfrage-stat-card">
+                        <div class="neo-umfrage-stat-number" id="total-surveys">-</div>
+                        <div class="neo-umfrage-stat-label">Gesamt Umfragen</div>
                     </div>
-                    <div class="neo-umfrage-admin-stat-card">
-                        <div class="neo-umfrage-admin-stat-number" id="total-templates">-</div>
-                        <div class="neo-umfrage-admin-stat-label">Vorlagen</div>
+                    <div class="neo-umfrage-stat-card">
+                        <div class="neo-umfrage-stat-number" id="total-templates">-</div>
+                        <div class="neo-umfrage-stat-label">Vorlagen</div>
                     </div>
-                    <div class="neo-umfrage-admin-stat-card">
-                        <div class="neo-umfrage-admin-stat-number" id="total-responses">-</div>
-                        <div class="neo-umfrage-admin-stat-label">Antworten</div>
+                    <div class="neo-umfrage-stat-card">
+                        <div class="neo-umfrage-stat-number" id="total-responses">-</div>
+                        <div class="neo-umfrage-stat-label">Antworten</div>
                     </div>
                 </div>
             </div>
@@ -776,20 +811,20 @@ function neo_umfrage_main_section_callback() {
 
 function neo_umfrage_surveys_callback() {
     ?>
-    <div class="neo-umfrage-admin-container">
-        <div class="neo-umfrage-admin-header">
-            <h1 class="neo-umfrage-admin-title">Umfragenverwaltung</h1>
-            <p class="neo-umfrage-admin-subtitle">Erstellung und Bearbeitung von Umfragen</p>
+    <div class="neo-umfrage-container">
+        <div class="neo-umfrage-header">
+            <h1 class="neo-umfrage-title">Umfragenverwaltung</h1>
+            <p class="neo-umfrage-subtitle">Erstellung und Bearbeitung von Umfragen</p>
         </div>
         
-        <div class="neo-umfrage-admin-card">
-            <div class="neo-umfrage-admin-card-header">
-                <h2 class="neo-umfrage-admin-card-title">Umfragenliste</h2>
+        <div class="neo-umfrage-card">
+            <div class="neo-umfrage-card-header">
+                <h2 class="neo-umfrage-card-title">Umfragenliste</h2>
             </div>
-            <div class="neo-umfrage-admin-card-body">
+            <div class="neo-umfrage-card-body">
                 <div style="margin-bottom: 20px;">
-                    <button class="neo-umfrage-admin-button" onclick="openAddSurveyModal()">Umfrage hinzufügen</button>
-                    <select class="neo-umfrage-admin-select" id="template-filter" style="margin-left: 10px; width: 200px;">
+                    <button class="neo-umfrage-button" onclick="openAddSurveyModal()">Umfrage hinzufügen</button>
+                    <select class="neo-umfrage-select" id="template-filter" style="margin-left: 10px; width: 200px;">
                         <option value="">Alle Vorlagen</option>
                     </select>
                 </div>
@@ -802,19 +837,19 @@ function neo_umfrage_surveys_callback() {
 
 function neo_umfrage_templates_callback() {
     ?>
-    <div class="neo-umfrage-admin-container">
-        <div class="neo-umfrage-admin-header">
-            <h1 class="neo-umfrage-admin-title">Vorlagenverwaltung</h1>
-            <p class="neo-umfrage-admin-subtitle">Erstellung und Bearbeitung von Umfragevorlagen</p>
+    <div class="neo-umfrage-container">
+        <div class="neo-umfrage-header">
+            <h1 class="neo-umfrage-title">Vorlagenverwaltung</h1>
+            <p class="neo-umfrage-subtitle">Erstellung und Bearbeitung von Umfragevorlagen</p>
         </div>
         
-        <div class="neo-umfrage-admin-card">
-            <div class="neo-umfrage-admin-card-header">
-                <h2 class="neo-umfrage-admin-card-title">Vorlagenliste</h2>
+        <div class="neo-umfrage-card">
+            <div class="neo-umfrage-card-header">
+                <h2 class="neo-umfrage-card-title">Vorlagenliste</h2>
             </div>
-            <div class="neo-umfrage-admin-card-body">
+            <div class="neo-umfrage-card-body">
                 <div style="margin-bottom: 20px;">
-                    <button class="neo-umfrage-admin-button" onclick="openAddTemplateModal()">Vorlage hinzufügen</button>
+                    <button class="neo-umfrage-button" onclick="openAddTemplateModal()">Vorlage hinzufügen</button>
                 </div>
                 <div id="templates-list">Laden...</div>
             </div>
@@ -825,32 +860,32 @@ function neo_umfrage_templates_callback() {
 
 function neo_umfrage_statistics_callback() {
     ?>
-    <div class="neo-umfrage-admin-container">
-        <div class="neo-umfrage-admin-header">
-            <h1 class="neo-umfrage-admin-title">Statistik</h1>
-            <p class="neo-umfrage-admin-subtitle">Analytik für Umfragen und Antworten</p>
+    <div class="neo-umfrage-container">
+        <div class="neo-umfrage-header">
+            <h1 class="neo-umfrage-title">Statistik</h1>
+            <p class="neo-umfrage-subtitle">Analytik für Umfragen und Antworten</p>
         </div>
         
-        <div class="neo-umfrage-admin-stats" id="statistics-stats">
-            <div class="neo-umfrage-admin-stat-card">
-                <div class="neo-umfrage-admin-stat-number" id="stats-total-surveys">-</div>
-                <div class="neo-umfrage-admin-stat-label">Gesamt Umfragen</div>
+        <div class="neo-umfrage-stats" id="statistics-stats">
+            <div class="neo-umfrage-stat-card">
+                <div class="neo-umfrage-stat-number" id="stats-total-surveys">-</div>
+                <div class="neo-umfrage-stat-label">Gesamt Umfragen</div>
             </div>
-            <div class="neo-umfrage-admin-stat-card">
-                <div class="neo-umfrage-admin-stat-number" id="stats-total-templates">-</div>
-                <div class="neo-umfrage-admin-stat-label">Vorlagen</div>
+            <div class="neo-umfrage-stat-card">
+                <div class="neo-umfrage-stat-number" id="stats-total-templates">-</div>
+                <div class="neo-umfrage-stat-label">Vorlagen</div>
             </div>
-            <div class="neo-umfrage-admin-stat-card">
-                <div class="neo-umfrage-admin-stat-number" id="stats-total-responses">-</div>
-                <div class="neo-umfrage-admin-stat-label">Antworten</div>
+            <div class="neo-umfrage-stat-card">
+                <div class="neo-umfrage-stat-number" id="stats-total-responses">-</div>
+                <div class="neo-umfrage-stat-label">Antworten</div>
             </div>
         </div>
         
-        <div class="neo-umfrage-admin-card">
-            <div class="neo-umfrage-admin-card-header">
-                <h2 class="neo-umfrage-admin-card-title">Letzte Umfragen</h2>
+        <div class="neo-umfrage-card">
+            <div class="neo-umfrage-card-header">
+                <h2 class="neo-umfrage-card-title">Letzte Umfragen</h2>
             </div>
-            <div class="neo-umfrage-admin-card-body">
+            <div class="neo-umfrage-card-body">
                 <div id="recent-surveys">Laden...</div>
             </div>
         </div>
@@ -863,7 +898,7 @@ function neo_umfrage_widget_callback() {
     <div class="neo-umfrage-widget">
         <h3>Neo Umfrage</h3>
         <div style="text-align: center;">
-            <button class="neo-umfrage-admin-button" onclick="openAddSurveyModal()">Umfrage hinzufügen</button>
+            <button class="neo-umfrage-button" onclick="openAddSurveyModal()">Umfrage hinzufügen</button>
         </div>
     </div>
     <?php
