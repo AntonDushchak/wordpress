@@ -25,15 +25,7 @@
                 }
             });
 
-            // События для кнопок добавления анкет
-            $(document).on('click', 'button[onclick*="openAddSurveyModal"]', function (e) {
-                e.preventDefault();
-                if (window.NeoUmfrageModals && NeoUmfrageModals.openAddSurveyModal) {
-                    NeoUmfrageModals.openAddSurveyModal();
-                } else {
-                    console.error('NeoUmfrageModals.openAddSurveyModal is not found');
-                }
-            });
+
 
             // События для кнопок добавления шаблонов
             $(document).on('click', 'button[onclick*="openAddTemplateModal"]', function (e) {
@@ -162,8 +154,9 @@
 
         // Закрытие модального окна
         closeModal: function () {
-            $('.neo-umfrage-modal').fadeOut(300);
-            $('body').removeClass('modal-open');
+            if (window.NeoUmfrageModals && NeoUmfrageModals.closeModal) {
+                NeoUmfrageModals.closeModal();
+            }
         },
 
         // Показ сообщения

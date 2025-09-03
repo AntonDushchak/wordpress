@@ -681,8 +681,6 @@
 
         // Открытие модального окна редактирования анкеты
         openEditSurveyModal: function () {
-            // Сбрасываем форму и меняем заголовок
-            $('#survey-form')[0].reset();
             $('#add-survey-modal .neo-umfrage-modal-title').text('Umfrage bearbeiten');
             $('#add-survey-modal').fadeIn(300);
             $('body').addClass('modal-open');
@@ -698,6 +696,15 @@
         closeModal: function () {
             $('.neo-umfrage-modal').fadeOut(300);
             $('body').removeClass('modal-open');
+            
+            // Очищаем все формы в модальных окнах
+            $('.neo-umfrage-modal form').each(function() {
+                this.reset();
+            });
+            
+            // Очищаем контейнер с полями шаблона
+            $('#template-fields-container').empty();
+            $('#survey-template-fields').hide();
         },
 
         // Отправка формы шаблона

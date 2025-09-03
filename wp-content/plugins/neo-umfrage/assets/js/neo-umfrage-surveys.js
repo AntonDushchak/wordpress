@@ -268,7 +268,7 @@
                 </div>
                 <div class="neo-umfrage-modal-body">
                     <div id="survey-view-content">
-                        <div class="neo-umfrage-loading">Umfragedaten werden geladen...</div>
+                        <div class="neo-umfrage-loading"></div>
                     </div>
                 </div>
                 <div class="neo-umfrage-modal-footer">
