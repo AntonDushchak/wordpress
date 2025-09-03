@@ -8,8 +8,24 @@
     
     window.NeoUmfrageTemplates = {
         
+        // Инициализация
+        init: function() {
+            this.initializeModals();
+        },
+
+        // Инициализация модальных окон для шаблонов
+        initializeModals: function() {
+            // Создаем модальные окна если они еще не созданы
+            if (window.NeoUmfrageModals && NeoUmfrageModals.createModals) {
+                NeoUmfrageModals.createModals();
+            }
+        },
+        
         // Загрузка шаблонов
         loadTemplates: function () {
+            // Инициализируем модальные окна при первой загрузке
+            this.init();
+            
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
                 type: 'POST',
@@ -48,6 +64,7 @@
 
         // Загрузка шаблонов для селекта
         loadTemplatesForSelect: function (selector, callback) {
+            console.log('loadTemplatesForSelect вызвана с селектором:', selector);
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
                 type: 'POST',
@@ -56,18 +73,36 @@
                     nonce: neoUmfrageAjax.nonce
                 },
                 success: function (response) {
+                    console.log('AJAX ответ для шаблонов:', response);
                     if (response.success) {
                         const $select = $(selector);
-                        $select.find('option:not(:first)').remove();
-                        response.data.forEach(template => {
-                            $select.append(`<option value="${template.id}">${template.name}</option>`);
-                        });
+                        console.log('Найденный селект:', $select.length, 'элементов');
+                        
+                        // Очищаем все опции
+                        $select.empty();
+                        
+                        if (response.data && response.data.length > 0) {
+                            console.log('Загружаем', response.data.length, 'шаблонов');
+                            // Добавляем первую опцию для выбора
+                            $select.append('<option value="">Vorlage auswählen</option>');
+                            response.data.forEach(template => {
+                                $select.append(`<option value="${template.id}">${template.name}</option>`);
+                            });
+                        } else {
+                            console.log('Нет доступных шаблонов');
+                            $select.append('<option value="" disabled>Keine Vorlagen verfügbar</option>');
+                        }
 
                         // Вызываем callback если он передан
                         if (typeof callback === 'function') {
                             callback();
                         }
+                    } else {
+                        console.error('Fehler beim Laden der Vorlagen:', response);
                     }
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX-Fehler beim Laden der Vorlagen:', error);
                 }
             });
         },
@@ -125,23 +160,23 @@
             const $container = $('#templates-list');
 
             if (templates.length === 0) {
-                $container.html('<p>Шаблоны не найдены.</p>');
+                $container.html('<p>Keine Vorlagen gefunden.</p>');
                 return;
             }
 
             let html = '<table class="neo-umfrage-table">';
-            html += '<thead><tr><th>Название</th><th>Описание</th><th>Дата создания</th><th>Действия</th></tr></thead>';
+            html += '<thead><tr><th>Name</th><th>Beschreibung</th><th>Erstellungsdatum</th><th>Aktionen</th></tr></thead>';
             html += '<tbody>';
 
             templates.forEach(template => {
                 html += `
             <tr>
                 <td>${template.name}</td>
-                <td>${template.description || 'Нет описания'}</td>
+                <td>${template.description || 'Keine Beschreibung'}</td>
                 <td>${new Date(template.created_at).toLocaleDateString()}</td>
                 <td>
-                    <button class="neo-umfrage-button neo-umfrage-button-secondary" onclick="NeoUmfrageTemplates.editTemplate(${template.id})">Редактировать</button>
-                    <button class="neo-umfrage-button neo-umfrage-button-danger" onclick="NeoUmfrageTemplates.deleteTemplate(${template.id})">Удалить</button>
+                    <button class="neo-umfrage-button neo-umfrage-button-secondary" onclick="editTemplate(${template.id}, ${template.user_id || 0})">Bearbeiten</button>
+                    <button class="neo-umfrage-button neo-umfrage-button-danger" onclick="deleteTemplate(${template.id}, ${template.user_id || 0})">Löschen</button>
                 </td>
             </tr>
         `;
@@ -176,8 +211,95 @@
 
         // Редактирование шаблона
         editTemplate: function (templateId) {
-            // Здесь будет логика редактирования шаблона
-            console.log('Редактирование шаблона:', templateId);
+            // Отправляем AJAX запрос для получения данных шаблона
+            $.ajax({
+                url: neoUmfrageAjax.ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'neo_umfrage_get_template',
+                    nonce: neoUmfrageAjax.nonce,
+                    template_id: templateId
+                },
+                success: function (response) {
+                    if (response && response.success) {
+                        NeoUmfrageTemplates.openEditTemplateModal(response.data.template);
+                    } else {
+                        NeoUmfrage.showMessage('error', 'Fehler beim Laden der Vorlage');
+                    }
+                },
+                error: function () {
+                    NeoUmfrage.showMessage('error', 'Fehler beim Laden der Vorlage');
+                }
+            });
+        },
+
+        // Открытие модального окна редактирования шаблона
+        openEditTemplateModal: function (template) {
+            // Заполняем форму данными шаблона
+            $('#template-form input[name="name"]').val(template.name);
+            $('#template-form textarea[name="description"]').val(template.description);
+            
+            // Добавляем скрытое поле с ID шаблона
+            if (!$('#template-form input[name="template_id"]').length) {
+                $('#template-form').append('<input type="hidden" name="template_id" value="' + template.id + '">');
+            } else {
+                $('#template-form input[name="template_id"]').val(template.id);
+            }
+            
+            // Очищаем существующие поля (кроме обязательных)
+            $('.template-field').not('[data-field-index="0"]').not('[data-field-index="1"]').remove();
+            
+            // Добавляем поля шаблона
+            if (template.fields && template.fields.length > 0) {
+                template.fields.forEach(function(field, index) {
+                    // Пропускаем обязательные поля
+                    if (field.label === 'Name' || field.label === 'Telefonnummer') {
+                        return;
+                    }
+                    
+                    NeoUmfrageTemplates.addTemplateField(field, index + 2);
+                });
+            }
+            
+            // Открываем модальное окно
+            NeoUmfrageModals.openAddTemplateModal();
+            
+            // Меняем заголовок модального окна
+            $('.neo-umfrage-modal-title').text('Vorlage bearbeiten');
+        },
+
+        // Добавление поля шаблона при редактировании
+        addTemplateField: function (field, index) {
+            const $fieldsContainer = $('#template-fields');
+            
+            const fieldHtml = `
+                <div class="template-field" data-field-index="${index}">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                        <input type="text" class="neo-umfrage-input" name="fields[${index}][label]" placeholder="Feldname" value="${field.label}" required>
+                        <select class="neo-umfrage-select field-type-select" name="fields[${index}][type]">
+                            <option value="text" ${field.type === 'text' ? 'selected' : ''}>Text</option>
+                            <option value="email" ${field.type === 'email' ? 'selected' : ''}>E-Mail</option>
+                            <option value="tel" ${field.type === 'tel' ? 'selected' : ''}>Telefon</option>
+                            <option value="number" ${field.type === 'number' ? 'selected' : ''}>Zahl</option>
+                            <option value="textarea" ${field.type === 'textarea' ? 'selected' : ''}>Textarea</option>
+                            <option value="select" ${field.type === 'select' ? 'selected' : ''}>Auswahl</option>
+                            <option value="radio" ${field.type === 'radio' ? 'selected' : ''}>Radio</option>
+                            <option value="checkbox" ${field.type === 'checkbox' ? 'selected' : ''}>Checkbox</option>
+                        </select>
+                        <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap;">
+                            <input type="checkbox" name="fields[${index}][required]" value="1" ${field.required ? 'checked' : ''}>
+                            Pflichtfeld
+                        </label>
+                        <button type="button" class="neo-umfrage-button neo-umfrage-button-danger remove-field-btn">Löschen</button>
+                    </div>
+                    <div class="field-options" style="display: ${field.type === 'select' || field.type === 'radio' || field.type === 'checkbox' ? 'block' : 'none'};">
+                        <label class="neo-umfrage-label">Optionen (eine pro Zeile):</label>
+                        <textarea class="neo-umfrage-textarea" name="fields[${index}][options]" placeholder="Option 1&#10;Option 2&#10;Option 3">${field.options ? field.options.join('\n') : ''}</textarea>
+                    </div>
+                </div>
+            `;
+            
+            $fieldsContainer.append(fieldHtml);
         }
     };
 })(jQuery);

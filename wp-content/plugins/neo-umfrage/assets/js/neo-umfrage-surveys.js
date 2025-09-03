@@ -2,8 +2,24 @@
     'use strict';
     window.NeoUmfrageSurveys = {
 
+        // Инициализация
+        init: function() {
+            this.initializeModals();
+        },
+
+        // Инициализация модальных окон для анкет
+        initializeModals: function() {
+            // Создаем модальные окна если они еще не созданы
+            if (window.NeoUmfrageModals && NeoUmfrageModals.createModals) {
+                NeoUmfrageModals.createModals();
+            }
+        },
+
         // Загрузка анкет
         loadSurveys: function () {
+            // Инициализируем модальные окна при первой загрузке
+            this.init();
+            
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
                 type: 'POST',
@@ -26,9 +42,32 @@
 
         // Фильтрация анкет по шаблону
         filterSurveys: function () {
-            const templateId = $(this).val();
-            // Здесь будет логика фильтрации
-            console.log('Фильтрация по шаблону:', templateId);
+            const templateName = $(this).val();
+            
+            // Показываем индикатор загрузки
+            const $surveysContainer = $('#surveys-list');
+            $surveysContainer.html('<div class="neo-umfrage-loading"></div>');
+            
+            // Отправляем AJAX запрос для получения отфильтрованных анкет
+            $.ajax({
+                url: neoUmfrageAjax.ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'neo_umfrage_get_surveys',
+                    nonce: neoUmfrageAjax.nonce,
+                    template_name: templateName
+                },
+                success: function (response) {
+                    if (response && response.success) {
+                        NeoUmfrageSurveys.renderSurveysList(response.data);
+                    } else {
+                        $surveysContainer.html('<div class="neo-umfrage-error">Ошибка загрузки анкет</div>');
+                    }
+                },
+                error: function () {
+                    $surveysContainer.html('<div class="neo-umfrage-error">Ошибка загрузки анкет</div>');
+                }
+            });
         },
 
         // Отображение списка анкет
@@ -76,7 +115,6 @@
             html += '<table class="neo-umfrage-table">';
             html += '<thead><tr><th>Vorlage</th><th>Benutzer</th><th>Name aus Umfrage</th><th>Telefonnummer</th><th>Ausfüllungsdatum</th><th>Aktionen</th></tr></thead>';
             html += '<tbody>';
-
             surveys.forEach(survey => {
                 const name = survey.name_value || 'Nicht ausgefüllt';
                 const phone = survey.phone_value || 'Nicht ausgefüllt';
@@ -97,8 +135,8 @@
                 <td>${phone}</td>
                 <td>${submittedDate}</td>
                 <td class="actions">
-                    ${NeoUmfrage.canEdit() ? `<button class="neo-umfrage-button neo-umfrage-button-secondary" onclick="NeoUmfrage.editSurvey(${survey.response_id})">Bearbeiten</button>` : ''}
-                    ${NeoUmfrage.canDelete() ? `<button class="neo-umfrage-button neo-umfrage-button-danger" onclick="NeoUmfrage.deleteSurvey(${survey.response_id})">Löschen</button>` : ''}
+                    ${NeoUmfrage.canEdit(survey.user_id) ? `<button class="neo-umfrage-button neo-umfrage-button-secondary" onclick="NeoUmfrage.editSurvey(${survey.response_id}, ${survey.user_id})">Bearbeiten</button>` : ''}
+                    ${NeoUmfrage.canDelete(survey.user_id) ? `<button class="neo-umfrage-button neo-umfrage-button-danger" onclick="NeoUmfrage.deleteSurvey(${survey.response_id}, ${survey.user_id})">Löschen</button>` : ''}
                     <button class="neo-umfrage-button" onclick="NeoUmfrage.viewSurvey(${survey.response_id})">Anzeigen</button>
                 </td>
             </tr>
@@ -107,41 +145,13 @@
 
             html += '</tbody></table>';
             $container.html(html);
-
-            // Добавляем обработчики фильтров
-            $('#user-filter').on('change', function () {
-                applyFilters();
-            });
-
-            $('#template-filter').on('change', function () {
-                applyFilters();
-            });
-
-            function applyFilters() {
-                const selectedUser = $('#user-filter').val();
-                const selectedTemplate = $('#template-filter').val();
-
-                $('.neo-umfrage-table tbody tr').each(function () {
-                    const userData = $(this).data('user');
-                    const templateData = $(this).data('template');
-
-                    const userMatch = selectedUser === '' || userData === selectedUser;
-                    const templateMatch = selectedTemplate === '' || templateData === selectedTemplate;
-
-                    if (userMatch && templateMatch) {
-                        $(this).show();
-                    } else {
-                        $(this).hide();
-                    }
-                });
-            }
         },
 
 
 
         // Удаление анкеты
         deleteSurvey: function (surveyId) {
-            if (confirm('Вы уверены, что хотите удалить эту анкету?')) {
+            if (confirm('Sind Sie sicher, dass Sie diese Umfrage löschen möchten?')) {
                 $.ajax({
                     url: neoUmfrageAjax.ajaxurl,
                     type: 'POST',
@@ -152,14 +162,14 @@
                     },
                     success: function (response) {
                         if (response && response.success) {
-                            NeoUmfrage.showMessage('success', 'Анкета удалена успешно');
+                            NeoUmfrage.showMessage('success', 'Umfrage erfolgreich gelöscht');
                             NeoUmfrageSurveys.loadSurveys();
                         } else {
-                            NeoUmfrage.showMessage('error', 'Ошибка при удалении анкеты');
+                            NeoUmfrage.showMessage('error', 'Fehler beim Löschen der Umfrage');
                         }
                     },
                     error: function () {
-                        NeoUmfrage.showMessage('error', 'Ошибка при удалении анкеты');
+                        NeoUmfrage.showMessage('error', 'Fehler beim Löschen der Umfrage');
                     }
                 });
             }
@@ -194,11 +204,11 @@
                             NeoUmfrageSurveys.populateSurveyForm(response.data);
                         }
                     } else {
-                        NeoUmfrage.showMessage('error', 'Ошибка загрузки данных анкеты');
+                        NeoUmfrage.showMessage('error', 'Fehler beim Laden der Umfragedaten');
                     }
                 },
                 error: function () {
-                    NeoUmfrage.showMessage('error', 'Ошибка загрузки данных анкеты');
+                    NeoUmfrage.showMessage('error', 'Fehler beim Laden der Umfragedaten');
                 }
             });
         },
@@ -290,11 +300,11 @@
                     if (response && response.success) {
                         NeoUmfrageSurveys.displaySurveyData(response.data);
                     } else {
-                        $('#survey-view-content').html('<div class="neo-umfrage-error">Ошибка загрузки данных анкеты</div>');
+                        $('#survey-view-content').html('<div class="neo-umfrage-error">Fehler beim Laden der Umfragedaten</div>');
                     }
                 },
                 error: function () {
-                    $('#survey-view-content').html('<div class="neo-umfrage-error">Ошибка загрузки данных анкеты</div>');
+                    $('#survey-view-content').html('<div class="neo-umfrage-error">Fehler beim Laden der Umfragedaten</div>');
                 }
             });
         },

@@ -8,9 +8,9 @@
     
     window.NeoUmfrageModals = {
         
-        // Создание модальных окон
+        // Erstellung der modalen Fenster
         createModals: function () {
-            // Модальное окно для добавления анкеты
+            // Modales Fenster für das Hinzufügen von Umfragen
             if (!$('#add-survey-modal').length) {
                 $('body').append(`
             <div id="add-survey-modal" class="neo-umfrage-modal">
@@ -152,32 +152,144 @@
             </div>
         `);
             }
+
+            // Modales Fenster für das Hinzufügen von Vorlagen
+            if (!$('#add-template-modal').length) {
+                $('body').append(`
+            <div id="add-template-modal" class="neo-umfrage-modal">
+                <div class="neo-umfrage-modal-content" style="max-width: 800px;">
+                    <div class="neo-umfrage-modal-header">
+                        <h3 class="neo-umfrage-modal-title">Vorlage hinzufügen</h3>
+                        <button class="neo-umfrage-modal-close">&times;</button>
+                    </div>
+                    <div class="neo-umfrage-modal-body">
+                        <form class="neo-umfrage-form" id="template-form">
+                            <div class="neo-umfrage-form-group">
+                                <label class="neo-umfrage-label">Vorlagenname</label>
+                                <input type="text" class="neo-umfrage-input" name="name" required>
+                            </div>
+                            <div class="neo-umfrage-form-group">
+                                <label class="neo-umfrage-label">Beschreibung</label>
+                                <textarea class="neo-umfrage-textarea" name="description"></textarea>
+                            </div>
+                            <div class="neo-umfrage-form-group">
+                                <label class="neo-umfrage-label">Umfragefelder</label>
+                                <div class="neo-umfrage-info" style="margin-bottom: 15px; padding: 10px; background: #f0f8ff; border-left: 4px solid #007cba; border-radius: 4px;">
+                                    <strong>Pflichtfelder:</strong> Name und Telefonnummer werden automatisch zu jeder Vorlage hinzugefügt.
+                                </div>
+                                <div id="template-fields">
+                                    <!-- Feld "Name" (Pflichtfeld) -->
+                                    <div class="template-field" data-field-index="0" style="background: #f9f9f9; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+                                        <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                                            <input type="text" class="neo-umfrage-input" name="fields[0][label]" value="Name" readonly style="background: #e9ecef;">
+                                            <select class="neo-umfrage-select field-type-select" name="fields[0][type]" disabled>
+                                                <option value="text" selected>Text</option>
+                                            </select>
+                                            <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap;">
+                                                <input type="checkbox" name="fields[0][required]" value="1" checked disabled>
+                                                Pflichtfeld
+                                            </label>
+                                            <span style="color: #666; font-size: 12px;">(kann nicht gelöscht werden)</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Поле "Номер телефона" (обязательное) -->
+                                    <div class="template-field" data-field-index="1" style="background: #f9f9f9; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+                                        <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                                            <input type="text" class="neo-umfrage-input" name="fields[1][label]" value="Telefonnummer" readonly style="background: #e9ecef;">
+                                            <select class="neo-umfrage-select field-type-select" name="fields[1][type]" disabled>
+                                                <option value="tel" selected>Telefon</option>
+                                            </select>
+                                            <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap;">
+                                                <input type="checkbox" name="fields[1][required]" value="1" checked disabled>
+                                                Pflichtfeld
+                                            </label>
+                                            <span style="color: #666; font-size: 12px;">(kann nicht gelöscht werden)</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Дополнительные поля (начинаются с индекса 2) -->
+                                    <div class="template-field" data-field-index="2">
+                                        <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
+                                            <input type="text" class="neo-umfrage-input" name="fields[2][label]" placeholder="Feldname" required>
+                                            <select class="neo-umfrage-select field-type-select" name="fields[2][type]" required>
+                                                <option value="text">Text</option>
+                                                <option value="tel">Telefon</option>
+                                                <option value="textarea">Mehrzeiliger Text</option>
+                                                <option value="email">Email</option>
+                                                <option value="number">Zahl</option>
+                                                <option value="radio">Einzelauswahl</option>
+                                                <option value="checkbox">Mehrfachauswahl</option>
+                                                <option value="select">Dropdown-Liste</option>
+                                            </select>
+                                            <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap;">
+                                                <input type="checkbox" name="fields[2][required]" value="1">
+                                                Pflichtfeld
+                                            </label>
+                                            <button type="button" class="neo-umfrage-button neo-umfrage-button-danger remove-field-btn">Löschen</button>
+                                        </div>
+                                        <div class="field-options" style="display: none;">
+                                            <label class="neo-umfrage-label">Antwortoptionen (eine pro Zeile)</label>
+                                            <textarea class="neo-umfrage-textarea" name="fields[2][options]" placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="neo-umfrage-button add-field-btn">Feld hinzufügen</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="neo-umfrage-modal-footer">
+                         <button type="button" class="neo-umfrage-button neo-umfrage-button-secondary" onclick="NeoUmfrageModals.closeModal()">Abbrechen</button>
+                         <button type="button" class="neo-umfrage-button" onclick="NeoUmfrageModals.submitTemplateForm()">Speichern</button>
+                     </div>
+                </div>
+            </div>
+        `);
+            }
         },
 
-        // Обработка отправки формы
-        handleFormSubmit: function (e) {
+        // Verarbeitung der Formularübermittlung
+        handleFormSubmit: function (e, $form) {
             e.preventDefault();
-
-            const $form = $(this);
+            
+            // Wenn das Formular als Parameter übergeben wurde, verwenden wir es, sonst verwenden wir this
+            if (!$form) {
+                $form = $(this);
+            }
+            
             const formId = $form.attr('id');
 
-            // Находим кнопку сохранения в модальном окне
+            // Проверяем, что выбран шаблон для формы анкеты
+            if (formId === 'survey-form') {
+                const templateId = $('#survey-template-select').val();
+                if (!templateId) {
+                    NeoUmfrage.showMessage('error', 'Keine Vorlage ausgewählt');
+                    return;
+                }
+            }
+
+            // Suchen nach der Speichern-Schaltfläche im modalen Fenster
             let $submitBtn;
             if (formId === 'survey-form') {
                 $submitBtn = $('#add-survey-modal .neo-umfrage-modal-footer button:last');
             } else if (formId === 'template-form') {
                 $submitBtn = $('#add-template-modal .neo-umfrage-modal-footer button:last');
             }
+            
+            // Wenn die Schaltfläche nicht gefunden wurde, suchen wir nach dem Text
+            if (!$submitBtn || !$submitBtn.length) {
+                $submitBtn = $form.closest('.neo-umfrage-modal').find('button:contains("Speichern")');
+            }
 
-            // Показываем индикатор загрузки
-            if ($submitBtn.length) {
+            // Ladeanzeige anzeigen
+            if ($submitBtn && $submitBtn.length) {
                 $submitBtn.prop('disabled', true).html('<span class="neo-umfrage-loading"></span>Speichern...');
             }
 
-            // Собираем данные формы
+            // Formulardaten sammeln
             const formData = NeoUmfrageModals.collectFormData($form);
 
-            // Определяем действие в зависимости от формы
+            // Aktion je nach Formular bestimmen
             let action = '';
             if (formId === 'survey-form') {
                 action = 'neo_umfrage_save_survey';
@@ -185,12 +297,11 @@
                 action = 'neo_umfrage_save_template';
             }
 
-            // Отладочная информация
-            console.log('Отправляемые данные:', {
-                action: action,
-                nonce: neoUmfrageAjax.nonce,
-                ...formData
-            });
+            // Prüfen, ob neoUmfrageAjax definiert ist
+            if (typeof neoUmfrageAjax === 'undefined') {
+                NeoUmfrage.showMessage('error', 'AJAX-Konfigurationsfehler');
+                return;
+            }
 
             // Отправляем AJAX запрос
             $.ajax({
@@ -202,8 +313,6 @@
                     ...formData
                 },
                 success: function (response) {
-                    console.log('Получен ответ:', response);
-
                     if (response && response.success) {
                         const message = (response.data && response.data.message) ? response.data.message : 'Operation erfolgreich ausgeführt';
                         NeoUmfrage.showMessage('success', message);
@@ -231,11 +340,6 @@
                     }
                 },
                 error: function (xhr, status, error) {
-                    console.error('AJAX Error:', {
-                        status: status,
-                        error: error,
-                        response: xhr.responseText
-                    });
                     NeoUmfrage.showMessage('error', 'Serverfehler: ' + error);
                 },
                 complete: function () {
@@ -270,8 +374,15 @@
                 const fields = [];
                 $form.find('.template-field').each(function () {
                     const $field = $(this);
+                    const fieldLabel = $field.find('input[name*="[label]"]').val();
+                    
+                    // Пропускаем обязательные поля, так как они добавляются автоматически на сервере
+                    if (fieldLabel === 'Name' || fieldLabel === 'Telefonnummer') {
+                        return;
+                    }
+                    
                     const fieldData = {
-                        label: $field.find('input[name*="[label]"]').val(),
+                        label: fieldLabel,
                         type: $field.find('select[name*="[type]"]').val(),
                         required: $field.find('input[name*="[required]"]').is(':checked'),
                         options: []
@@ -418,7 +529,7 @@
 
         // Загрузка полей шаблона
         loadTemplateFields: function (templateId, $container) {
-            $container.html('<div class="neo-umfrage-loading">Загрузка полей...</div>');
+            $container.html('<div class="neo-umfrage-loading">Felder werden geladen...</div>');
 
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
@@ -429,8 +540,6 @@
                     template_id: templateId
                 },
                 success: function (response) {
-                    console.log('Ответ загрузки полей:', response);
-
                     if (response && response.success) {
                         const fields = (response.data && response.data.fields) ? response.data.fields : [];
                         // Фильтруем поля, исключая обязательные
@@ -440,12 +549,12 @@
                         NeoUmfrageModals.renderTemplateFields(filteredFields, $container);
                     } else {
                         const errorMessage = (response && response.data && response.data.message) ? response.data.message :
-                            (response && response.message) ? response.message : 'Неизвестная ошибка';
-                        $container.html('<div class="neo-umfrage-error">Ошибка загрузки полей: ' + errorMessage + '</div>');
+                            (response && response.message) ? response.message : 'Unbekannter Fehler';
+                        $container.html('<div class="neo-umfrage-error">Fehler beim Laden der Felder: ' + errorMessage + '</div>');
                     }
                 },
-                error: function () {
-                    $container.html('<div class="neo-umfrage-error">Ошибка загрузки полей</div>');
+                error: function (xhr, status, error) {
+                    $container.html('<div class="neo-umfrage-error">Fehler beim Laden der Felder</div>');
                 }
             });
         },
@@ -453,7 +562,7 @@
         // Отображение полей шаблона
         renderTemplateFields: function (fields, $container) {
             if (!fields || fields.length === 0) {
-                $container.html('<div class="neo-umfrage-info">В шаблоне нет полей</div>');
+                $container.html('<div class="neo-umfrage-info">Keine Felder in der Vorlage</div>');
                 return;
             }
 
@@ -546,15 +655,27 @@
 
         // Открытие модального окна добавления анкеты
         openAddSurveyModal: function () {
+            // Проверяем, существует ли модальное окно
+            const $modal = $('#add-survey-modal');
+            
+            if ($modal.length === 0) {
+                this.createModals();
+            }
+            
             // Сбрасываем форму и заголовок
-            $('#survey-form')[0].reset();
+            const $form = $('#survey-form');
+            
+            if ($form.length > 0) {
+                $form[0].reset();
+            }
+            
             $('#add-survey-modal .neo-umfrage-modal-title').text('Umfrage hinzufügen');
             $('#add-survey-modal').fadeIn(300);
             $('body').addClass('modal-open');
 
             // Загружаем шаблоны в селект
             if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.loadTemplatesForSelect) {
-                NeoUmfrageTemplates.loadTemplatesForSelect('#add-survey-modal select[name="template_id"]');
+                NeoUmfrageTemplates.loadTemplatesForSelect('#survey-template-select');
             }
         },
 
@@ -583,8 +704,72 @@
         submitTemplateForm: function () {
             const $form = $('#template-form');
             if ($form.length) {
-                $form.trigger('submit');
+                // Обрабатываем форму шаблона напрямую
+                NeoUmfrageModals.processTemplateForm($form);
             }
+        },
+
+        // Обработка формы шаблона
+        processTemplateForm: function ($form) {
+            const formId = $form.attr('id');
+            
+            // Находим кнопку сохранения
+            const $submitBtn = $('#add-template-modal .neo-umfrage-modal-footer button:last');
+            
+            // Показываем индикатор загрузки
+            if ($submitBtn && $submitBtn.length) {
+                $submitBtn.prop('disabled', true).html('<span class="neo-umfrage-loading"></span>Speichern...');
+            }
+
+            // Собираем данные формы
+            const formData = NeoUmfrageModals.collectFormData($form);
+            
+            // Определяем действие (создание или редактирование)
+            const templateId = $form.find('input[name="template_id"]').val();
+            const action = templateId ? 'neo_umfrage_update_template' : 'neo_umfrage_save_template';
+            
+            // Проверяем, что neoUmfrageAjax определен
+            if (typeof neoUmfrageAjax === 'undefined') {
+                NeoUmfrage.showMessage('error', 'AJAX-Konfigurationsfehler');
+                return;
+            }
+
+            // Отправляем AJAX запрос
+            $.ajax({
+                url: neoUmfrageAjax.ajaxurl,
+                type: 'POST',
+                data: {
+                    action: action,
+                    nonce: neoUmfrageAjax.nonce,
+                    ...formData
+                },
+                success: function (response) {
+                    if (response && response.success) {
+                        const message = (response.data && response.data.message) ? response.data.message : 'Operation erfolgreich ausgeführt';
+                        NeoUmfrage.showMessage('success', message);
+                        NeoUmfrageModals.closeModal();
+                        $form[0].reset();
+
+                        // Обновляем список шаблонов
+                        if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.loadTemplates) {
+                            NeoUmfrageTemplates.loadTemplates();
+                        }
+                    } else {
+                        const errorMessage = (response && response.data && response.data.message) ? response.data.message :
+                            (response && response.message) ? response.message :
+                                neoUmfrageAjax.strings.error;
+                        NeoUmfrage.showMessage('error', errorMessage);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    NeoUmfrage.showMessage('error', 'Serverfehler: ' + error);
+                },
+                complete: function () {
+                    if ($submitBtn && $submitBtn.length) {
+                        $submitBtn.prop('disabled', false).html('Speichern');
+                    }
+                }
+            });
         },
 
         // Отправка формы анкеты
