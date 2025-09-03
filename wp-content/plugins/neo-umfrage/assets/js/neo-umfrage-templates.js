@@ -52,11 +52,13 @@
                 },
                 success: function (response) {
                     if (response.success) {
-                        const $filter = $('#template-filter');
-                        $filter.find('option:not(:first)').remove();
-                        response.data.forEach(template => {
-                            $filter.append(`<option value="${template.id}">${template.name}</option>`);
-                        });
+                        const $filter = $('#filter-template');
+                        if ($filter.length) {
+                            $filter.find('option:not(:first)').remove();
+                            response.data.forEach(template => {
+                                $filter.append(`<option value="${template.id}">${template.name}</option>`);
+                            });
+                        }
                     }
                 }
             });
@@ -120,11 +122,7 @@
                 success: function (response) {
                     if (response && response.success) {
                         const fields = (response.data && response.data.fields) ? response.data.fields : [];
-                        // Фильтруем поля, исключая обязательные
-                        const filteredFields = fields.filter(field =>
-                            field.label !== 'Name' && field.label !== 'Telefonnummer'
-                        );
-                        NeoUmfrageTemplates.renderTemplateFieldsForEdit(filteredFields, existingFields);
+                        NeoUmfrageTemplates.renderTemplateFieldsForEdit(fields, existingFields);
                     }
                 }
             });
@@ -135,12 +133,7 @@
             const $container = $('#template-fields-container');
             $container.empty();
 
-            // Пропускаем обязательные поля (Name и Telefonnummer) - они уже есть в форме
-            const additionalFields = templateFields.filter(field =>
-                field.label !== 'Name' && field.label !== 'Telefonnummer'
-            );
-
-            additionalFields.forEach(function (field, index) {
+            templateFields.forEach(function (field, index) {
                 // Находим значение из существующих данных
                 let fieldValue = '';
                 if (existingFields) {
@@ -246,18 +239,13 @@
                 $('#template-form input[name="template_id"]').val(template.id);
             }
             
-            // Очищаем существующие поля (кроме обязательных)
-            $('.template-field').not('[data-field-index="0"]').not('[data-field-index="1"]').remove();
+            // Очищаем существующие поля
+            $('.template-field').remove();
             
             // Добавляем поля шаблона
             if (template.fields && template.fields.length > 0) {
                 template.fields.forEach(function(field, index) {
-                    // Пропускаем обязательные поля
-                    if (field.label === 'Name' || field.label === 'Telefonnummer') {
-                        return;
-                    }
-                    
-                    NeoUmfrageTemplates.addTemplateField(field, index + 2);
+                    NeoUmfrageTemplates.addTemplateField(field, index);
                 });
             }
             
@@ -278,8 +266,6 @@
                         <input type="text" class="neo-umfrage-input" name="fields[${index}][label]" placeholder="Feldname" value="${field.label}" required>
                         <select class="neo-umfrage-select field-type-select" name="fields[${index}][type]">
                             <option value="text" ${field.type === 'text' ? 'selected' : ''}>Text</option>
-                            <option value="email" ${field.type === 'email' ? 'selected' : ''}>E-Mail</option>
-                            <option value="tel" ${field.type === 'tel' ? 'selected' : ''}>Telefon</option>
                             <option value="number" ${field.type === 'number' ? 'selected' : ''}>Zahl</option>
                             <option value="textarea" ${field.type === 'textarea' ? 'selected' : ''}>Textarea</option>
                             <option value="select" ${field.type === 'select' ? 'selected' : ''}>Auswahl</option>

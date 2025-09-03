@@ -20,24 +20,8 @@
             // Инициализируем модальные окна при первой загрузке
             this.init();
             
-            $.ajax({
-                url: neoUmfrageAjax.ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'neo_umfrage_get_surveys',
-                    nonce: neoUmfrageAjax.nonce
-                },
-                success: function (response) {
-                    if (response && response.success) {
-                        NeoUmfrageSurveys.renderSurveysList(response.data);
-                    } else {
-                        NeoUmfrage.showMessage('error', 'Fehler beim Laden der Umfragen');
-                    }
-                },
-                error: function () {
-                    NeoUmfrage.showMessage('error', 'Fehler beim Laden der Umfragen');
-                }
-            });
+            // Инициализируем DataTables
+            this.initSurveysDataTable();
         },
 
         // Фильтрация анкет по шаблону
@@ -70,81 +54,150 @@
             });
         },
 
-        // Отображение списка анкет
-        renderSurveysList: function (surveys) {
+        // Инициализация DataTables для анкет
+        initSurveysDataTable: function () {
             const $container = $('#surveys-list');
+            
+            // Создаем HTML для DataTables
+            $container.html(`
+                <div class="neo-umfrage-filters" style="margin-bottom: 20px; display: flex; gap: 20px; align-items: center;">
+                    <div>
+                        <label class="neo-umfrage-label">Filter nach Vorlage:</label>
+                        <select id="filter-template" class="neo-umfrage-select" style="margin-left: 10px;">
+                            <option value="">Alle Vorlagen</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="neo-umfrage-label">Filter nach Benutzer:</label>
+                        <select id="filter-user" class="neo-umfrage-select" style="margin-left: 10px;">
+                            <option value="">Alle Benutzer</option>
+                        </select>
+                    </div>
+                </div>
+                <table id="surveys-table" class="display" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Vorlage</th>
+                            <th>Benutzer</th>
+                            <th>Erstellt am</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                </table>
+            `);
 
-            if (!surveys || !Array.isArray(surveys)) {
-                $container.html('<p>Fehler: Umfragedaten konnten nicht abgerufen werden.</p>');
-                return;
+            // Инициализируем DataTable
+            const table = $('#surveys-table').DataTable({
+                ajax: {
+                    url: neoUmfrageAjax.ajaxurl,
+                    type: 'POST',
+                    data: function(d) {
+                        d.action = 'neo_umfrage_get_surveys';
+                        d.nonce = neoUmfrageAjax.nonce;
+                        d.template_id = $('#filter-template').val();
+                        d.user_id = $('#filter-user').val();
+                    }
+                },
+                columns: [
+                    { data: 'id' },
+                    { data: 'template_name' },
+                    { data: 'wp_user_name' },
+                    { 
+                        data: 'submitted_at',
+                        render: function(data, type, row) {
+                            if (type === 'display' && data) {
+                                return new Date(data).toLocaleDateString('de-DE', {
+                                    timeZone: 'Europe/Berlin',
+                                    year: 'numeric',
+                                    month: '2-digit',
+                                    day: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                });
+                            }
+                            return data;
+                        }
+                    },
+                    { 
+                        data: 'actions',                        
+                        orderable: false, 
+                        searchable: false,
+                        render: function(data, type, row) {
+                            let actions = '';
+                            if (NeoUmfrage.canEdit(row.user_id)) {
+                                actions += `<button class="neo-umfrage-button neo-umfrage-button-secondary" onclick="NeoUmfrage.editSurvey(${row.response_id}, ${row.user_id})">Bearbeiten</button> `;
+                            }
+                            if (NeoUmfrage.canDelete(row.user_id)) {
+                                actions += `<button class="neo-umfrage-button neo-umfrage-button-danger" onclick="NeoUmfrage.deleteSurvey(${row.response_id}, ${row.user_id})">Löschen</button> `;
+                            }
+                            actions += `<button class="neo-umfrage-button" onclick="NeoUmfrage.viewSurvey(${row.response_id})">Anzeigen</button>`;
+                            return actions;
+                        }
+                    }
+                ],
+                language: {url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/de-DE.json'},
+                processing: true,
+                serverSide: false,
+                responsive: true,
+                searching: false,
+            });
+
+            // Загружаем опции для фильтров сначала
+            this.loadFilterOptions();
+
+            // Обновление таблицы при смене фильтра
+            $('#filter-template, #filter-user').on('change', function() {
+                table.ajax.reload();
+            });
+        },
+
+        // Загрузка опций для фильтров
+        loadFilterOptions: function() {
+            // Загружаем шаблоны для фильтра
+            if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.loadTemplatesForFilter) {
+                NeoUmfrageTemplates.loadTemplatesForFilter();
             }
+            
+            // Загружаем пользователей для фильтра
+            this.loadUsersForFilter();
+        },
 
-            if (surveys.length === 0) {
-                $container.html('<p>Keine Umfragen gefunden.</p>');
-                return;
-            }
+        // Загрузка пользователей для фильтра
+        loadUsersForFilter: function() {
+            $.ajax({
+                url: neoUmfrageAjax.ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'neo_umfrage_get_users',
+                    nonce: neoUmfrageAjax.nonce
+                },
+                success: function (response) {
+                    if (response && response.success) {
+            
+                        const $filter = $('#filter-user');
+                        if ($filter.length) {
+                            $filter.find('option:not(:first)').remove();
+                            response.data.forEach(user => {
 
-            let html = '<div class="neo-umfrage-filters" style="margin-bottom: 20px; display: flex; gap: 20px; align-items: center;">';
-
-            // Фильтр по шаблону
-            html += '<div>';
-            html += '<label class="neo-umfrage-label">Filter nach Vorlage:</label>';
-            html += '<select id="template-filter" class="neo-umfrage-select" style="margin-left: 10px;">';
-            html += '<option value="">Alle Vorlagen</option>';
-            const uniqueTemplates = [...new Set(surveys.map(s => s.template_name))];
-            uniqueTemplates.forEach(templateName => {
-                html += `<option value="${templateName}">${templateName}</option>`;
+                                $filter.append(`<option value="${user.ID}">${user.display_name}</option>`);
+                            });
+                            
+                            // Устанавливаем текущего пользователя по умолчанию (только для не-администраторов)
+                            const roles = neoUmfrageAjax.userRoles;
+                            const isAdmin = Array.isArray(roles) ? roles.includes('administrator') : roles === 'administrator';
+                            
+                            if (neoUmfrageAjax.currentUserId && !isAdmin) {
+                                $filter.val(neoUmfrageAjax.currentUserId);
+                                // Перезагружаем DataTable с новым фильтром
+                                if ($.fn.DataTable && $('#surveys-table').length) {
+                                    $('#surveys-table').DataTable().ajax.reload();
+                                }
+                            }
+                        }
+                    }
+                }
             });
-            html += '</select>';
-            html += '</div>';
-
-            // Фильтр по пользователю
-            html += '<div>';
-            html += '<label class="neo-umfrage-label">Filter nach Benutzer:</label>';
-            html += '<select id="user-filter" class="neo-umfrage-select" style="margin-left: 10px;">';
-            html += '<option value="">Alle Benutzer</option>';
-            const uniqueUsers = [...new Set(surveys.map(s => s.wp_user_name))];
-            uniqueUsers.forEach(userName => {
-                html += `<option value="${userName}">${userName}</option>`;
-            });
-            html += '</select>';
-            html += '</div>';
-
-            html += '</div>';
-
-            html += '<table class="neo-umfrage-table">';
-            html += '<thead><tr><th>Vorlage</th><th>Benutzer</th><th>Name aus Umfrage</th><th>Telefonnummer</th><th>Ausfüllungsdatum</th><th>Aktionen</th></tr></thead>';
-            html += '<tbody>';
-            surveys.forEach(survey => {
-                const name = survey.name_value || 'Nicht ausgefüllt';
-                const phone = survey.phone_value || 'Nicht ausgefüllt';
-                const submittedDate = new Date(survey.submitted_at).toLocaleDateString('de-DE', {
-                    timeZone: 'Europe/Berlin',
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-
-                html += `
-            <tr data-user="${survey.wp_user_name}" data-template="${survey.template_name}">
-                <td>${survey.template_name || 'Nicht angegeben'}</td>
-                <td>${survey.wp_user_name || 'Unbekannter Benutzer'}</td>
-                <td>${name}</td>
-                <td>${phone}</td>
-                <td>${submittedDate}</td>
-                <td class="actions">
-                    ${NeoUmfrage.canEdit(survey.user_id) ? `<button class="neo-umfrage-button neo-umfrage-button-secondary" onclick="NeoUmfrage.editSurvey(${survey.response_id}, ${survey.user_id})">Bearbeiten</button>` : ''}
-                    ${NeoUmfrage.canDelete(survey.user_id) ? `<button class="neo-umfrage-button neo-umfrage-button-danger" onclick="NeoUmfrage.deleteSurvey(${survey.response_id}, ${survey.user_id})">Löschen</button>` : ''}
-                    <button class="neo-umfrage-button" onclick="NeoUmfrage.viewSurvey(${survey.response_id})">Anzeigen</button>
-                </td>
-            </tr>
-        `;
-            });
-
-            html += '</tbody></table>';
-            $container.html(html);
         },
 
 
@@ -163,7 +216,12 @@
                     success: function (response) {
                         if (response && response.success) {
                             NeoUmfrage.showMessage('success', 'Umfrage erfolgreich gelöscht');
-                            NeoUmfrageSurveys.loadSurveys();
+                            // Обновляем DataTable
+                            if ($.fn.DataTable && $('#surveys-table').length) {
+                                $('#surveys-table').DataTable().ajax.reload();
+                            } else {
+                                NeoUmfrageSurveys.loadSurveys();
+                            }
                         } else {
                             NeoUmfrage.showMessage('error', 'Fehler beim Löschen der Umfrage');
                         }
@@ -228,17 +286,6 @@
                     // Загружаем поля шаблона и заполняем их данными
                     if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.loadTemplateFieldsForEdit) {
                         NeoUmfrageTemplates.loadTemplateFieldsForEdit(templateId, fields);
-                    }
-                });
-            }
-
-            // Заполняем обязательные поля из ответа
-            if (fields && fields.length > 0) {
-                fields.forEach(function (field) {
-                    if (field.label === 'Name') {
-                        $('input[name="required_name"]').val(field.value);
-                    } else if (field.label === 'Telefonnummer') {
-                        $('input[name="required_phone"]').val(field.value);
                     }
                 });
             }
@@ -315,16 +362,6 @@
             const fields = response.response_data;
             const templateName = response.template_name;
 
-            // Находим имя пользователя из полей анкеты
-            let surveyUserName = 'Nicht angegeben';
-            if (fields && fields.length > 0) {
-                fields.forEach(function (field) {
-                    if (field.label === 'Name' && field.value) {
-                        surveyUserName = field.value;
-                    }
-                });
-            }
-
             // Получаем имя пользователя WordPress
             let wpUserName = 'Unbekannter Benutzer';
             if (responseData.first_name && responseData.last_name) {
@@ -346,7 +383,6 @@
                 second: '2-digit'
             }) + '</p>';
             html += '<p><strong>WordPress-Benutzer:</strong> ' + wpUserName + '</p>';
-            html += '<p><strong>Name aus Umfrage:</strong> ' + surveyUserName + '</p>';
 
             // Фильтруем только заполненные поля (исключаем пустые значения)
             const filledFields = fields ? fields.filter(function (field) {

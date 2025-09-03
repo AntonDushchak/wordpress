@@ -147,11 +147,7 @@
 
             return false;
         },
-
-
-
-
-
+        
         // Закрытие модального окна
         closeModal: function () {
             if (window.NeoUmfrageModals && NeoUmfrageModals.closeModal) {
@@ -296,7 +292,10 @@
                     success: function (response) {
                         if (response.success) {
                             NeoUmfrage.showMessage('success', response.data.message);
-                            if (window.NeoUmfrageSurveys && NeoUmfrageSurveys.loadSurveys) {
+                            // Обновляем DataTable если он существует
+                            if ($.fn.DataTable && $('#surveys-table').length) {
+                                $('#surveys-table').DataTable().ajax.reload();
+                            } else if (window.NeoUmfrageSurveys && NeoUmfrageSurveys.loadSurveys) {
                                 NeoUmfrageSurveys.loadSurveys();
                             }
                         } else {

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Plugin Name: Neo Umfrage
  * Description: Plugin für Erstellung und Verwaltung von Umfragen in WordPress
@@ -35,6 +36,12 @@ add_action('plugins_loaded', static function () {
 
     // Подключаем CSS для плагина
     add_action('neo_dashboard_enqueue_plugin_assets_css', function () {
+        // CSS DataTables
+        wp_enqueue_style(
+            'datatables-css',
+            'https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css'
+        );
+
         wp_enqueue_style(
             'neo-umfrage-css',
             NEO_UMFRAGE_PLUGIN_URL . 'assets/css/neo-umfrage.css',
@@ -45,6 +52,20 @@ add_action('plugins_loaded', static function () {
 
     // Подключаем JS для плагина
     add_action('neo_dashboard_enqueue_plugin_assets_js', function () {
+        // Подключаем CSS DataTables
+        wp_enqueue_style(
+            'datatables-css',
+            'https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css'
+        );
+
+        // Основной JS DataTables (зависит от jQuery)
+        wp_enqueue_script(
+            'datatables-js',
+            'https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js',
+            ['jquery'],
+            '1.13.6',
+            true
+        );
         // Основной координатор (загружается первым)
         wp_enqueue_script(
             'neo-umfrage-js',
@@ -93,7 +114,7 @@ add_action('plugins_loaded', static function () {
         // Локализация скрипта
         $current_user = wp_get_current_user();
         $user_roles = $current_user->roles;
-        
+
         $ajax_data = [
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('neo_umfrage_nonce'),
@@ -107,7 +128,7 @@ add_action('plugins_loaded', static function () {
                 'no_data' => 'Keine Daten gefunden'
             ]
         ];
-        
+
         // Локализуем для всех JS файлов
         wp_localize_script('neo-umfrage-js', 'neoUmfrageAjax', $ajax_data);
         wp_localize_script('neo-umfrage-modals-js', 'neoUmfrageAjax', $ajax_data);
@@ -146,7 +167,7 @@ add_action('plugins_loaded', static function () {
                 'icon'  => 'bi-clipboard-check',
                 'pos'   => 26,
             ],
-            
+
             'statistics' => [
                 'label' => 'Statistik',
                 'icon'  => 'bi-graph-up',
@@ -154,13 +175,13 @@ add_action('plugins_loaded', static function () {
             ],
         ];
 
-        if(current_user_can('manage_options')) {
+        if (current_user_can('manage_options')) {
             $sections['templates'] = [
                 'label' => 'Vorlagen',
                 'icon'  => 'bi-file-earmark-text',
-                    'pos'   => 27,
-                ];
-            }
+                'pos'   => 27,
+            ];
+        }
 
         foreach ($sections as $slug => $data) {
             $full_slug = 'neo-umfrage/' . $slug;
@@ -208,9 +229,11 @@ add_action('plugins_loaded', static function () {
 /**
  * Основной класс плагина
  */
-class NeoUmfrage {
-    
-    public function __construct() {
+class NeoUmfrage
+{
+
+    public function __construct()
+    {
         add_action('init', [$this, 'init']);
         add_action('wp_ajax_neo_umfrage_save_survey', [$this, 'save_survey']);
         add_action('wp_ajax_neo_umfrage_save_template', [$this, 'save_template']);
@@ -224,106 +247,86 @@ class NeoUmfrage {
         add_action('wp_ajax_neo_umfrage_get_field_statistics', [$this, 'get_field_statistics']);
         add_action('wp_ajax_neo_umfrage_update_template', [$this, 'update_template']);
         add_action('wp_ajax_neo_umfrage_get_survey_data', [$this, 'get_survey_data']);
-        
+        add_action('wp_ajax_neo_umfrage_get_users', [$this, 'get_users']);
+
         // Устанавливаем часовой пояс Германии
         date_default_timezone_set('Europe/Berlin');
     }
-    
-    public function init() {
+
+    public function init()
+    {
         // Загружаем текстовый домен для переводов
         load_plugin_textdomain('neo-umfrage', false, dirname(plugin_basename(__FILE__)) . '/languages');
     }
-    
-    public function create_tables() {
+
+    public function create_tables()
+    {
         global $wpdb;
-        
+
         $charset_collate = $wpdb->get_charset_collate();
-        
+
         // Таблица шаблонов
         $templates_table = $wpdb->prefix . 'neo_umfrage_templates';
         $templates_sql = "CREATE TABLE $templates_table (
-            id mediumint(9) NOT NULL AUTO_INCREMENT,
-            name varchar(255) NOT NULL,
-            description text,
-            fields longtext,
-            created_at datetime DEFAULT CURRENT_TIMESTAMP,
-            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY (id)
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            description TEXT,
+            fields JSON NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) $charset_collate;";
-        
+
         // Таблица анкет
         $surveys_table = $wpdb->prefix . 'neo_umfrage_surveys';
         $surveys_sql = "CREATE TABLE $surveys_table (
-            id mediumint(9) NOT NULL AUTO_INCREMENT,
-            template_id mediumint(9) NOT NULL,
-            name varchar(255) NOT NULL,
-            description text,
-            fields_data longtext,
-            created_at datetime DEFAULT CURRENT_TIMESTAMP,
-            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            is_active tinyint(1) DEFAULT 1,
-            PRIMARY KEY (id),
-            KEY template_id (template_id)
-        ) $charset_collate;";
-        
-        // Таблица ответов
-        $responses_table = $wpdb->prefix . 'neo_umfrage_responses';
-        $responses_sql = "CREATE TABLE $responses_table (
-            id mediumint(9) NOT NULL AUTO_INCREMENT,
-            survey_id mediumint(9) NOT NULL,
-            response_data longtext NOT NULL,
-            user_id bigint(20),
-            ip_address varchar(45),
-            user_agent text,
-            submitted_at datetime DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            KEY survey_id (survey_id),
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            template_id BIGINT NOT NULL,
+            user_id BIGINT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            KEY template_id (template_id),
             KEY user_id (user_id)
         ) $charset_collate;";
-        
+
+        // Таблица значений полей (EAV)
+        $survey_values_table = $wpdb->prefix . 'neo_umfrage_survey_values';
+        $survey_values_sql = "CREATE TABLE $survey_values_table (
+            id BIGINT AUTO_INCREMENT PRIMARY KEY,
+            survey_id BIGINT NOT NULL,
+            field_name VARCHAR(255) NOT NULL,
+            field_value TEXT,
+            KEY survey_id (survey_id),
+            KEY field_name (field_name)
+        ) $charset_collate;";
+
+
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($templates_sql);
         dbDelta($surveys_sql);
-        dbDelta($responses_sql);
+        dbDelta($survey_values_sql);
     }
-    
-    public function save_template() {
+
+    public function save_template()
+    {
         // Проверяем nonce
         if (!wp_verify_nonce($_POST['nonce'], 'neo_umfrage_nonce')) {
             wp_send_json_error(['message' => 'Ошибка безопасности: неверный nonce']);
             return;
         }
-        
+
         global $wpdb;
         $templates_table = $wpdb->prefix . 'neo_umfrage_templates';
-        
+
         $name = sanitize_text_field($_POST['name']);
         $description = sanitize_textarea_field($_POST['description']);
-        
+
         $fields = [];
-        // Добавляем обязательные поля в начало
-        $fields[] = [
-            'label' => 'Name',
-            'type' => 'text',
-            'required' => true,
-            'options' => []
-        ];
-        $fields[] = [
-            'label' => 'Telefonnummer',
-            'type' => 'tel',
-            'required' => true,
-            'options' => []
-        ];
-        
+
         if (isset($_POST['fields'])) {
             if (is_string($_POST['fields'])) {
                 $fields_data = json_decode(stripslashes($_POST['fields']), true);
                 if (is_array($fields_data)) {
                     foreach ($fields_data as $field) {
-                        // Пропускаем обязательные поля, так как они уже добавлены выше
-                        if ($field['label'] === 'Name' || $field['label'] === 'Telefonnummer') {
-                            continue;
-                        }
                         $fields[] = [
                             'label' => sanitize_text_field($field['label']),
                             'type' => sanitize_text_field($field['type']),
@@ -334,10 +337,6 @@ class NeoUmfrage {
                 }
             } elseif (is_array($_POST['fields'])) {
                 foreach ($_POST['fields'] as $field) {
-                    // Пропускаем обязательные поля, так как они уже добавлены выше
-                    if ($field['label'] === 'Name' || $field['label'] === 'Telefonnummer') {
-                        continue;
-                    }
                     $fields[] = [
                         'label' => sanitize_text_field($field['label']),
                         'type' => sanitize_text_field($field['type']),
@@ -347,7 +346,7 @@ class NeoUmfrage {
                 }
             }
         }
-        
+
         $result = $wpdb->insert(
             $templates_table,
             [
@@ -357,42 +356,43 @@ class NeoUmfrage {
             ],
             ['%s', '%s', '%s']
         );
-        
+
         if ($result) {
             wp_send_json_success(['message' => 'Vorlage erfolgreich gespeichert']);
         } else {
             wp_send_json_error(['message' => 'Fehler beim Speichern der Vorlage']);
         }
     }
-    
-    public function save_survey() {
+
+    public function save_survey()
+    {
         // Проверяем nonce
         if (!wp_verify_nonce($_POST['nonce'], 'neo_umfrage_nonce')) {
             wp_send_json_error(['message' => 'Ошибка безопасности: неверный nonce']);
             return;
         }
-        
+
         global $wpdb;
         $surveys_table = $wpdb->prefix . 'neo_umfrage_surveys';
-        $responses_table = $wpdb->prefix . 'neo_umfrage_responses';
-        
+        $responses_table = $wpdb->prefix . 'neo_umfrage_survey_values';
+
         $template_id = intval($_POST['template_id']);
-        
+
         if (!$template_id) {
             wp_send_json_error(['message' => 'Keine Vorlage ausgewählt']);
         }
-        
+
         // Получаем данные шаблона
         $templates_table = $wpdb->prefix . 'neo_umfrage_templates';
         $template = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM $templates_table WHERE id = %d",
             $template_id
         ));
-        
+
         if (!$template) {
             wp_send_json_error(['message' => 'Vorlage nicht gefunden']);
         }
-        
+
         // Обрабатываем поля анкеты
         $survey_fields = [];
         if (isset($_POST['survey_fields'])) {
@@ -400,389 +400,409 @@ class NeoUmfrage {
                 $survey_fields = json_decode(stripslashes($_POST['survey_fields']), true);
             }
         }
-        
+
         // Создаем или обновляем анкету
         $survey_name = 'Umfrage nach Vorlage ' . $template->name;
         $survey_description = 'Umfrage, erstellt basierend auf Vorlage';
-        
-        // Проверяем, существует ли уже анкета для этого шаблона
-        $existing_survey = $wpdb->get_row($wpdb->prepare(
-            "SELECT * FROM $surveys_table WHERE template_id = %d AND is_active = 1",
-            $template_id
-        ));
-        
-        if ($existing_survey) {
-            $survey_id = $existing_survey->id;
-        } else {
-            $result = $wpdb->insert(
-                $surveys_table,
-                [
-                    'template_id' => $template_id,
-                    'name' => $survey_name,
-                    'description' => $survey_description,
-                    'fields_data' => json_encode($survey_fields)
-                ],
-                ['%d', '%s', '%s', '%s']
-            );
-            
-            if (!$result) {
-                wp_send_json_error(['message' => 'Fehler beim Erstellen der Umfrage']);
-            }
-            
-            $survey_id = $wpdb->insert_id;
+
+        // Создаем новую анкету
+        $result = $wpdb->insert(
+            $surveys_table,
+            [
+                'template_id' => $template_id,
+                'user_id' => get_current_user_id()
+            ],
+            ['%d', '%d']
+        );
+
+        if (!$result) {
+            wp_send_json_error(['message' => 'Fehler beim Erstellen der Umfrage']);
         }
-        
+
+        $survey_id = $wpdb->insert_id;
+
         // Проверяем, редактируем ли мы существующий ответ
         $response_id = isset($_POST['response_id']) ? intval($_POST['response_id']) : 0;
-        
+
         if ($response_id > 0) {
-            // Обновляем существующий ответ
-            $result = $wpdb->update(
+            // Удаляем старые значения ответа
+            $wpdb->delete(
                 $responses_table,
-                [
-                    'response_data' => json_encode($survey_fields),
-                    'user_id' => get_current_user_id(),
-                    'ip_address' => $_SERVER['REMOTE_ADDR'],
-                    'user_agent' => $_SERVER['HTTP_USER_AGENT']
-                ],
-                ['id' => $response_id],
-                ['%s', '%d', '%s', '%s'],
+                ['survey_id' => $response_id],
                 ['%d']
             );
-            
-            if ($result !== false) {
-                wp_send_json_success(['message' => 'Umfrage erfolgreich aktualisiert']);
-            } else {
-                wp_send_json_error(['message' => 'Fehler beim Aktualisieren der Umfrage']);
-            }
-        } else {
-            // Создаем новый ответ
+        }
+
+        // Сохраняем каждое поле отдельно в таблицу survey_values
+        $success = true;
+        foreach ($survey_fields as $field) {
+            $field_value = is_array($field['value']) ? implode(', ', $field['value']) : $field['value'];
+
             $result = $wpdb->insert(
                 $responses_table,
                 [
-                    'survey_id' => $survey_id,
-                    'response_data' => json_encode($survey_fields),
-                    'user_id' => get_current_user_id(),
-                    'ip_address' => $_SERVER['REMOTE_ADDR'],
-                    'user_agent' => $_SERVER['HTTP_USER_AGENT']
+                    'survey_id' => $response_id > 0 ? $response_id : $survey_id,
+                    'field_name' => $field['label'],
+                    'field_value' => $field_value
                 ],
-                ['%d', '%s', '%d', '%s', '%s']
+                ['%d', '%s', '%s']
             );
-            
-            if ($result) {
-                wp_send_json_success(['message' => 'Umfrage erfolgreich gespeichert']);
-            } else {
-                wp_send_json_error(['message' => 'Fehler beim Speichern der Umfrage']);
+
+            if (!$result) {
+                $success = false;
+                break;
             }
         }
+
+        if ($success) {
+            $message = $response_id > 0 ? 'Umfrage erfolgreich aktualisiert' : 'Umfrage erfolgreich gespeichert';
+            wp_send_json_success(['message' => $message]);
+        } else {
+            wp_send_json_error(['message' => 'Fehler beim Speichern der Umfrage']);
+        }
     }
-    
-    public function get_surveys() {
+
+    public function get_surveys()
+    {
         // Проверяем nonce
         if (!wp_verify_nonce($_POST['nonce'], 'neo_umfrage_nonce')) {
             error_log('Neo Umfrage: Fehler bei der nonce-Überprüfung');
             wp_send_json_error(['message' => 'Ошибка безопасности: неверный nonce']);
             return;
         }
-        
+
         global $wpdb;
-        $responses_table = $wpdb->prefix . 'neo_umfrage_responses';
+        $responses_table = $wpdb->prefix . 'neo_umfrage_survey_values';
         $surveys_table = $wpdb->prefix . 'neo_umfrage_surveys';
         $templates_table = $wpdb->prefix . 'neo_umfrage_templates';
-        
-        // Проверяем, есть ли фильтр по шаблону
+
+        // Проверяем фильтры
         $template_filter = isset($_POST['template_id']) ? intval($_POST['template_id']) : 0;
+        $user_filter = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
         $template_name_filter = isset($_POST['template_name']) ? sanitize_text_field($_POST['template_name']) : '';
-        
-        // Получаем все ответы (конкретные анкеты пользователей)
+
+        // Получаем уникальные survey_id из таблицы ответов
         $sql = "
-            SELECT r.*, s.name as survey_name, t.name as template_name,
-                   u.display_name as user_display_name,
-                   um1.meta_value as first_name,
-                   um2.meta_value as last_name
-            FROM $responses_table r
-            LEFT JOIN $surveys_table s ON r.survey_id = s.id
+            SELECT DISTINCT sv.survey_id, s.user_id, s.created_at, t.name as template_name
+            FROM $responses_table sv
+            LEFT JOIN $surveys_table s ON sv.survey_id = s.id
             LEFT JOIN $templates_table t ON s.template_id = t.id
-            LEFT JOIN {$wpdb->users} u ON r.user_id = u.ID
-            LEFT JOIN {$wpdb->usermeta} um1 ON (u.ID = um1.user_id AND um1.meta_key = 'first_name')
-            LEFT JOIN {$wpdb->usermeta} um2 ON (u.ID = um2.user_id AND um2.meta_key = 'last_name')
         ";
-        
-        // Добавляем фильтр по шаблону, если указан
+
+        $where_conditions = [];
+        $prepare_values = [];
+
+        // Добавляем фильтры
         if ($template_filter > 0) {
-            $sql .= " WHERE t.id = %d";
-            $sql .= " ORDER BY r.submitted_at DESC";
-            $responses = $wpdb->get_results($wpdb->prepare($sql, $template_filter));
-        } elseif (!empty($template_name_filter)) {
-            $sql .= " WHERE t.name = %s";
-            $sql .= " ORDER BY r.submitted_at DESC";
-            $responses = $wpdb->get_results($wpdb->prepare($sql, $template_name_filter));
-        } else {
-            $sql .= " ORDER BY r.submitted_at DESC";
-            $responses = $wpdb->get_results($sql);
+            $where_conditions[] = "t.id = %d";
+            $prepare_values[] = $template_filter;
         }
-        
+
+        if ($user_filter > 0) {
+            $where_conditions[] = "s.user_id = %d";
+            $prepare_values[] = $user_filter;
+        }
+
+        if (!empty($template_name_filter)) {
+            $where_conditions[] = "t.name = %s";
+            $prepare_values[] = $template_name_filter;
+        }
+
+        // Добавляем WHERE условия
+        if (!empty($where_conditions)) {
+            $sql .= " WHERE " . implode(" AND ", $where_conditions);
+        }
+
+        $sql .= " ORDER BY s.created_at DESC";
+
+        // Выполняем запрос
+        if (!empty($prepare_values)) {
+            $surveys_data = $wpdb->get_results($wpdb->prepare($sql, $prepare_values));
+        } else {
+            $surveys_data = $wpdb->get_results($sql);
+        }
+
         $surveys = [];
-        foreach ($responses as $response) {
-            $response_data = json_decode($response->response_data, true);
-            $name_value = 'Nicht ausgefüllt';
-            $phone_value = 'Nicht ausgefüllt';
+        foreach ($surveys_data as $survey_data) {
+            // Получаем все поля для этого survey_id
+            $fields = $wpdb->get_results($wpdb->prepare(
+                "SELECT field_name, field_value FROM $responses_table WHERE survey_id = %d",
+                $survey_data->survey_id
+            ));
+
+            // Получаем информацию о пользователе с именем и фамилией
+            $user = get_user_by('id', $survey_data->user_id);
+            $wp_user_name = 'Unbekannter Benutzer';
             
-            if (is_array($response_data)) {
-                foreach ($response_data as $field) {
-                    if (isset($field['label']) && isset($field['value'])) {
-                        if ($field['label'] === 'Name') {
-                            $name_value = $field['value'] ?: 'Nicht ausgefüllt';
-                        } elseif ($field['label'] === 'Telefonnummer') {
-                            $phone_value = $field['value'] ?: 'Nicht ausgefüllt';
-                        }
-                    }
+            if ($user) {
+                $first_name = get_user_meta($user->ID, 'first_name', true);
+                $last_name = get_user_meta($user->ID, 'last_name', true);
+                
+                if (!empty($first_name) && !empty($last_name)) {
+                    $wp_user_name = $first_name . ' ' . $last_name;
+                } elseif (!empty($first_name)) {
+                    $wp_user_name = $first_name;
+                } elseif (!empty($last_name)) {
+                    $wp_user_name = $last_name;
+                } else {
+                    $wp_user_name = $user->display_name;
                 }
             }
-            
-            // Формируем имя пользователя WordPress
-            $wp_user_name = 'Unbekannter Benutzer';
-            if ($response->first_name && $response->last_name) {
-                $wp_user_name = $response->first_name . ' ' . $response->last_name;
-            } elseif ($response->user_display_name) {
-                $wp_user_name = $response->user_display_name;
-            }
-            
+
             $surveys[] = [
-                'id' => $response->id,
-                'response_id' => $response->id,
-                'survey_id' => $response->survey_id,
-                'template_name' => $response->template_name ?: 'Nicht angegeben',
-                'survey_name' => $response->survey_name ?: 'Umfrage',
-                'name_value' => $name_value,
-                'phone_value' => $phone_value,
+                'id' => $survey_data->survey_id,
+                'response_id' => $survey_data->survey_id,
+                'survey_id' => $survey_data->survey_id,
+                'template_name' => $survey_data->template_name ?: 'Nicht angegeben',
                 'wp_user_name' => $wp_user_name,
-                'submitted_at' => $response->submitted_at,
-                'user_id' => $response->user_id,
-                'ip_address' => $response->ip_address
+                'submitted_at' => $survey_data->created_at,
+                'user_id' => $survey_data->user_id,
             ];
         }
-        
+
         wp_send_json_success($surveys);
     }
-    
-    public function get_templates() {
+
+    public function get_templates()
+    {
         // Проверяем nonce
         if (!wp_verify_nonce($_POST['nonce'], 'neo_umfrage_nonce')) {
             wp_send_json_error(['message' => 'Ошибка безопасности: неверный nonce']);
             return;
         }
-        
+
         global $wpdb;
         $templates_table = $wpdb->prefix . 'neo_umfrage_templates';
-        
+
         $templates = $wpdb->get_results("
             SELECT * FROM $templates_table 
             ORDER BY created_at DESC
         ");
-        
+
         wp_send_json_success($templates);
     }
-    
-    public function get_template_fields() {
+
+    public function get_template_fields()
+    {
         // Проверяем nonce
         if (!wp_verify_nonce($_POST['nonce'], 'neo_umfrage_nonce')) {
             wp_send_json_error(['message' => 'Ошибка безопасности: неверный nonce']);
             return;
         }
-        
+
         $template_id = intval($_POST['template_id']);
-        
+
         global $wpdb;
         $templates_table = $wpdb->prefix . 'neo_umfrage_templates';
-        
+
         $template = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM $templates_table WHERE id = %d",
             $template_id
         ));
-        
+
         if (!$template) {
             wp_send_json_error(['message' => 'Vorlage nicht gefunden']);
         }
-        
+
         $fields = json_decode($template->fields, true);
         if (!is_array($fields)) {
             $fields = [];
         }
-        
+
         wp_send_json_success(['fields' => $fields]);
     }
-    
-    public function get_survey_data() {
+
+    public function get_survey_data()
+    {
         // Проверяем nonce
         if (!wp_verify_nonce($_POST['nonce'], 'neo_umfrage_nonce')) {
             wp_send_json_error(['message' => 'Ошибка безопасности: неверный nonce']);
             return;
         }
-        
-        $response_id = intval($_POST['survey_id']); // Это на самом деле response_id
-        
+
+        $survey_id = intval($_POST['survey_id']);
+
         global $wpdb;
-        $responses_table = $wpdb->prefix . 'neo_umfrage_responses';
+        $responses_table = $wpdb->prefix . 'neo_umfrage_survey_values';
         $surveys_table = $wpdb->prefix . 'neo_umfrage_surveys';
         $templates_table = $wpdb->prefix . 'neo_umfrage_templates';
-        
-        // Получаем конкретный ответ (анкету пользователя)
-        $response = $wpdb->get_row($wpdb->prepare(
-            "SELECT r.*, s.name as survey_name, s.template_id, t.name as template_name,
-                    u.display_name as user_display_name,
-                    um1.meta_value as first_name,
-                    um2.meta_value as last_name
-             FROM $responses_table r
-             LEFT JOIN $surveys_table s ON r.survey_id = s.id
+
+        // Получаем информацию об анкете
+        $survey = $wpdb->get_row($wpdb->prepare(
+            "SELECT s.*, t.name as template_name, t.id as template_id
+             FROM $surveys_table s
              LEFT JOIN $templates_table t ON s.template_id = t.id
-             LEFT JOIN {$wpdb->users} u ON r.user_id = u.ID
-             LEFT JOIN {$wpdb->usermeta} um1 ON (u.ID = um1.user_id AND um1.meta_key = 'first_name')
-             LEFT JOIN {$wpdb->usermeta} um2 ON (u.ID = um2.user_id AND um2.meta_key = 'last_name')
-             WHERE r.id = %d",
-            $response_id
+             WHERE s.id = %d",
+            $survey_id
         ));
-        
-        if (!$response) {
+
+        if (!$survey) {
             wp_send_json_error(['message' => 'Umfrage nicht gefunden']);
         }
-        
-        // Парсим данные ответа
-        $response_data = json_decode($response->response_data, true);
-        if (!is_array($response_data)) {
-            $response_data = [];
+
+        // Получаем все поля ответа
+        $fields = $wpdb->get_results($wpdb->prepare(
+            "SELECT field_name, field_value FROM $responses_table WHERE survey_id = %d",
+            $survey_id
+        ));
+
+        // Преобразуем поля в массив
+        $response_data = [];
+        foreach ($fields as $field) {
+            $response_data[] = [
+                'label' => $field->field_name,
+                'value' => $field->field_value
+            ];
         }
+
+        // Получаем информацию о пользователе с именем и фамилией
+        $user = get_user_by('id', $survey->user_id);
+        $user_info = [
+            'user_display_name' => $user ? $user->display_name : 'Unbekannter Benutzer',
+            'first_name' => '',
+            'last_name' => ''
+        ];
         
+        if ($user) {
+            $first_name = get_user_meta($user->ID, 'first_name', true);
+            $last_name = get_user_meta($user->ID, 'last_name', true);
+            
+            if (!empty($first_name)) {
+                $user_info['first_name'] = $first_name;
+            }
+            if (!empty($last_name)) {
+                $user_info['last_name'] = $last_name;
+            }
+        }
+
         wp_send_json_success([
-            'response' => $response,
+            'response' => array_merge((array)$survey, $user_info),
             'response_data' => $response_data,
-            'template_name' => $response->template_name,
-            'survey_name' => $response->survey_name,
-            'template_id' => $response->template_id
+            'template_name' => $survey->template_name,
+            'template_id' => $survey->template_id
         ]);
     }
-    
-    public function delete_survey() {
+
+    public function delete_survey()
+    {
         // Проверяем nonce
         if (!wp_verify_nonce($_POST['nonce'], 'neo_umfrage_nonce')) {
             wp_send_json_error(['message' => 'Ошибка безопасности: неверный nonce']);
             return;
         }
-        
-        $response_id = intval($_POST['survey_id']); // Это на самом деле response_id
-        
+
+        $survey_id = intval($_POST['survey_id']);
+
         global $wpdb;
-        $responses_table = $wpdb->prefix . 'neo_umfrage_responses';
-        
-        // Удаляем конкретный ответ (анкету пользователя)
-        $result = $wpdb->delete($responses_table, ['id' => $response_id], ['%d']);
-        
+        $responses_table = $wpdb->prefix . 'neo_umfrage_survey_values';
+        $surveys_table = $wpdb->prefix . 'neo_umfrage_surveys';
+
+        // Удаляем все поля ответа
+        $wpdb->delete($responses_table, ['survey_id' => $survey_id], ['%d']);
+
+        // Удаляем саму анкету
+        $result = $wpdb->delete($surveys_table, ['id' => $survey_id], ['%d']);
+
         if ($result) {
             wp_send_json_success(['message' => 'Umfrage erfolgreich gelöscht']);
         } else {
             wp_send_json_error(['message' => 'Fehler beim Löschen der Umfrage']);
         }
     }
-    
-    public function delete_template() {
+
+    public function delete_template()
+    {
         // Проверяем nonce
         if (!wp_verify_nonce($_POST['nonce'], 'neo_umfrage_nonce')) {
             wp_send_json_error(['message' => 'Ошибка безопасности: неверный nonce']);
             return;
         }
-        
+
         $template_id = intval($_POST['template_id']);
-        
+
         global $wpdb;
         $templates_table = $wpdb->prefix . 'neo_umfrage_templates';
-        
+
         $result = $wpdb->delete($templates_table, ['id' => $template_id], ['%d']);
-        
+
         if ($result) {
             wp_send_json_success(['message' => 'Vorlage erfolgreich gelöscht']);
         } else {
             wp_send_json_error(['message' => 'Fehler beim Löschen der Vorlage']);
         }
     }
-    
-    public function get_statistics() {
+
+    public function get_statistics()
+    {
         // Проверяем nonce
         if (!wp_verify_nonce($_POST['nonce'], 'neo_umfrage_nonce')) {
             wp_send_json_error(['message' => 'Ошибка безопасности: неверный nonce']);
             return;
         }
-        
+
         global $wpdb;
         $surveys_table = $wpdb->prefix . 'neo_umfrage_surveys';
         $templates_table = $wpdb->prefix . 'neo_umfrage_templates';
-        $responses_table = $wpdb->prefix . 'neo_umfrage_responses';
-        
+        $responses_table = $wpdb->prefix . 'neo_umfrage_survey_values';
+
         $total_surveys = $wpdb->get_var("SELECT COUNT(*) FROM $surveys_table");
         $total_templates = $wpdb->get_var("SELECT COUNT(*) FROM $templates_table");
         $total_responses = $wpdb->get_var("SELECT COUNT(*) FROM $responses_table");
-        
+
         wp_send_json_success([
             'total_surveys' => $total_surveys,
             'total_templates' => $total_templates,
             'total_responses' => $total_responses
         ]);
     }
-    
-    public function get_field_statistics() {
+
+    public function get_field_statistics()
+    {
         // Проверяем nonce
         if (!wp_verify_nonce($_POST['nonce'], 'neo_umfrage_nonce')) {
             wp_send_json_error(['message' => 'Ошибка безопасности: неверный nonce']);
             return;
         }
-        
+
         $field_label = sanitize_text_field($_POST['field_label']);
         $template_id = intval($_POST['template_id']);
-        
+
         global $wpdb;
         $surveys_table = $wpdb->prefix . 'neo_umfrage_surveys';
-        $responses_table = $wpdb->prefix . 'neo_umfrage_responses';
-        
+        $responses_table = $wpdb->prefix . 'neo_umfrage_survey_values';
+
         // Получаем все ответы для анкет этого шаблона
         $responses = $wpdb->get_results($wpdb->prepare(
-            "SELECT r.response_data 
-             FROM $responses_table r 
-             JOIN $surveys_table s ON r.survey_id = s.id 
-             WHERE s.template_id = %d",
-            $template_id
+            "SELECT sv.field_value 
+             FROM $responses_table sv 
+             JOIN $surveys_table s ON sv.survey_id = s.id 
+             WHERE s.template_id = %d AND sv.field_name = %s",
+            $template_id,
+            $field_label
         ));
-        
+
         $field_data = [
             'label' => $field_label,
             'type' => 'text' // По умолчанию
         ];
-        
+
         $stats = $this->analyze_field_responses($field_data, $responses);
-        
+
         wp_send_json_success($stats);
     }
-    
-    private function analyze_field_responses($field_data, $responses) {
+
+    private function analyze_field_responses($field_data, $responses)
+    {
         $stats = [
             'total_responses' => count($responses),
             'filled_responses' => 0,
             'empty_responses' => 0,
             'values' => []
         ];
-        
+
         foreach ($responses as $response) {
-            $response_data = json_decode($response->response_data, true);
-            if (!is_array($response_data)) {
-                continue;
-            }
-            
-            $field_value = null;
-            foreach ($response_data as $field) {
-                if (isset($field['label']) && $field['label'] === $field_data['label']) {
-                    $field_value = $field['value'];
-                    break;
-                }
-            }
-            
+            $field_value = $response->field_value;
+
             if (!empty($field_value)) {
                 $stats['filled_responses']++;
                 $stats['values'][] = $field_value;
@@ -790,7 +810,7 @@ class NeoUmfrage {
                 $stats['empty_responses']++;
             }
         }
-        
+
         // Дополнительная статистика в зависимости от типа поля
         if ($field_data['type'] === 'number' && !empty($stats['values'])) {
             $numbers = array_map('floatval', $stats['values']);
@@ -802,39 +822,41 @@ class NeoUmfrage {
             $stats['frequency'] = array_count_values($stats['values']);
             arsort($stats['frequency']);
         }
-        
+
         return $stats;
     }
-    
-    private function calculate_median($numbers) {
+
+    private function calculate_median($numbers)
+    {
         sort($numbers);
         $count = count($numbers);
         $middle = floor($count / 2);
-        
+
         if ($count % 2 === 0) {
             return ($numbers[$middle - 1] + $numbers[$middle]) / 2;
         } else {
             return $numbers[$middle];
         }
     }
-    
-    public function get_template() {
+
+    public function get_template()
+    {
         // Проверяем nonce
         if (!wp_verify_nonce($_POST['nonce'], 'neo_umfrage_nonce')) {
             wp_send_json_error(['message' => 'Ошибка безопасности: неверный nonce']);
             return;
         }
-        
+
         global $wpdb;
         $templates_table = $wpdb->prefix . 'neo_umfrage_templates';
-        
+
         $template_id = intval($_POST['template_id']);
-        
+
         $template = $wpdb->get_row($wpdb->prepare(
             "SELECT * FROM $templates_table WHERE id = %d",
             $template_id
         ));
-        
+
         if ($template) {
             $template->fields = json_decode($template->fields, true);
             wp_send_json_success(['template' => $template]);
@@ -842,45 +864,29 @@ class NeoUmfrage {
             wp_send_json_error(['message' => 'Шаблон не найден']);
         }
     }
-    
-    public function update_template() {
+
+    public function update_template()
+    {
         // Проверяем nonce
         if (!wp_verify_nonce($_POST['nonce'], 'neo_umfrage_nonce')) {
             wp_send_json_error(['message' => 'Ошибка безопасности: неверный nonce']);
             return;
         }
-        
+
         global $wpdb;
         $templates_table = $wpdb->prefix . 'neo_umfrage_templates';
-        
+
         $template_id = intval($_POST['template_id']);
         $name = sanitize_text_field($_POST['name']);
         $description = sanitize_textarea_field($_POST['description']);
-        
+
         $fields = [];
-        // Добавляем обязательные поля в начало
-        $fields[] = [
-            'label' => 'Name',
-            'type' => 'text',
-            'required' => true,
-            'options' => []
-        ];
-        $fields[] = [
-            'label' => 'Telefonnummer',
-            'type' => 'tel',
-            'required' => true,
-            'options' => []
-        ];
-        
+
         if (isset($_POST['fields'])) {
             if (is_string($_POST['fields'])) {
                 $fields_data = json_decode(stripslashes($_POST['fields']), true);
                 if (is_array($fields_data)) {
                     foreach ($fields_data as $field) {
-                        // Пропускаем обязательные поля, так как они уже добавлены выше
-                        if ($field['label'] === 'Name' || $field['label'] === 'Telefonnummer') {
-                            continue;
-                        }
                         $fields[] = [
                             'label' => sanitize_text_field($field['label']),
                             'type' => sanitize_text_field($field['type']),
@@ -891,10 +897,6 @@ class NeoUmfrage {
                 }
             } elseif (is_array($_POST['fields'])) {
                 foreach ($_POST['fields'] as $field) {
-                    // Пропускаем обязательные поля, так как они уже добавлены выше
-                    if ($field['label'] === 'Name' || $field['label'] === 'Telefonnummer') {
-                        continue;
-                    }
                     $fields[] = [
                         'label' => sanitize_text_field($field['label']),
                         'type' => sanitize_text_field($field['type']),
@@ -904,7 +906,7 @@ class NeoUmfrage {
                 }
             }
         }
-        
+
         $result = $wpdb->update(
             $templates_table,
             [
@@ -917,20 +919,69 @@ class NeoUmfrage {
             ['%s', '%s', '%s', '%s'],
             ['%d']
         );
-        
+
         if ($result !== false) {
             wp_send_json_success(['message' => 'Шаблон успешно обновлен']);
         } else {
             wp_send_json_error(['message' => 'Ошибка обновления шаблона']);
         }
     }
+
+    public function get_users()
+    {
+        // Проверяем nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'neo_umfrage_nonce')) {
+            wp_send_json_error(['message' => 'Ошибка безопасности: неверный nonce']);
+            return;
+        }
+
+        // Получаем всех пользователей
+        $users = get_users([
+            'fields' => ['ID', 'display_name'],
+            'orderby' => 'display_name',
+            'order' => 'ASC'
+        ]);
+
+        // Формируем массив с полными именами
+        $users_with_names = [];
+        foreach ($users as $user) {
+            // Получаем имя и фамилию из мета-полей
+            $first_name = get_user_meta($user->ID, 'first_name', true);
+            $last_name = get_user_meta($user->ID, 'last_name', true);
+            
+            $full_name = '';
+            if (!empty($first_name) && !empty($last_name)) {
+                $full_name = $first_name . ' ' . $last_name;
+            } elseif (!empty($first_name)) {
+                $full_name = $first_name;
+            } elseif (!empty($last_name)) {
+                $full_name = $last_name;
+            } else {
+                $full_name = $user->display_name;
+            }
+            
+            
+            $users_with_names[] = [
+                'ID' => $user->ID,
+                'display_name' => $full_name
+            ];
+        }
+
+        // Сортируем по полному имени
+        usort($users_with_names, function($a, $b) {
+            return strcmp($a['display_name'], $b['display_name']);
+        });
+
+        wp_send_json_success($users_with_names);
+    }
 }
 
 /**
  * Callback функции для страниц
  */
-function neo_umfrage_main_section_callback() {
-    ?>
+function neo_umfrage_main_section_callback()
+{
+?>
     <div class="neo-umfrage-container">
         <div class="neo-umfrage-header">
             <h1 class="neo-umfrage-title">Neo Umfrage</h1>
@@ -956,17 +1007,18 @@ function neo_umfrage_main_section_callback() {
             </div>
         </div>
     </div>
-    <?php
+<?php
 }
 
-function neo_umfrage_surveys_callback() {
-    ?>
+function neo_umfrage_surveys_callback()
+{
+?>
     <div class="neo-umfrage-container">
         <div class="neo-umfrage-header">
             <h1 class="neo-umfrage-title">Umfragenverwaltung</h1>
             <p class="neo-umfrage-subtitle">Erstellung und Bearbeitung von Umfragen</p>
         </div>
-        
+
         <div class="neo-umfrage-card">
             <div class="neo-umfrage-card-header">
                 <h2 class="neo-umfrage-card-title">Umfragenliste</h2>
@@ -979,17 +1031,18 @@ function neo_umfrage_surveys_callback() {
             </div>
         </div>
     </div>
-    <?php
+<?php
 }
 
-function neo_umfrage_templates_callback() {
-    ?>
+function neo_umfrage_templates_callback()
+{
+?>
     <div class="neo-umfrage-container">
         <div class="neo-umfrage-header">
             <h1 class="neo-umfrage-title">Vorlagenverwaltung</h1>
             <p class="neo-umfrage-subtitle">Erstellung und Bearbeitung von Umfragevorlagen</p>
         </div>
-        
+
         <div class="neo-umfrage-card">
             <div class="neo-umfrage-card-header">
                 <h2 class="neo-umfrage-card-title">Vorlagenliste</h2>
@@ -1002,17 +1055,18 @@ function neo_umfrage_templates_callback() {
             </div>
         </div>
     </div>
-    <?php
+<?php
 }
 
-function neo_umfrage_statistics_callback() {
-    ?>
+function neo_umfrage_statistics_callback()
+{
+?>
     <div class="neo-umfrage-container">
         <div class="neo-umfrage-header">
             <h1 class="neo-umfrage-title">Statistik</h1>
             <p class="neo-umfrage-subtitle">Analytik für Umfragen und Antworten</p>
         </div>
-        
+
         <div class="neo-umfrage-stats" id="statistics-stats">
             <div class="neo-umfrage-stat-card">
                 <div class="neo-umfrage-stat-number" id="stats-total-surveys">-</div>
@@ -1027,7 +1081,7 @@ function neo_umfrage_statistics_callback() {
                 <div class="neo-umfrage-stat-label">Antworten</div>
             </div>
         </div>
-        
+
         <div class="neo-umfrage-card">
             <div class="neo-umfrage-card-header">
                 <h2 class="neo-umfrage-card-title">Letzte Umfragen</h2>
@@ -1037,28 +1091,30 @@ function neo_umfrage_statistics_callback() {
             </div>
         </div>
     </div>
-    <?php
+<?php
 }
 
-function neo_umfrage_widget_callback() {
-    ?>
+function neo_umfrage_widget_callback()
+{
+?>
     <div class="neo-umfrage-widget">
         <h3>Neo Umfrage</h3>
         <div style="text-align: center;">
             <button class="neo-umfrage-button" onclick="openAddSurveyModal()">Umfrage hinzufügen</button>
         </div>
     </div>
-    <?php
+<?php
 }
 
 /**
  * Активация плагина
  */
-function neo_umfrage_activate() {
+function neo_umfrage_activate()
+{
     // Создаем таблицы БД при активации
     $neo_umfrage = new NeoUmfrage();
     $neo_umfrage->create_tables();
-    
+
     flush_rewrite_rules();
 }
 register_activation_hook(__FILE__, 'neo_umfrage_activate');
@@ -1066,7 +1122,8 @@ register_activation_hook(__FILE__, 'neo_umfrage_activate');
 /**
  * Деактивация плагина
  */
-function neo_umfrage_deactivate() {
+function neo_umfrage_deactivate()
+{
     flush_rewrite_rules();
 }
 register_deactivation_hook(__FILE__, 'neo_umfrage_deactivate');

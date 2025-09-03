@@ -26,21 +26,7 @@
                                 <select class="neo-umfrage-select" name="template_id" id="survey-template-select" required>
                                     <option value="">Vorlage auswählen</option>
                                 </select>
-                            </div>
-                            
-                            <!-- Pflichtfelder -->
-                            <div class="neo-umfrage-form-group">
-                                <label class="neo-umfrage-label">Name <span style="color: red;">*</span></label>
-                                <input type="text" class="neo-umfrage-input" name="required_name" required>
-                            </div>
-                            
-                            <div class="neo-umfrage-form-group">
-                                <label class="neo-umfrage-label">Telefonnummer <span style="color: red;">*</span></label>
-                                <input type="tel" class="neo-umfrage-input" name="required_phone" 
-                                       placeholder="+49 30 12345678 oder 030 12345678"
-                                       title="Geben Sie eine gültige deutsche Telefonnummer ein"
-                                       required>
-                            </div>
+                            </div>                   
                             
                             <div id="survey-template-fields" class="neo-umfrage-form-group" style="display: none;">
                                 <label class="neo-umfrage-label">Zusätzliche Umfragefelder</label>
@@ -80,45 +66,13 @@
                             </div>
                             <div class="neo-umfrage-form-group">
                                 <label class="neo-umfrage-label">Umfragefelder</label>
-                                <div class="neo-umfrage-info" style="margin-bottom: 15px; padding: 10px; background: #f0f8ff; border-left: 4px solid #007cba; border-radius: 4px;">
-                                    <strong>Pflichtfelder:</strong> Name und Telefonnummer werden automatisch zu jeder Vorlage hinzugefügt.
-                                </div>
+                                
                                 <div id="template-fields">
-                                    <!-- Feld "Name" (Pflichtfeld) -->
-                                    <div class="template-field" data-field-index="0" style="background: #f9f9f9; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
+                                    <!-- Дополнительные поля (начинаются с индекса 0) -->
+                                    <div class="template-field" data-field-index="0">
                                         <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
-                                            <input type="text" class="neo-umfrage-input" name="fields[0][label]" value="Name" readonly style="background: #e9ecef;">
-                                            <select class="neo-umfrage-select field-type-select" name="fields[0][type]" disabled>
-                                                <option value="text" selected>Text</option>
-                                            </select>
-                                            <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap;">
-                                                <input type="checkbox" name="fields[0][required]" value="1" checked disabled>
-                                                Pflichtfeld
-                                            </label>
-                                            <span style="color: #666; font-size: 12px;">(kann nicht gelöscht werden)</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Поле "Номер телефона" (обязательное) -->
-                                    <div class="template-field" data-field-index="1" style="background: #f9f9f9; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
-                                        <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
-                                            <input type="text" class="neo-umfrage-input" name="fields[1][label]" value="Telefonnummer" readonly style="background: #e9ecef;">
-                                            <select class="neo-umfrage-select field-type-select" name="fields[1][type]" disabled>
-                                                <option value="tel" selected>Telefon</option>
-                                            </select>
-                                            <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap;">
-                                                <input type="checkbox" name="fields[1][required]" value="1" checked disabled>
-                                                Pflichtfeld
-                                            </label>
-                                            <span style="color: #666; font-size: 12px;">(kann nicht gelöscht werden)</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Дополнительные поля (начинаются с индекса 2) -->
-                                    <div class="template-field" data-field-index="2">
-                                        <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
-                                            <input type="text" class="neo-umfrage-input" name="fields[2][label]" placeholder="Feldname" required>
-                                            <select class="neo-umfrage-select field-type-select" name="fields[2][type]" required>
+                                            <input type="text" class="neo-umfrage-input" name="fields[0][label]" placeholder="Feldname" required>
+                                            <select class="neo-umfrage-select field-type-select" name="fields[0][type]" required>
                                                 <option value="text">Text</option>
                                                 <option value="tel">Telefon</option>
                                                 <option value="textarea">Mehrzeiliger Text</option>
@@ -129,108 +83,14 @@
                                                 <option value="select">Dropdown-Liste</option>
                                             </select>
                                             <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap;">
-                                                <input type="checkbox" name="fields[2][required]" value="1">
+                                                <input type="checkbox" name="fields[0][required]" value="1">
                                                 Pflichtfeld
                                             </label>
                                             <button type="button" class="neo-umfrage-button neo-umfrage-button-danger remove-field-btn">Löschen</button>
                                         </div>
                                         <div class="field-options" style="display: none;">
                                             <label class="neo-umfrage-label">Antwortoptionen (eine pro Zeile)</label>
-                                            <textarea class="neo-umfrage-textarea" name="fields[2][options]" placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button type="button" class="neo-umfrage-button add-field-btn">Feld hinzufügen</button>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="neo-umfrage-modal-footer">
-                         <button type="button" class="neo-umfrage-button neo-umfrage-button-secondary" onclick="NeoUmfrageModals.closeModal()">Abbrechen</button>
-                         <button type="button" class="neo-umfrage-button" onclick="NeoUmfrageModals.submitTemplateForm()">Speichern</button>
-                     </div>
-                </div>
-            </div>
-        `);
-            }
-
-            // Modales Fenster für das Hinzufügen von Vorlagen
-            if (!$('#add-template-modal').length) {
-                $('body').append(`
-            <div id="add-template-modal" class="neo-umfrage-modal">
-                <div class="neo-umfrage-modal-content" style="max-width: 800px;">
-                    <div class="neo-umfrage-modal-header">
-                        <h3 class="neo-umfrage-modal-title">Vorlage hinzufügen</h3>
-                        <button class="neo-umfrage-modal-close">&times;</button>
-                    </div>
-                    <div class="neo-umfrage-modal-body">
-                        <form class="neo-umfrage-form" id="template-form">
-                            <div class="neo-umfrage-form-group">
-                                <label class="neo-umfrage-label">Vorlagenname</label>
-                                <input type="text" class="neo-umfrage-input" name="name" required>
-                            </div>
-                            <div class="neo-umfrage-form-group">
-                                <label class="neo-umfrage-label">Beschreibung</label>
-                                <textarea class="neo-umfrage-textarea" name="description"></textarea>
-                            </div>
-                            <div class="neo-umfrage-form-group">
-                                <label class="neo-umfrage-label">Umfragefelder</label>
-                                <div class="neo-umfrage-info" style="margin-bottom: 15px; padding: 10px; background: #f0f8ff; border-left: 4px solid #007cba; border-radius: 4px;">
-                                    <strong>Pflichtfelder:</strong> Name und Telefonnummer werden automatisch zu jeder Vorlage hinzugefügt.
-                                </div>
-                                <div id="template-fields">
-                                    <!-- Feld "Name" (Pflichtfeld) -->
-                                    <div class="template-field" data-field-index="0" style="background: #f9f9f9; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
-                                        <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
-                                            <input type="text" class="neo-umfrage-input" name="fields[0][label]" value="Name" readonly style="background: #e9ecef;">
-                                            <select class="neo-umfrage-select field-type-select" name="fields[0][type]" disabled>
-                                                <option value="text" selected>Text</option>
-                                            </select>
-                                            <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap;">
-                                                <input type="checkbox" name="fields[0][required]" value="1" checked disabled>
-                                                Pflichtfeld
-                                            </label>
-                                            <span style="color: #666; font-size: 12px;">(kann nicht gelöscht werden)</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Поле "Номер телефона" (обязательное) -->
-                                    <div class="template-field" data-field-index="1" style="background: #f9f9f9; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
-                                        <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
-                                            <input type="text" class="neo-umfrage-input" name="fields[1][label]" value="Telefonnummer" readonly style="background: #e9ecef;">
-                                            <select class="neo-umfrage-select field-type-select" name="fields[1][type]" disabled>
-                                                <option value="tel" selected>Telefon</option>
-                                            </select>
-                                            <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap;">
-                                                <input type="checkbox" name="fields[1][required]" value="1" checked disabled>
-                                                Pflichtfeld
-                                            </label>
-                                            <span style="color: #666; font-size: 12px;">(kann nicht gelöscht werden)</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Дополнительные поля (начинаются с индекса 2) -->
-                                    <div class="template-field" data-field-index="2">
-                                        <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
-                                            <input type="text" class="neo-umfrage-input" name="fields[2][label]" placeholder="Feldname" required>
-                                            <select class="neo-umfrage-select field-type-select" name="fields[2][type]" required>
-                                                <option value="text">Text</option>
-                                                <option value="tel">Telefon</option>
-                                                <option value="textarea">Mehrzeiliger Text</option>
-                                                <option value="email">Email</option>
-                                                <option value="number">Zahl</option>
-                                                <option value="radio">Einzelauswahl</option>
-                                                <option value="checkbox">Mehrfachauswahl</option>
-                                                <option value="select">Dropdown-Liste</option>
-                                            </select>
-                                            <label style="display: flex; align-items: center; gap: 5px; white-space: nowrap;">
-                                                <input type="checkbox" name="fields[2][required]" value="1">
-                                                Pflichtfeld
-                                            </label>
-                                            <button type="button" class="neo-umfrage-button neo-umfrage-button-danger remove-field-btn">Löschen</button>
-                                        </div>
-                                        <div class="field-options" style="display: none;">
-                                            <label class="neo-umfrage-label">Antwortoptionen (eine pro Zeile)</label>
-                                            <textarea class="neo-umfrage-textarea" name="fields[2][options]" placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
+                                            <textarea class="neo-umfrage-textarea" name="fields[0][options]" placeholder="Option 1&#10;Option 2&#10;Option 3"></textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -321,7 +181,10 @@
 
                         // Обновляем соответствующие списки
                         if (formId === 'survey-form') {
-                            if (window.NeoUmfrageSurveys && NeoUmfrageSurveys.loadSurveys) {
+                            // Обновляем DataTable если он существует
+                            if ($.fn.DataTable && $('#surveys-table').length) {
+                                $('#surveys-table').DataTable().ajax.reload();
+                            } else if (window.NeoUmfrageSurveys && NeoUmfrageSurveys.loadSurveys) {
                                 NeoUmfrageSurveys.loadSurveys();
                             }
                         } else if (formId === 'template-form') {
@@ -376,11 +239,6 @@
                     const $field = $(this);
                     const fieldLabel = $field.find('input[name*="[label]"]').val();
                     
-                    // Пропускаем обязательные поля, так как они добавляются автоматически на сервере
-                    if (fieldLabel === 'Name' || fieldLabel === 'Telefonnummer') {
-                        return;
-                    }
-                    
                     const fieldData = {
                         label: fieldLabel,
                         type: $field.find('select[name*="[type]"]').val(),
@@ -404,22 +262,6 @@
             // Обрабатываем поля анкеты
             if ($form.attr('id') === 'survey-form') {
                 const surveyFields = [];
-
-                // Добавляем обязательные поля
-                surveyFields.push({
-                    label: 'Name',
-                    type: 'text',
-                    required: true,
-                    value: $form.find('input[name="required_name"]').val()
-                });
-
-                surveyFields.push({
-                    label: 'Telefonnummer',
-                    type: 'tel',
-                    required: true,
-                    value: $form.find('input[name="required_phone"]').val()
-                });
-
                 // Добавляем дополнительные поля из шаблона
                 $form.find('.survey-field').each(function () {
                     const $field = $(this);
@@ -473,9 +315,7 @@
                  <input type="text" class="neo-umfrage-input" name="fields[${fieldIndex}][label]" placeholder="Feldname" required>
                  <select class="neo-umfrage-select field-type-select" name="fields[${fieldIndex}][type]" required>
                      <option value="text">Text</option>
-                     <option value="tel">Telefon</option>
                      <option value="textarea">Mehrzeiliger Text</option>
-                     <option value="email">Email</option>
                      <option value="number">Zahl</option>
                      <option value="radio">Einzelauswahl</option>
                      <option value="checkbox">Mehrfachauswahl</option>
@@ -542,11 +382,7 @@
                 success: function (response) {
                     if (response && response.success) {
                         const fields = (response.data && response.data.fields) ? response.data.fields : [];
-                        // Фильтруем поля, исключая обязательные
-                        const filteredFields = fields.filter(field =>
-                            field.label !== 'Name' && field.label !== 'Telefonnummer'
-                        );
-                        NeoUmfrageModals.renderTemplateFields(filteredFields, $container);
+                        NeoUmfrageModals.renderTemplateFields(fields, $container);
                     } else {
                         const errorMessage = (response && response.data && response.data.message) ? response.data.message :
                             (response && response.message) ? response.message : 'Unbekannter Fehler';
@@ -566,13 +402,8 @@
                 return;
             }
 
-            // Пропускаем обязательные поля (Name и Telefonnummer) - они уже есть в форме
-            const additionalFields = fields.filter(field =>
-                field.label !== 'Name' && field.label !== 'Telefonnummer'
-            );
-
             let html = '';
-            additionalFields.forEach(function (field, index) {
+            fields.forEach(function (field, index) {
                 html += NeoUmfrageModals.renderSurveyField(field, '');
             });
 
@@ -589,17 +420,8 @@
 
             switch (field.type) {
                 case 'text':
-                case 'email':
                 case 'number':
                     html += `<input type="${field.type}" class="neo-umfrage-input" name="survey_fields[${field.label}][value]" value="${defaultValue}" ${required}>`;
-                    break;
-
-                case 'tel':
-                    html += `<input type="tel" class="neo-umfrage-input" name="survey_fields[${field.label}][value]" 
-                     value="${defaultValue}" 
-                     placeholder="+49 30 12345678 oder 030 12345678"
-                     title="Geben Sie eine gültige deutsche Telefonnummer ein"
-                     ${required}>`;
                     break;
 
                 case 'textarea':
