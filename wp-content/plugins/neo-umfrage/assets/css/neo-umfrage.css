@@ -572,3 +572,7 @@
     font-weight: 600;
     color: #007cba;
 }
+
+header.mb-3 {
+    display: none;
+}

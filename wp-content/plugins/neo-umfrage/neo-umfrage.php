@@ -1062,11 +1062,6 @@ function neo_umfrage_surveys_callback()
 {
 ?>
     <div class="neo-umfrage-container">
-        <div class="neo-umfrage-header">
-            <h1 class="neo-umfrage-title">Umfragenverwaltung</h1>
-            <p class="neo-umfrage-subtitle">Erstellung und Bearbeitung von Umfragen</p>
-        </div>
-
         <div class="neo-umfrage-card">
             <div class="neo-umfrage-card-header">
                 <h2 class="neo-umfrage-card-title">Umfragenliste</h2>
@@ -1086,11 +1081,6 @@ function neo_umfrage_templates_callback()
 {
 ?>
     <div class="neo-umfrage-container">
-        <div class="neo-umfrage-header">
-            <h1 class="neo-umfrage-title">Vorlagenverwaltung</h1>
-            <p class="neo-umfrage-subtitle">Erstellung und Bearbeitung von Umfragevorlagen</p>
-        </div>
-
         <div class="neo-umfrage-card">
             <div class="neo-umfrage-card-header">
                 <h2 class="neo-umfrage-card-title">Vorlagenliste</h2>
@@ -1110,11 +1100,6 @@ function neo_umfrage_statistics_callback()
 {
 ?>
     <div class="neo-umfrage-container">
-        <div class="neo-umfrage-header">
-            <h1 class="neo-umfrage-title">Statistik</h1>
-            <p class="neo-umfrage-subtitle">Analytik für Umfragen und Antworten</p>
-        </div>
-
         <div class="neo-umfrage-stats" id="statistics-stats">
             <div class="neo-umfrage-stat-card">
                 <div class="neo-umfrage-stat-number" id="stats-total-surveys">-</div>
