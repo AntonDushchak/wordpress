@@ -215,7 +215,8 @@
                     },
                     success: function (response) {
                         if (response && response.success) {
-                            NeoUmfrage.showMessage('success', 'Umfrage erfolgreich gelöscht');
+                            const message = (response.data && response.data.message) ? response.data.message : 'Umfrage erfolgreich gelöscht';
+                            NeoUmfrage.showMessage('success', message);
                             // Обновляем DataTable
                             if ($.fn.DataTable && $('#surveys-table').length) {
                                 $('#surveys-table').DataTable().ajax.reload();
@@ -223,7 +224,8 @@
                                 NeoUmfrageSurveys.loadSurveys();
                             }
                         } else {
-                            NeoUmfrage.showMessage('error', 'Fehler beim Löschen der Umfrage');
+                            const errorMessage = (response && response.data && response.data.message) ? response.data.message : 'Fehler beim Löschen der Umfrage';
+                            NeoUmfrage.showMessage('error', errorMessage);
                         }
                     },
                     error: function () {

@@ -20,7 +20,7 @@ class AssetManager
 {
     private const BOOTSTRAP_VERSION = '5.3.2';
     private const ICONS_VERSION     = '1.10.5';
-    
+
     private static array $assets_registered = [];
 
     public function register(): void
@@ -111,14 +111,20 @@ class AssetManager
     {
         $section = get_query_var(Router::QUERY_VAR_SECTION, '');
         $this->enqueueAssets();
-        
+
         if ($section !== '') {
-            do_action('neo_dashboard_enqueue_plugin_assets_css', $section);
-        }
-        else if ($section === '') {
+            // Определяем, к какому плагину относится секция
+            $plugin_prefix = $this->getPluginPrefixFromSection($section);
+
+            if ($plugin_prefix) {
+                // Вызываем хук только для соответствующего плагина
+                $hook_name = "neo_dashboard_enqueue_{$plugin_prefix}_assets_css";
+                do_action($hook_name, $section);
+            }
+        } else if ($section === '') {
             do_action('neo_dashboard_enqueue_widget_assets_css');
         }
-        
+
         if (function_exists('wp_print_styles')) {
             wp_print_styles();
         }
@@ -128,14 +134,20 @@ class AssetManager
     {
         $section = get_query_var(Router::QUERY_VAR_SECTION, '');
         $this->enqueueAssets();
-        
+
         if ($section !== '') {
-            do_action('neo_dashboard_enqueue_plugin_assets_js', $section);
-        }
-        else if ($section === '') {
+            // Определяем, к какому плагину относится секция
+            $plugin_prefix = $this->getPluginPrefixFromSection($section);
+
+            if ($plugin_prefix) {
+                // Вызываем хук только для соответствующего плагина
+                $hook_name = "neo_dashboard_enqueue_{$plugin_prefix}_assets_js";
+                do_action($hook_name, $section);
+            }
+        } else if ($section === '') {
             do_action('neo_dashboard_enqueue_widget_assets_js');
         }
-        
+
         if (function_exists('wp_print_scripts')) {
             wp_print_scripts();
         }
@@ -157,5 +169,55 @@ class AssetManager
         $pagename = get_query_var('pagename', '');
 
         return $section !== '' || $pagename === 'neo-dashboard' || strpos($_SERVER['REQUEST_URI'] ?? '', '/neo-dashboard') === 0;
+    }
+
+    /**
+     * Определяет префикс плагина из секции
+     * Например: 'neo-umfrage/surveys' -> 'neo-umfrage'
+     */
+    private function getPluginPrefixFromSection(string $section): ?string
+    {
+        // Извлекаем префикс плагина (часть до первого слеша)
+        $parts = explode('/', $section);
+        $prefix = $parts[0];
+
+        // Проверяем, что это не системная секция
+        if (in_array($prefix, ['neo-dashboard', 'dashboard', 'admin'])) {
+            return null;
+        }
+
+        // Проверяем, зарегистрирована ли секция
+        $registry = \NeoDashboard\Core\Registry::instance();
+        $sections = $registry->getSections();
+        
+        // Проверяем, существует ли секция в Registry
+        $section_exists = false;
+        
+        // Сначала проверяем точное совпадение
+        if (isset($sections[$section])) {
+            $section_exists = true;
+        }
+        
+        // Если не найдена, ищем без слешей (neo-umfrage/statistics -> neo-umfragestatistics)
+        if (!$section_exists && strpos($section, '/') !== false) {
+            $section_without_slash = str_replace('/', '', $section);
+            if (isset($sections[$section_without_slash])) {
+                $section_exists = true;
+            }
+        }
+        
+        // Если не найдена, ищем по префиксу (neo-umfrage/statistics -> neo-umfrage)
+        if (!$section_exists) {
+            if (isset($sections[$prefix])) {
+                $section_exists = true;
+            }
+        }
+
+        // Возвращаем префикс только если секция существует в Registry
+        if ($section_exists) {
+            return $prefix;
+        } else {
+            return null;
+        }
     }
 }

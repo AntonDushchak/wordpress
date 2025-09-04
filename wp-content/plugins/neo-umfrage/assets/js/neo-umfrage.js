@@ -157,13 +157,39 @@
 
         // Показ сообщения
         showMessage: function (type, message) {
+            // Определяем стили в зависимости от типа
+            let inlineStyles = '';
+            switch(type) {
+                case 'success':
+                    inlineStyles = 'background-color: #d4edda; border-left: 4px solid #28a745; color: #155724; padding: 12px 16px; margin: 10px 0; border-radius: 4px; font-size: 14px; line-height: 1.4; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);';
+                    break;
+                case 'error':
+                    inlineStyles = 'background-color: #f8d7da; border-left: 4px solid #dc3545; color: #721c24; padding: 12px 16px; margin: 10px 0; border-radius: 4px; font-size: 14px; line-height: 1.4; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);';
+                    break;
+                case 'warning':
+                    inlineStyles = 'background-color: #fff3cd; border-left: 4px solid #ffc107; color: #856404; padding: 12px 16px; margin: 10px 0; border-radius: 4px; font-size: 14px; line-height: 1.4; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);';
+                    break;
+                case 'info':
+                    inlineStyles = 'background-color: #d1ecf1; border-left: 4px solid #17a2b8; color: #0c5460; padding: 12px 16px; margin: 10px 0; border-radius: 4px; font-size: 14px; line-height: 1.4; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);';
+                    break;
+                default:
+                    inlineStyles = 'background-color: #f8f9fa; border-left: 4px solid #6c757d; color: #495057; padding: 12px 16px; margin: 10px 0; border-radius: 4px; font-size: 14px; line-height: 1.4; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);';
+            }
+
             const $message = $(`
-                <div class="neo-umfrage-message neo-umfrage-message-${type}">
+                <div class="neo-umfrage-message neo-umfrage-message-${type}" style="${inlineStyles}">
                     ${message}
                 </div>
             `);
 
-            $('.neo-umfrage-container').prepend($message);
+            const $container = $('.neo-umfrage-container');
+            
+            if ($container.length > 0) {
+                $container.prepend($message);
+            } else {
+                // Добавляем в body как fallback
+                $('body').prepend($message);
+            }
 
             // Автоматически скрываем сообщение через 5 секунд
             setTimeout(() => {

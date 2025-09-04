@@ -35,7 +35,7 @@ add_action('plugins_loaded', static function () {
     }
 
     // Подключаем CSS для плагина
-    add_action('neo_dashboard_enqueue_plugin_assets_css', function () {
+    add_action('neo_dashboard_enqueue_neo-umfrage_assets_css', function () {
         // CSS DataTables
         wp_enqueue_style(
             'datatables-css',
@@ -50,8 +50,8 @@ add_action('plugins_loaded', static function () {
         );
     });
 
-    // Подключаем JS для плагина
-    add_action('neo_dashboard_enqueue_plugin_assets_js', function () {
+    // Подключаем JS для плагина в зависимости от секции
+    add_action('neo_dashboard_enqueue_neo-umfrage_assets_js', function ($section) {
         // Подключаем CSS DataTables
         wp_enqueue_style(
             'datatables-css',
@@ -66,7 +66,8 @@ add_action('plugins_loaded', static function () {
             '1.13.6',
             true
         );
-        // Основной координатор (загружается первым)
+
+        // Основной координатор (загружается всегда)
         wp_enqueue_script(
             'neo-umfrage-js',
             NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage.js',
@@ -75,7 +76,7 @@ add_action('plugins_loaded', static function () {
             true
         );
 
-        // Модальные окна и формы
+        // Модальные окна и формы (загружаются всегда)
         wp_enqueue_script(
             'neo-umfrage-modals-js',
             NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage-modals.js',
@@ -84,32 +85,71 @@ add_action('plugins_loaded', static function () {
             true
         );
 
-        // Работа с анкетами
-        wp_enqueue_script(
-            'neo-umfrage-surveys-js',
-            NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage-surveys.js',
-            ['jquery', 'neo-umfrage-js'],
-            NEO_UMFRAGE_VERSION,
-            true
-        );
+        // Загружаем специфичные скрипты в зависимости от секции
+        switch ($section) {
+            case 'neo-umfrage/surveys':
+                wp_enqueue_script(
+                    'neo-umfrage-surveys-js',
+                    NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage-surveys.js',
+                    ['jquery', 'neo-umfrage-js'],
+                    NEO_UMFRAGE_VERSION,
+                    true
+                );
+                // Также загружаем шаблоны для фильтрации анкет
+                wp_enqueue_script(
+                    'neo-umfrage-templates-js',
+                    NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage-templates.js',
+                    ['jquery', 'neo-umfrage-js'],
+                    NEO_UMFRAGE_VERSION,
+                    true
+                );
+                break;
 
-        // Работа с шаблонами
-        wp_enqueue_script(
-            'neo-umfrage-templates-js',
-            NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage-templates.js',
-            ['jquery', 'neo-umfrage-js'],
-            NEO_UMFRAGE_VERSION,
-            true
-        );
+            case 'neo-umfrage/templates':
+                wp_enqueue_script(
+                    'neo-umfrage-templates-js',
+                    NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage-templates.js',
+                    ['jquery', 'neo-umfrage-js'],
+                    NEO_UMFRAGE_VERSION,
+                    true
+                );
+                break;
 
-        // Статистика
-        wp_enqueue_script(
-            'neo-umfrage-statistics-js',
-            NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage-statistics.js',
-            ['jquery', 'neo-umfrage-js'],
-            NEO_UMFRAGE_VERSION,
-            true
-        );
+            case 'neo-umfrage/statistics':
+                wp_enqueue_script(
+                    'neo-umfrage-statistics-js',
+                    NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage-statistics.js',
+                    ['jquery', 'neo-umfrage-js'],
+                    NEO_UMFRAGE_VERSION,
+                    true
+                );
+                break;
+
+            case 'neo-umfrage':
+                // Главная страница - загружаем все скрипты
+                wp_enqueue_script(
+                    'neo-umfrage-surveys-js',
+                    NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage-surveys.js',
+                    ['jquery', 'neo-umfrage-js'],
+                    NEO_UMFRAGE_VERSION,
+                    true
+                );
+                wp_enqueue_script(
+                    'neo-umfrage-templates-js',
+                    NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage-templates.js',
+                    ['jquery', 'neo-umfrage-js'],
+                    NEO_UMFRAGE_VERSION,
+                    true
+                );
+                wp_enqueue_script(
+                    'neo-umfrage-statistics-js',
+                    NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage-statistics.js',
+                    ['jquery', 'neo-umfrage-js'],
+                    NEO_UMFRAGE_VERSION,
+                    true
+                );
+                break;
+        }
 
         // Локализация скрипта
         $current_user = wp_get_current_user();
@@ -129,12 +169,20 @@ add_action('plugins_loaded', static function () {
             ]
         ];
 
-        // Локализуем для всех JS файлов
+        // Локализуем для основных JS файлов
         wp_localize_script('neo-umfrage-js', 'neoUmfrageAjax', $ajax_data);
         wp_localize_script('neo-umfrage-modals-js', 'neoUmfrageAjax', $ajax_data);
-        wp_localize_script('neo-umfrage-surveys-js', 'neoUmfrageAjax', $ajax_data);
-        wp_localize_script('neo-umfrage-templates-js', 'neoUmfrageAjax', $ajax_data);
-        wp_localize_script('neo-umfrage-statistics-js', 'neoUmfrageAjax', $ajax_data);
+        
+        // Локализуем для специфичных скриптов, если они загружены
+        if (wp_script_is('neo-umfrage-surveys-js', 'enqueued')) {
+            wp_localize_script('neo-umfrage-surveys-js', 'neoUmfrageAjax', $ajax_data);
+        }
+        if (wp_script_is('neo-umfrage-templates-js', 'enqueued')) {
+            wp_localize_script('neo-umfrage-templates-js', 'neoUmfrageAjax', $ajax_data);
+        }
+        if (wp_script_is('neo-umfrage-statistics-js', 'enqueued')) {
+            wp_localize_script('neo-umfrage-statistics-js', 'neoUmfrageAjax', $ajax_data);
+        }
     });
 
     // Регистрируем элемент в боковом меню

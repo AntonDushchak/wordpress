@@ -490,6 +490,53 @@
     box-shadow: 0 0 0 1px #dc3545 !important;
 }
 
+/* Сообщения */
+.neo-umfrage-message {
+    padding: 12px 16px;
+    margin: 10px 0;
+    border-radius: 4px;
+    border-left: 4px solid;
+    font-size: 14px;
+    line-height: 1.4;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    animation: slideIn 0.3s ease-out;
+}
+
+.neo-umfrage-message-success {
+    background-color: #d4edda;
+    border-left-color: #28a745;
+    color: #155724;
+}
+
+.neo-umfrage-message-error {
+    background-color: #f8d7da;
+    border-left-color: #dc3545;
+    color: #721c24;
+}
+
+.neo-umfrage-message-warning {
+    background-color: #fff3cd;
+    border-left-color: #ffc107;
+    color: #856404;
+}
+
+.neo-umfrage-message-info {
+    background-color: #d1ecf1;
+    border-left-color: #17a2b8;
+    color: #0c5460;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .neo-umfrage-error-message {
     color: #dc3545;
     font-size: 12px;

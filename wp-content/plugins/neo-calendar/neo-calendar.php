@@ -31,7 +31,7 @@ add_action('plugins_loaded', static function () {
         return;
     }
 
-    add_action('neo_dashboard_enqueue_plugin_assets_css', function () {
+    add_action('neo_dashboard_enqueue_neo-calendar_assets_css', function () {
         wp_enqueue_style(
             'neo-calendar-css',
             plugin_dir_url(__FILE__) . 'assets/css/neo-calendar.css',
@@ -57,7 +57,7 @@ add_action('plugins_loaded', static function () {
     });
 
     // FullCalendar JS
-    add_action('neo_dashboard_enqueue_plugin_assets_js', function () {
+    add_action('neo_dashboard_enqueue_neo-calendar_assets_js', function () {
         wp_enqueue_script(
             'fullcalendar-js',
             plugin_dir_url(__FILE__) . 'assets/fullcalendar/dist/index.global.min.js',
