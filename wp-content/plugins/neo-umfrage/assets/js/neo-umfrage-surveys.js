@@ -278,18 +278,16 @@
             const response = surveyData.response;
             const fields = surveyData.response_data;
             const templateId = surveyData.template_id; // Получаем template_id из данных
+            const templateName = surveyData.template_name; // Получаем название шаблона
 
-            // Сначала загружаем шаблоны в селект
-            if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.loadTemplatesForSelect) {
-                NeoUmfrageTemplates.loadTemplatesForSelect('#survey-template-select', function () {
-                    // После загрузки шаблонов устанавливаем нужный
-                    $('#survey-template-select').val(templateId);
+            // При редактировании показываем только название шаблона (селект отключен)
+            if (templateName) {
+                $('#survey-template-select').html(`<option value="${templateId}" selected>${templateName}</option>`);
+            }
 
-                    // Загружаем поля шаблона и заполняем их данными
-                    if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.loadTemplateFieldsForEdit) {
-                        NeoUmfrageTemplates.loadTemplateFieldsForEdit(templateId, fields);
-                    }
-                });
+            // Загружаем поля шаблона и заполняем их данными
+            if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.loadTemplateFieldsForEdit) {
+                NeoUmfrageTemplates.loadTemplateFieldsForEdit(templateId, fields);
             }
 
             // Показываем поля шаблона

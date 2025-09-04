@@ -296,6 +296,10 @@ class NeoUmfrage
         add_action('wp_ajax_neo_umfrage_update_template', [$this, 'update_template']);
         add_action('wp_ajax_neo_umfrage_get_survey_data', [$this, 'get_survey_data']);
         add_action('wp_ajax_neo_umfrage_get_users', [$this, 'get_users']);
+        add_action('wp_ajax_neo_umfrage_toggle_template_status', [$this, 'toggle_template_status']);
+        add_action('wp_ajax_neo_umfrage_restore_template', [$this, 'restore_template']);
+        add_action('wp_ajax_neo_umfrage_deactivate_template', [$this, 'deactivate_template']);
+        add_action('wp_ajax_neo_umfrage_delete_template_with_surveys', [$this, 'delete_template_with_surveys']);
 
         // Устанавливаем часовой пояс Германии
         date_default_timezone_set('Europe/Berlin');
@@ -320,6 +324,7 @@ class NeoUmfrage
             name VARCHAR(255) NOT NULL,
             description TEXT,
             fields JSON NOT NULL,
+            is_active TINYINT(1) DEFAULT 1,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) $charset_collate;";
@@ -367,6 +372,7 @@ class NeoUmfrage
 
         $name = sanitize_text_field($_POST['name']);
         $description = sanitize_textarea_field($_POST['description']);
+        $is_active = isset($_POST['is_active']) ? intval($_POST['is_active']) : 1;
 
         $fields = [];
 
@@ -400,9 +406,10 @@ class NeoUmfrage
             [
                 'name' => $name,
                 'description' => $description,
-                'fields' => json_encode($fields)
+                'fields' => json_encode($fields),
+                'is_active' => $is_active
             ],
-            ['%s', '%s', '%s']
+            ['%s', '%s', '%s', '%d']
         );
 
         if ($result) {
@@ -622,9 +629,18 @@ class NeoUmfrage
         global $wpdb;
         $templates_table = $wpdb->prefix . 'neo_umfrage_templates';
 
+        // Проверяем, нужно ли фильтровать только активные шаблоны
+        $show_only_active = isset($_POST['show_only_active']) ? intval($_POST['show_only_active']) : 1; // По умолчанию показываем только активные
+        
+        $where_clause = '';
+        if ($show_only_active) {
+            $where_clause = ' WHERE is_active = 1';
+        }
+
         $templates = $wpdb->get_results("
             SELECT * FROM $templates_table 
-            ORDER BY created_at DESC
+            $where_clause
+            ORDER BY is_active DESC, created_at DESC
         ");
 
         wp_send_json_success($templates);
@@ -758,7 +774,7 @@ class NeoUmfrage
         }
     }
 
-    public function delete_template()
+    public function deactivate_template()
     {
         // Проверяем nonce
         if (!wp_verify_nonce($_POST['nonce'], 'neo_umfrage_nonce')) {
@@ -771,10 +787,61 @@ class NeoUmfrage
         global $wpdb;
         $templates_table = $wpdb->prefix . 'neo_umfrage_templates';
 
+        // Устанавливаем is_active = 0
+        $result = $wpdb->update(
+            $templates_table,
+            [
+                'is_active' => 0,
+                'updated_at' => current_time('mysql')
+            ],
+            ['id' => $template_id],
+            ['%d', '%s'],
+            ['%d']
+        );
+
+        if ($result !== false) {
+            wp_send_json_success(['message' => 'Vorlage erfolgreich deaktiviert']);
+        } else {
+            wp_send_json_error(['message' => 'Fehler beim Deaktivieren der Vorlage']);
+        }
+    }
+
+    public function delete_template_with_surveys()
+    {
+        // Проверяем nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'neo_umfrage_nonce')) {
+            wp_send_json_error(['message' => 'Ошибка безопасности: неверный nonce']);
+            return;
+        }
+
+        $template_id = intval($_POST['template_id']);
+
+        global $wpdb;
+        $templates_table = $wpdb->prefix . 'neo_umfrage_templates';
+        $surveys_table = $wpdb->prefix . 'neo_umfrage_surveys';
+        $responses_table = $wpdb->prefix . 'neo_umfrage_survey_values';
+
+        // Получаем все анкеты этого шаблона
+        $surveys = $wpdb->get_results($wpdb->prepare(
+            "SELECT id FROM $surveys_table WHERE template_id = %d",
+            $template_id
+        ));
+
+        // Удаляем все ответы анкет
+        foreach ($surveys as $survey) {
+            $wpdb->delete($responses_table, ['survey_id' => $survey->id], ['%d']);
+        }
+
+        // Удаляем все анкеты
+        $wpdb->delete($surveys_table, ['template_id' => $template_id], ['%d']);
+
+        // Удаляем сам шаблон
         $result = $wpdb->delete($templates_table, ['id' => $template_id], ['%d']);
 
         if ($result) {
-            wp_send_json_success(['message' => 'Vorlage erfolgreich gelöscht']);
+            $surveys_count = count($surveys);
+            $message = "Vorlage und $surveys_count zugehörige Umfragen erfolgreich gelöscht";
+            wp_send_json_success(['message' => $message]);
         } else {
             wp_send_json_error(['message' => 'Fehler beim Löschen der Vorlage']);
         }
@@ -927,6 +994,7 @@ class NeoUmfrage
         $template_id = intval($_POST['template_id']);
         $name = sanitize_text_field($_POST['name']);
         $description = sanitize_textarea_field($_POST['description']);
+        $is_active = isset($_POST['is_active']) ? intval($_POST['is_active']) : 1;
 
         $fields = [];
 
@@ -961,10 +1029,11 @@ class NeoUmfrage
                 'name' => $name,
                 'description' => $description,
                 'fields' => json_encode($fields),
+                'is_active' => $is_active,
                 'updated_at' => current_time('mysql')
             ],
             ['id' => $template_id],
-            ['%s', '%s', '%s', '%s'],
+            ['%s', '%s', '%s', '%d', '%s'],
             ['%d']
         );
 
@@ -1021,6 +1090,44 @@ class NeoUmfrage
         });
 
         wp_send_json_success($users_with_names);
+    }
+
+    public function toggle_template_status()
+    {
+        // Проверяем nonce
+        if (!wp_verify_nonce($_POST['nonce'], 'neo_umfrage_nonce')) {
+            wp_send_json_error(['message' => 'Ошибка безопасности: неверный nonce']);
+            return;
+        }
+
+        $template_id = intval($_POST['template_id']);
+        $is_active = intval($_POST['is_active']);
+
+        if (!$template_id) {
+            wp_send_json_error(['message' => 'Неверный ID шаблона']);
+            return;
+        }
+
+        global $wpdb;
+        $templates_table = $wpdb->prefix . 'neo_umfrage_templates';
+
+        $result = $wpdb->update(
+            $templates_table,
+            [
+                'is_active' => $is_active,
+                'updated_at' => current_time('mysql')
+            ],
+            ['id' => $template_id],
+            ['%d', '%s'],
+            ['%d']
+        );
+
+        if ($result !== false) {
+            $status_text = $is_active ? 'активирован' : 'деактивирован';
+            wp_send_json_success(['message' => "Шаблон успешно $status_text"]);
+        } else {
+            wp_send_json_error(['message' => 'Ошибка обновления статуса шаблона']);
+        }
     }
 }
 

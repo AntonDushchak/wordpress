@@ -21,7 +21,7 @@
             }
         },
         
-        // Загрузка шаблонов
+        // Загрузка шаблонов для админки (все шаблоны)
         loadTemplates: function () {
             // Инициализируем модальные окна при первой загрузке
             this.init();
@@ -31,7 +31,8 @@
                 type: 'POST',
                 data: {
                     action: 'neo_umfrage_get_templates',
-                    nonce: neoUmfrageAjax.nonce
+                    nonce: neoUmfrageAjax.nonce,
+                    show_only_active: 0 // Показываем все шаблоны в админке
                 },
                 success: function (response) {
                     if (response.success) {
@@ -41,14 +42,15 @@
             });
         },
 
-        // Загрузка шаблонов для фильтра
+        // Загрузка шаблонов для фильтра (только активные)
         loadTemplatesForFilter: function () {
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
                 type: 'POST',
                 data: {
                     action: 'neo_umfrage_get_templates',
-                    nonce: neoUmfrageAjax.nonce
+                    nonce: neoUmfrageAjax.nonce,
+                    show_only_active: 1 // Показываем только активные шаблоны для фильтра
                 },
                 success: function (response) {
                     if (response.success) {
@@ -64,7 +66,7 @@
             });
         },
 
-        // Загрузка шаблонов для селекта
+        // Загрузка шаблонов для селекта (только активные)
         loadTemplatesForSelect: function (selector, callback) {
             console.log('loadTemplatesForSelect вызвана с селектором:', selector);
             $.ajax({
@@ -72,7 +74,8 @@
                 type: 'POST',
                 data: {
                     action: 'neo_umfrage_get_templates',
-                    nonce: neoUmfrageAjax.nonce
+                    nonce: neoUmfrageAjax.nonce,
+                    show_only_active: 1 // Показываем только активные шаблоны для селекта
                 },
                 success: function (response) {
                     console.log('AJAX ответ для шаблонов:', response);
@@ -158,18 +161,26 @@
             }
 
             let html = '<table class="neo-umfrage-table">';
-            html += '<thead><tr><th>Name</th><th>Beschreibung</th><th>Erstellungsdatum</th><th>Aktionen</th></tr></thead>';
+            html += '<thead><tr><th>Name</th><th>Beschreibung</th><th>Status</th><th>Erstellungsdatum</th><th>Aktionen</th></tr></thead>';
             html += '<tbody>';
 
             templates.forEach(template => {
+                const statusText = template.is_active == 1 ? 'Aktiv' : 'Inaktiv';
+                const statusClass = template.is_active == 1 ? 'status-active' : 'status-inactive';
+                
                 html += `
             <tr>
                 <td>${template.name}</td>
                 <td>${template.description || 'Keine Beschreibung'}</td>
+                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                 <td>${new Date(template.created_at).toLocaleDateString()}</td>
                 <td>
                     <button class="neo-umfrage-button neo-umfrage-button-secondary" onclick="editTemplate(${template.id}, ${template.user_id || 0})">Bearbeiten</button>
-                    <button class="neo-umfrage-button neo-umfrage-button-danger" onclick="deleteTemplate(${template.id}, ${template.user_id || 0})">Löschen</button>
+                    ${template.is_active == 1 ? 
+                        `<button class="neo-umfrage-button neo-umfrage-button-warning" onclick="deactivateTemplate(${template.id})">Deaktivieren</button>` : 
+                        `<button class="neo-umfrage-button neo-umfrage-button-success" onclick="activateTemplate(${template.id})">Aktivieren</button>`
+                    }
+                    <button class="neo-umfrage-button neo-umfrage-button-danger" onclick="deleteTemplateWithSurveys(${template.id})">Löschen</button>
                 </td>
             </tr>
         `;
@@ -179,14 +190,14 @@
             $container.html(html);
         },
 
-        // Удаление шаблона
-        deleteTemplate: function (templateId) {
-            if (confirm(neoUmfrageAjax.strings.confirm_delete)) {
+        // Деактивация шаблона
+        deactivateTemplate: function (templateId) {
+            if (confirm('Sind Sie sicher, dass Sie diese Vorlage deaktivieren möchten? Die Vorlage wird nicht in Listen angezeigt, aber bestehende Umfragen bleiben erhalten.')) {
                 $.ajax({
                     url: neoUmfrageAjax.ajaxurl,
                     type: 'POST',
                     data: {
-                        action: 'neo_umfrage_delete_template',
+                        action: 'neo_umfrage_deactivate_template',
                         nonce: neoUmfrageAjax.nonce,
                         template_id: templateId
                     },
@@ -199,6 +210,59 @@
                         }
                     }
                 });
+            }
+        },
+
+        // Активация шаблона
+        activateTemplate: function (templateId) {
+            $.ajax({
+                url: neoUmfrageAjax.ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'neo_umfrage_toggle_template_status',
+                    nonce: neoUmfrageAjax.nonce,
+                    template_id: templateId,
+                    is_active: 1
+                },
+                success: function (response) {
+                    if (response.success) {
+                        NeoUmfrage.showMessage('success', response.data.message);
+                        NeoUmfrageTemplates.loadTemplates();
+                    } else {
+                        NeoUmfrage.showMessage('error', response.data.message || neoUmfrageAjax.strings.error);
+                    }
+                }
+            });
+        },
+
+        // Полное удаление шаблона с анкетами
+        deleteTemplateWithSurveys: function (templateId) {
+            const confirmMessage = 'WARNUNG: Diese Aktion löscht die Vorlage und ALLE zugehörigen Umfragen unwiderruflich!\n\n' +
+                                 'Sind Sie absolut sicher, dass Sie fortfahren möchten?\n\n' +
+                                 'Geben Sie "LÖSCHEN" ein, um zu bestätigen:';
+            
+            const userInput = prompt(confirmMessage);
+            
+            if (userInput === 'LÖSCHEN') {
+                $.ajax({
+                    url: neoUmfrageAjax.ajaxurl,
+                    type: 'POST',
+                    data: {
+                        action: 'neo_umfrage_delete_template_with_surveys',
+                        nonce: neoUmfrageAjax.nonce,
+                        template_id: templateId
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            NeoUmfrage.showMessage('success', response.data.message);
+                            NeoUmfrageTemplates.loadTemplates();
+                        } else {
+                            NeoUmfrage.showMessage('error', response.data.message || neoUmfrageAjax.strings.error);
+                        }
+                    }
+                });
+            } else if (userInput !== null) {
+                NeoUmfrage.showMessage('error', 'Löschvorgang abgebrochen. Bitte geben Sie "LÖSCHEN" ein, um zu bestätigen.');
             }
         },
 
@@ -288,4 +352,22 @@
             $fieldsContainer.append(fieldHtml);
         }
     };
+
+    // Глобальные функции для вызова из HTML
+    window.deactivateTemplate = function(templateId) {
+        NeoUmfrageTemplates.deactivateTemplate(templateId);
+    };
+
+    window.activateTemplate = function(templateId) {
+        NeoUmfrageTemplates.activateTemplate(templateId);
+    };
+
+    window.deleteTemplateWithSurveys = function(templateId) {
+        NeoUmfrageTemplates.deleteTemplateWithSurveys(templateId);
+    };
+
+    window.editTemplate = function(templateId) {
+        NeoUmfrageTemplates.editTemplate(templateId);
+    };
+
 })(jQuery);

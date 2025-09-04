@@ -492,6 +492,11 @@
             }
             
             $('#add-survey-modal .neo-umfrage-modal-title').text('Umfrage hinzufügen');
+            
+            // Включаем селект шаблона при создании новой анкеты
+            $('#survey-template-select').prop('disabled', false);
+            $('#survey-template-select').removeClass('disabled');
+            
             $('#add-survey-modal').fadeIn(300);
             $('body').addClass('modal-open');
 
@@ -504,6 +509,11 @@
         // Открытие модального окна редактирования анкеты
         openEditSurveyModal: function () {
             $('#add-survey-modal .neo-umfrage-modal-title').text('Umfrage bearbeiten');
+            
+            // Отключаем селект шаблона при редактировании
+            $('#survey-template-select').prop('disabled', true);
+            $('#survey-template-select').addClass('disabled');
+            
             $('#add-survey-modal').fadeIn(300);
             $('body').addClass('modal-open');
         },
@@ -523,6 +533,11 @@
             $('.neo-umfrage-modal form').each(function() {
                 this.reset();
             });
+            
+            // Сбрасываем состояние селекта шаблона
+            $('#survey-template-select').prop('disabled', false);
+            $('#survey-template-select').removeClass('disabled');
+            $('#survey-template-select').html('<option value="">Vorlage auswählen</option>');
             
             // Очищаем контейнер с полями шаблона
             $('#template-fields-container').empty();
