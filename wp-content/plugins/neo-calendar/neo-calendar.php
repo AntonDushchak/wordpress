@@ -15,9 +15,6 @@ if (!defined('ABSPATH')) {
 }
 
 add_action('plugins_loaded', static function () {
-    // Setze Zeitzone für Deutschland
-    date_default_timezone_set('Europe/Berlin');
-
     if (!class_exists(\NeoDashboard\Core\Router::class)) {
         deactivate_plugins(plugin_basename(__FILE__));
         add_action('admin_notices', static function () {
@@ -31,7 +28,7 @@ add_action('plugins_loaded', static function () {
         return;
     }
 
-    add_action('neo_dashboard_enqueue_plugin_assets_css', function () {
+    add_action('neo_dashboard_enqueue_neo-calendar_assets_css', function () {
         wp_enqueue_style(
             'neo-calendar-css',
             plugin_dir_url(__FILE__) . 'assets/css/neo-calendar.css',
@@ -57,7 +54,7 @@ add_action('plugins_loaded', static function () {
     });
 
     // FullCalendar JS
-    add_action('neo_dashboard_enqueue_plugin_assets_js', function () {
+    add_action('neo_dashboard_enqueue_neo-calendar_assets_js', function () {
         wp_enqueue_script(
             'fullcalendar-js',
             plugin_dir_url(__FILE__) . 'assets/fullcalendar/dist/index.global.min.js',
