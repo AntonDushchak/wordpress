@@ -6,18 +6,18 @@
 (function ($) {
     'use strict';
 
-    // Основной объект плагина
+    // Hauptobjekt des Plugins
     window.NeoUmfrage = {
 
-        // Инициализация
+        // Initialisierung
         init: function () {
             this.bindEvents();
             this.loadInitialData();
         },
 
-        // Привязка событий
+        // Ereignisse binden
         bindEvents: function () {
-            // События для форм анкет
+            // Ereignisse für Umfrage-Formulare
             $(document).on('submit', '.neo-umfrage-form', function(e) {
                 e.preventDefault();
                 if (window.NeoUmfrageModals && NeoUmfrageModals.handleFormSubmit) {
@@ -27,17 +27,15 @@
 
 
 
-            // События для кнопок добавления шаблонов
+            // Ereignisse für Template-Hinzufügen-Buttons
             $(document).on('click', 'button[onclick*="openAddTemplateModal"]', function (e) {
                 e.preventDefault();
                 if (window.NeoUmfrageModals && NeoUmfrageModals.openAddTemplateModal) {
                     NeoUmfrageModals.openAddTemplateModal();
-                } else {
-                    console.error('NeoUmfrageModals.openAddTemplateModal is not found');
                 }
             });
 
-            // События для модальных окон
+            // Ereignisse für modale Fenster
             $(document).on('click', '.neo-umfrage-modal-close', this.closeModal);
             $(document).on('click', '.neo-umfrage-modal', function (e) {
                 if (e.target === this) {
@@ -45,7 +43,7 @@
                 }
             });
 
-            // События для кнопок управления полями в шаблонах
+            // Ereignisse für Feldverwaltung in Vorlagen
             $(document).on('click', '.add-field-btn', function (e) {
                 e.preventDefault();
                 if (window.NeoUmfrageModals && NeoUmfrageModals.addField) {
@@ -75,32 +73,28 @@
             });
         },
 
-        // Загрузка начальных данных
+        // Initialdaten laden
         loadInitialData: function () {
-            // Загружаем статистику для главной страницы
             if ($('#main-stats').length) {
                 this.loadStatistics();
             }
 
-            // Загружаем анкеты для страницы анкет
             if ($('#surveys-list').length) {
                 this.loadSurveys();
                 this.loadTemplatesForFilter();
             }
 
-            // Загружаем шаблоны для страницы шаблонов
             if ($('#templates-list').length) {
                 this.loadTemplates();
             }
 
-            // Загружаем статистику для страницы статистики
             if ($('#statistics-stats').length) {
                 this.loadStatistics();
                 this.loadRecentSurveys();
             }
         },
 
-        // Проверка прав доступа
+        // Berechtigungen prüfen
         canEdit: function (objectUserId) {
             const rolesRaw = neoUmfrageAjax.userRoles;
             const roles = Array.isArray(rolesRaw)
@@ -148,16 +142,15 @@
             return false;
         },
         
-        // Закрытие модального окна
+        // Modales Fenster schließen
         closeModal: function () {
             if (window.NeoUmfrageModals && NeoUmfrageModals.closeModal) {
                 NeoUmfrageModals.closeModal();
             }
         },
 
-        // Показ сообщения
+        // Nachricht anzeigen
         showMessage: function (type, message) {
-            // Определяем стили в зависимости от типа
             let inlineStyles = '';
             switch(type) {
                 case 'success':

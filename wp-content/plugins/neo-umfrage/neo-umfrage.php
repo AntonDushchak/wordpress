@@ -34,6 +34,66 @@ add_action('plugins_loaded', static function () {
         return;
     }
 
+    // Добавляем хук для подключения CSS в виджете
+    add_action('neo_dashboard_enqueue_widget_assets_css', function () {
+            // Подключаем CSS
+            wp_enqueue_style(
+                'neo-umfrage-widget-css',
+                NEO_UMFRAGE_PLUGIN_URL . 'assets/css/neo-umfrage.css',
+                [],
+                NEO_UMFRAGE_VERSION
+            );
+    });
+
+    // Добавляем хук для подключения JS в виджете
+    add_action('neo_dashboard_enqueue_widget_assets_js', function () {
+            // Подключаем JS
+            wp_enqueue_script(
+                'neo-umfrage-widget-js',
+                NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage.js',
+                ['jquery'],
+                NEO_UMFRAGE_VERSION,
+                true
+            );
+
+            wp_enqueue_script(
+                'neo-umfrage-widget-modals-js',
+                NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage-modals.js',
+                ['jquery', 'neo-umfrage-widget-js'],
+                NEO_UMFRAGE_VERSION,
+                true
+            );
+
+            wp_enqueue_script(
+                'neo-umfrage-widget-templates-js',
+                NEO_UMFRAGE_PLUGIN_URL . 'assets/js/neo-umfrage-templates.js',
+                ['jquery', 'neo-umfrage-widget-js'],
+                NEO_UMFRAGE_VERSION,
+                true
+            );
+
+            // Локализация для виджета
+            $current_user = wp_get_current_user();
+            $user_roles = $current_user->roles;
+
+            $ajax_data = [
+                'ajaxurl' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('neo_umfrage_nonce'),
+                'userRoles' => $user_roles,
+                'currentUserId' => $current_user->ID,
+                'strings' => [
+                    'error' => 'Ein Fehler ist aufgetreten',
+                    'success' => 'Operation erfolgreich ausgeführt',
+                    'confirm_delete' => 'Sind Sie sicher, dass Sie dieses Element löschen möchten?',
+                    'loading' => 'Laden...',
+                    'no_data' => 'Keine Daten gefunden'
+                ]
+            ];
+
+            wp_localize_script('neo-umfrage-widget-js', 'neoUmfrageAjax', $ajax_data);
+            wp_localize_script('neo-umfrage-widget-modals-js', 'neoUmfrageAjax', $ajax_data);
+    });
+
     // Подключаем CSS для плагина
     add_action('neo_dashboard_enqueue_neo-umfrage_assets_css', function () {
         // CSS DataTables
@@ -172,7 +232,7 @@ add_action('plugins_loaded', static function () {
         // Локализуем для основных JS файлов
         wp_localize_script('neo-umfrage-js', 'neoUmfrageAjax', $ajax_data);
         wp_localize_script('neo-umfrage-modals-js', 'neoUmfrageAjax', $ajax_data);
-        
+
         // Локализуем для специфичных скриптов, если они загружены
         if (wp_script_is('neo-umfrage-surveys-js', 'enqueued')) {
             wp_localize_script('neo-umfrage-surveys-js', 'neoUmfrageAjax', $ajax_data);
@@ -275,7 +335,7 @@ add_action('plugins_loaded', static function () {
 });
 
 /**
- * Основной класс плагина
+ * Основной класс плагина   
  */
 class NeoUmfrage
 {
@@ -300,9 +360,6 @@ class NeoUmfrage
         add_action('wp_ajax_neo_umfrage_restore_template', [$this, 'restore_template']);
         add_action('wp_ajax_neo_umfrage_deactivate_template', [$this, 'deactivate_template']);
         add_action('wp_ajax_neo_umfrage_delete_template_with_surveys', [$this, 'delete_template_with_surveys']);
-
-        // Устанавливаем часовой пояс Германии
-        date_default_timezone_set('Europe/Berlin');
     }
 
     public function init()
@@ -588,11 +645,11 @@ class NeoUmfrage
             // Получаем информацию о пользователе с именем и фамилией
             $user = get_user_by('id', $survey_data->user_id);
             $wp_user_name = 'Unbekannter Benutzer';
-            
+
             if ($user) {
                 $first_name = get_user_meta($user->ID, 'first_name', true);
                 $last_name = get_user_meta($user->ID, 'last_name', true);
-                
+
                 if (!empty($first_name) && !empty($last_name)) {
                     $wp_user_name = $first_name . ' ' . $last_name;
                 } elseif (!empty($first_name)) {
@@ -631,7 +688,7 @@ class NeoUmfrage
 
         // Проверяем, нужно ли фильтровать только активные шаблоны
         $show_only_active = isset($_POST['show_only_active']) ? intval($_POST['show_only_active']) : 1; // По умолчанию показываем только активные
-        
+
         $where_clause = '';
         if ($show_only_active) {
             $where_clause = ' WHERE is_active = 1';
@@ -726,11 +783,11 @@ class NeoUmfrage
             'first_name' => '',
             'last_name' => ''
         ];
-        
+
         if ($user) {
             $first_name = get_user_meta($user->ID, 'first_name', true);
             $last_name = get_user_meta($user->ID, 'last_name', true);
-            
+
             if (!empty($first_name)) {
                 $user_info['first_name'] = $first_name;
             }
@@ -1065,7 +1122,7 @@ class NeoUmfrage
             // Получаем имя и фамилию из мета-полей
             $first_name = get_user_meta($user->ID, 'first_name', true);
             $last_name = get_user_meta($user->ID, 'last_name', true);
-            
+
             $full_name = '';
             if (!empty($first_name) && !empty($last_name)) {
                 $full_name = $first_name . ' ' . $last_name;
@@ -1076,8 +1133,8 @@ class NeoUmfrage
             } else {
                 $full_name = $user->display_name;
             }
-            
-            
+
+
             $users_with_names[] = [
                 'ID' => $user->ID,
                 'display_name' => $full_name
@@ -1085,7 +1142,7 @@ class NeoUmfrage
         }
 
         // Сортируем по полному имени
-        usort($users_with_names, function($a, $b) {
+        usort($users_with_names, function ($a, $b) {
             return strcmp($a['display_name'], $b['display_name']);
         });
 
@@ -1238,11 +1295,36 @@ function neo_umfrage_widget_callback()
 {
 ?>
     <div class="neo-umfrage-widget">
-        <h3>Neo Umfrage</h3>
-        <div style="text-align: center;">
-            <button class="neo-umfrage-button" onclick="openAddSurveyModal()">Umfrage hinzufügen</button>
+        <div class="neo-umfrage-widget-body">
+            <div class="neo-umfrage-widget-actions">
+                <button class="neo-umfrage-button neo-umfrage-button-primary" id="widget-add-survey-btn">
+                    <i class="bi bi-plus-circle"></i>
+                    Umfrage hinzufügen
+                </button>
+            </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Modale Fenster beim Laden des Widgets initialisieren
+            if (window.NeoUmfrageModals) {
+                NeoUmfrageModals.createModals();
+            }
+
+            // Button-Klick-Handler
+            const button = document.getElementById('widget-add-survey-btn');
+            if (button) {
+                button.addEventListener('click', function() {
+                    if (window.NeoUmfrageModals && NeoUmfrageModals.openAddSurveyModal) {
+                        NeoUmfrageModals.openAddSurveyModal();
+                    } else {
+                        window.location.href = '/neo-dashboard/neo-umfrage/surveys';
+                    }
+                });
+            }
+        });
+    </script>
 <?php
 }
 

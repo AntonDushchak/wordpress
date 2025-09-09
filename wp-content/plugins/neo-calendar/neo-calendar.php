@@ -15,9 +15,6 @@ if (!defined('ABSPATH')) {
 }
 
 add_action('plugins_loaded', static function () {
-    // Setze Zeitzone für Deutschland
-    date_default_timezone_set('Europe/Berlin');
-
     if (!class_exists(\NeoDashboard\Core\Router::class)) {
         deactivate_plugins(plugin_basename(__FILE__));
         add_action('admin_notices', static function () {

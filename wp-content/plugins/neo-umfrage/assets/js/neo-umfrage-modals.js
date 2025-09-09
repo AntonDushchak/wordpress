@@ -369,7 +369,7 @@
 
         // Загрузка полей шаблона
         loadTemplateFields: function (templateId, $container) {
-            $container.html('<div class="neo-umfrage-loading">Felder werden geladen...</div>');
+            $container.html('<div class="neo-umfrage-loading"></div>');
 
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,

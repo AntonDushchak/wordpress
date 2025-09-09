@@ -382,7 +382,7 @@
                 minute: '2-digit',
                 second: '2-digit'
             }) + '</p>';
-            html += '<p><strong>WordPress-Benutzer:</strong> ' + wpUserName + '</p>';
+            html += '<p><strong>Benutzer:</strong> ' + wpUserName + '</p>';
 
             // Фильтруем только заполненные поля (исключаем пустые значения)
             const filledFields = fields ? fields.filter(function (field) {

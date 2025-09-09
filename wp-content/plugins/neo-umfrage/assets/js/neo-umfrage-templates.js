@@ -66,44 +66,33 @@
             });
         },
 
-        // Загрузка шаблонов для селекта (только активные)
+        // Vorlagen für Select laden (nur aktive)
         loadTemplatesForSelect: function (selector, callback) {
-            console.log('loadTemplatesForSelect вызвана с селектором:', selector);
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
                 type: 'POST',
                 data: {
                     action: 'neo_umfrage_get_templates',
                     nonce: neoUmfrageAjax.nonce,
-                    show_only_active: 1 // Показываем только активные шаблоны для селекта
+                    show_only_active: 1
                 },
                 success: function (response) {
-                    console.log('AJAX ответ для шаблонов:', response);
                     if (response.success) {
                         const $select = $(selector);
-                        console.log('Найденный селект:', $select.length, 'элементов');
-                        
-                        // Очищаем все опции
                         $select.empty();
                         
                         if (response.data && response.data.length > 0) {
-                            console.log('Загружаем', response.data.length, 'шаблонов');
-                            // Добавляем первую опцию для выбора
                             $select.append('<option value="">Vorlage auswählen</option>');
                             response.data.forEach(template => {
                                 $select.append(`<option value="${template.id}">${template.name}</option>`);
                             });
                         } else {
-                            console.log('Нет доступных шаблонов');
                             $select.append('<option value="" disabled>Keine Vorlagen verfügbar</option>');
                         }
 
-                        // Вызываем callback если он передан
                         if (typeof callback === 'function') {
                             callback();
                         }
-                    } else {
-                        console.error('Fehler beim Laden der Vorlagen:', response);
                     }
                 },
                 error: function (xhr, status, error) {
@@ -112,7 +101,7 @@
             });
         },
 
-        // Загрузка полей шаблона для редактирования
+        // Vorlagenfelder für Bearbeitung laden
         loadTemplateFieldsForEdit: function (templateId, existingFields) {
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
