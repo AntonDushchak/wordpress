@@ -1,6 +1,6 @@
 <?php
 /**
- * Template Name: Dashboard (Standalone)
+ * Template Name: Dashboard (Standalone) v1
  * Description: Vollständig eigenständige Dashboard‑Ansicht ohne Theme‑Header/Footer.
  */
 if ( ! defined( 'ABSPATH' ) ) {
