@@ -1,0 +1,625 @@
+/**
+ * Neo Dashboard - Адаптивные стили
+ * Поддержка: Компьютеры, планшеты, телефоны
+ * Версия: 1.0.0
+ */
+
+/* ===========================
+   БАЗОВЫЕ СТИЛИ
+   =========================== */
+
+.neo-dashboard {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.5;
+}
+
+/* Контейнеры и сетки */
+.container-fluid {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* ===========================
+   NAVBAR (Навигационная панель)
+   =========================== */
+
+.navbar {
+    padding: 0.75rem 1rem;
+    background-color: #fff !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.navbar-toggler {
+    border: none;
+    padding: 0.25rem 0.5rem;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
+}
+
+/* ===========================
+   САЙДБАР
+   =========================== */
+
+/* Десктоп сайдбар */
+.desktop-sidebar {
+    background-color: #f8f9fa;
+    min-height: calc(100vh - 76px);
+    border-right: 1px solid #dee2e6;
+    padding: 1rem;
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-nav-item {
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-nav-link {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: #495057;
+    text-decoration: none;
+    border-radius: 0.375rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.sidebar-nav-link:hover,
+.sidebar-nav-link.active {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+/* Offcanvas сайдбар */
+.offcanvas {
+    --bs-offcanvas-width: 280px;
+}
+
+.offcanvas-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.offcanvas-body {
+    padding: 1rem 1.5rem;
+}
+
+/* ===========================
+   ОСНОВНОЙ КОНТЕНТ
+   =========================== */
+
+main {
+    min-height: calc(100vh - 76px);
+}
+
+/* Уведомления */
+.notification {
+    margin-bottom: 1rem;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    border-left: 4px solid;
+}
+
+.notification.success {
+    background-color: #d1f2eb;
+    border-left-color: #198754;
+    color: #0f5132;
+}
+
+.notification.error {
+    background-color: #f8d7da;
+    border-left-color: #dc3545;
+    color: #721c24;
+}
+
+.notification.warning {
+    background-color: #fff3cd;
+    border-left-color: #ffc107;
+    color: #664d03;
+}
+
+.notification.info {
+    background-color: #cff4fc;
+    border-left-color: #0dcaf0;
+    color: #055160;
+}
+
+/* ===========================
+   ВИДЖЕТЫ И КАРТОЧКИ
+   =========================== */
+
+.widget-card {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 1.5rem;
+}
+
+.widget-card-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+    border-radius: 0.375rem 0.375rem 0 0;
+}
+
+.widget-card-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0;
+    color: #495057;
+}
+
+.widget-card-body {
+    padding: 1.25rem;
+}
+
+/* ===========================
+   ФОРМЫ И ЭЛЕМЕНТЫ УПРАВЛЕНИЯ
+   =========================== */
+
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.form-label {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.btn {
+    display: inline-block;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: center;
+    text-decoration: none;
+    vertical-align: middle;
+    cursor: pointer;
+    border: 1px solid transparent;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    border-radius: 0.375rem;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+    color: #fff;
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+/* ===========================
+   ТАБЛИЦЫ
+   =========================== */
+
+.table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #495057;
+}
+
+.table th,
+.table td {
+    padding: 0.75rem;
+    vertical-align: top;
+    border-top: 1px solid #dee2e6;
+}
+
+.table thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+}
+
+.table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* ===========================
+   АДАПТИВНЫЕ МЕДИА-ЗАПРОСЫ
+   =========================== */
+
+/* Большие экраны (Десктопы 1200px и выше) */
+@media (min-width: 1200px) {
+    .container-fluid {
+        max-width: 1140px;
+        margin: 0 auto;
+    }
+    
+    .widget-card-body {
+        padding: 1.5rem;
+    }
+    
+    .sidebar-nav-link {
+        font-size: 1rem;
+    }
+}
+
+/* Средние экраны (Планшеты 768px - 1199px) */
+@media (min-width: 768px) and (max-width: 1199px) {
+    .desktop-sidebar {
+        padding: 0.75rem;
+    }
+    
+    .sidebar-nav-link {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .widget-card-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .widget-card-body {
+        padding: 1rem;
+    }
+    
+    .widget-card-title {
+        font-size: 1rem;
+    }
+    
+    main {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+}
+
+/* Маленькие экраны (Мобильные устройства до 767px) */
+@media (max-width: 767px) {
+    /* Скрываем десктоп сайдбар */
+    .desktop-sidebar {
+        display: none !important;
+    }
+    
+    /* Главный контент занимает всю ширину */
+    main {
+        flex: 0 0 100%;
+        max-width: 100%;
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+        padding-top: 1rem !important;
+    }
+    
+    /* Navbar */
+    .navbar {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .navbar-brand {
+        font-size: 1.125rem;
+    }
+    
+    /* Карточки виджетов */
+    .widget-card {
+        margin-bottom: 1rem;
+        border-radius: 0.25rem;
+    }
+    
+    .widget-card-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .widget-card-title {
+        font-size: 1rem;
+    }
+    
+    .widget-card-body {
+        padding: 0.75rem 1rem;
+    }
+    
+    /* Формы */
+    .form-control {
+        font-size: 16px; /* Предотвращает зум на iOS */
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn + .btn {
+        margin-left: 0;
+    }
+    
+    /* Таблицы - горизонтальная прокрутка */
+    .table-responsive {
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+    }
+    
+    .table {
+        margin-bottom: 0;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+        white-space: nowrap;
+    }
+    
+    /* Уведомления */
+    .notification {
+        padding: 0.75rem;
+        font-size: 0.875rem;
+    }
+    
+    /* Отступы контейнера */
+    .container-fluid {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    /* Offcanvas для мобильных */
+    .offcanvas {
+        --bs-offcanvas-width: 280px;
+    }
+}
+
+/* Очень маленькие экраны (до 480px) */
+@media (max-width: 480px) {
+    .navbar-brand {
+        font-size: 1rem;
+    }
+    
+    .widget-card-header {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .widget-card-title {
+        font-size: 0.9rem;
+    }
+    
+    .widget-card-body {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .btn {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .form-control {
+        padding: 0.5rem;
+    }
+    
+    .container-fluid {
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+    }
+    
+    main {
+        padding-left: 0.25rem !important;
+        padding-right: 0.25rem !important;
+    }
+}
+
+/* ===========================
+   ЛАНДШАФТНАЯ ОРИЕНТАЦИЯ
+   =========================== */
+
+/* Планшеты в ландшафтной ориентации */
+@media (max-width: 1024px) and (orientation: landscape) {
+    .desktop-sidebar {
+        width: 200px;
+        min-width: 200px;
+    }
+    
+    .sidebar-nav-link {
+        padding: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    main {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+}
+
+/* Мобильные устройства в ландшафтной ориентации */
+@media (max-height: 500px) and (orientation: landscape) {
+    .navbar {
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .widget-card {
+        margin-bottom: 0.75rem;
+    }
+    
+    .widget-card-header {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .widget-card-body {
+        padding: 0.5rem 0.75rem;
+    }
+}
+
+/* ===========================
+   УТИЛИТЫ ДЛЯ АДАПТИВНОСТИ
+   =========================== */
+
+/* Скрытие элементов на разных экранах */
+.d-mobile-none {
+    display: block;
+}
+
+@media (max-width: 767px) {
+    .d-mobile-none {
+        display: none !important;
+    }
+}
+
+.d-desktop-none {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .d-desktop-none {
+        display: block !important;
+    }
+}
+
+/* Размеры текста для разных экранов */
+.text-mobile-sm {
+    font-size: 1rem;
+}
+
+@media (max-width: 767px) {
+    .text-mobile-sm {
+        font-size: 0.875rem;
+    }
+}
+
+/* ===========================
+   ПЕЧАТЬ
+   =========================== */
+
+@media print {
+    .navbar,
+    .desktop-sidebar,
+    .offcanvas,
+    .btn {
+        display: none !important;
+    }
+    
+    main {
+        flex: 1 !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+    }
+    
+    .widget-card {
+        border: 1px solid #000;
+        page-break-inside: avoid;
+    }
+    
+    .notification {
+        border: 1px solid #000;
+    }
+}
+
+/* ===========================
+   ТЕМНАЯ ТЕМА (опционально)
+   =========================== */
+
+@media (prefers-color-scheme: dark) {
+    .neo-dashboard {
+        color: #e9ecef;
+    }
+    
+    .widget-card {
+        background: #343a40;
+        border-color: #495057;
+        color: #e9ecef;
+    }
+    
+    .widget-card-header {
+        background-color: #495057;
+        border-color: #6c757d;
+    }
+    
+    .form-control {
+        background-color: #495057;
+        border-color: #6c757d;
+        color: #e9ecef;
+    }
+    
+    .form-control:focus {
+        background-color: #495057;
+        border-color: #86b7fe;
+    }
+    
+    .desktop-sidebar {
+        background-color: #343a40;
+        border-color: #495057;
+    }
+    
+    .sidebar-nav-link {
+        color: #e9ecef;
+    }
+    
+    .table {
+        color: #e9ecef;
+    }
+    
+    .table th,
+    .table td {
+        border-color: #495057;
+    }
+}
+
+/* ===========================
+   ВЫСОКАЯ КОНТРАСТНОСТЬ
+   =========================== */
+
+@media (prefers-contrast: high) {
+    .widget-card {
+        border-width: 2px;
+    }
+    
+    .btn {
+        border-width: 2px;
+    }
+    
+    .form-control {
+        border-width: 2px;
+    }
+    
+    .form-control:focus {
+        border-width: 3px;
+    }
+}
+
+/* ===========================
+   УМЕНЬШЕННАЯ АНИМАЦИЯ
+   =========================== */
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

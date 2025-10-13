@@ -1,0 +1,936 @@
+/**
+ * WordPress - Глобальные адаптивные стили
+ * Универсальные стили для всех страниц сайта
+ * Поддержка: Компьютеры, планшеты, телефоны
+ * Версия: 1.0.0
+ */
+
+/* ===========================
+   БАЗОВЫЕ СТИЛИ
+   =========================== */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #fff;
+}
+
+/* ===========================
+   КОНТЕЙНЕРЫ И СЕТКА
+   =========================== */
+
+.container,
+.container-fluid {
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+.container {
+    max-width: 1140px;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+}
+
+.col,
+.col-12,
+.col-md-6,
+.col-lg-4,
+.col-lg-8,
+.col-xl-3 {
+    position: relative;
+    width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+
+.col-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+}
+
+/* ===========================
+   ТИПОГРАФИКА
+   =========================== */
+
+h1, h2, h3, h4, h5, h6 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+h1 {
+    font-size: 2.5rem;
+}
+
+h2 {
+    font-size: 2rem;
+}
+
+h3 {
+    font-size: 1.75rem;
+}
+
+h4 {
+    font-size: 1.5rem;
+}
+
+h5 {
+    font-size: 1.25rem;
+}
+
+h6 {
+    font-size: 1rem;
+}
+
+p {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+/* ===========================
+   ИЗОБРАЖЕНИЯ И МЕДИА
+   =========================== */
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+.img-responsive {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Встраиваемые медиа */
+.embed-responsive {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    overflow: hidden;
+}
+
+.embed-responsive::before {
+    display: block;
+    content: "";
+}
+
+.embed-responsive .embed-responsive-item,
+.embed-responsive iframe,
+.embed-responsive embed,
+.embed-responsive object,
+.embed-responsive video {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.embed-responsive-16by9::before {
+    padding-top: 56.25%;
+}
+
+.embed-responsive-4by3::before {
+    padding-top: 75%;
+}
+
+/* ===========================
+   WORDPRESS СПЕЦИФИЧНЫЕ СТИЛИ
+   =========================== */
+
+/* Админ-бар */
+#wpadminbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 99999;
+}
+
+body.admin-bar {
+    margin-top: 32px;
+}
+
+/* Основной контент */
+#main,
+#content {
+    min-height: calc(100vh - 200px);
+}
+
+/* Сайдбары */
+.sidebar {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.375rem;
+}
+
+.widget {
+    margin-bottom: 1.5rem;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+}
+
+.widget-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: #495057;
+}
+
+/* Навигация */
+.nav-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.nav-menu li {
+    position: relative;
+}
+
+.nav-menu a {
+    display: block;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    color: #495057;
+    transition: all 0.2s ease-in-out;
+}
+
+.nav-menu a:hover,
+.nav-menu a:focus {
+    background-color: #f8f9fa;
+    color: #007cba;
+}
+
+/* Подменю */
+.nav-menu .sub-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    z-index: 1000;
+    min-width: 200px;
+}
+
+.nav-menu li:hover .sub-menu {
+    display: block;
+}
+
+/* ===========================
+   АДАПТИВНЫЕ МЕДИА-ЗАПРОСЫ
+   =========================== */
+
+/* Большие экраны (Десктопы 1200px и выше) */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1140px;
+    }
+    
+    .col-xl-3 {
+        flex: 0 0 25%;
+        max-width: 25%;
+    }
+    
+    h1 {
+        font-size: 2.5rem;
+    }
+    
+    h2 {
+        font-size: 2rem;
+    }
+    
+    h3 {
+        font-size: 1.75rem;
+    }
+}
+
+/* Средние экраны (Планшеты 992px - 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+    .container {
+        max-width: 960px;
+    }
+    
+    .col-lg-4 {
+        flex: 0 0 33.333333%;
+        max-width: 33.333333%;
+    }
+    
+    .col-lg-8 {
+        flex: 0 0 66.666667%;
+        max-width: 66.666667%;
+    }
+    
+    h1 {
+        font-size: 2.25rem;
+    }
+    
+    h2 {
+        font-size: 1.875rem;
+    }
+    
+    h3 {
+        font-size: 1.625rem;
+    }
+    
+    .nav-menu {
+        justify-content: space-between;
+    }
+}
+
+/* Планшеты (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+    .container {
+        max-width: 720px;
+    }
+    
+    .col-md-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+    
+    h1 {
+        font-size: 2rem;
+    }
+    
+    h2 {
+        font-size: 1.75rem;
+    }
+    
+    h3 {
+        font-size: 1.5rem;
+    }
+    
+    .nav-menu {
+        flex-direction: column;
+    }
+    
+    .nav-menu .sub-menu {
+        position: static;
+        display: none;
+        border: none;
+        box-shadow: none;
+        padding-left: 1rem;
+        background: transparent;
+    }
+    
+    .nav-menu li.menu-item-has-children > a::after {
+        content: " ▼";
+        font-size: 0.75em;
+    }
+    
+    .widget {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+    }
+    
+    .sidebar {
+        margin-top: 2rem;
+    }
+}
+
+/* Мобильные устройства (до 767px) */
+@media (max-width: 767px) {
+    html {
+        font-size: 14px;
+    }
+    
+    body {
+        font-size: 0.875rem;
+    }
+    
+    .container,
+    .container-fluid {
+        padding-right: 10px;
+        padding-left: 10px;
+    }
+    
+    .row {
+        margin-right: -10px;
+        margin-left: -10px;
+    }
+    
+    .col,
+    .col-12,
+    .col-md-6,
+    .col-lg-4,
+    .col-lg-8,
+    .col-xl-3 {
+        padding-right: 10px;
+        padding-left: 10px;
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    
+    /* Типографика для мобильных */
+    h1 {
+        font-size: 1.75rem;
+        line-height: 1.3;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+        line-height: 1.3;
+    }
+    
+    h3 {
+        font-size: 1.25rem;
+        line-height: 1.3;
+    }
+    
+    h4 {
+        font-size: 1.125rem;
+        line-height: 1.3;
+    }
+    
+    h5, h6 {
+        font-size: 1rem;
+        line-height: 1.3;
+    }
+    
+    p {
+        margin-bottom: 0.75rem;
+        line-height: 1.6;
+    }
+    
+    /* WordPress специфичные стили для мобильных */
+    body.admin-bar {
+        margin-top: 46px;
+    }
+    
+    #wpadminbar {
+        position: fixed;
+    }
+    
+    /* Навигация для мобильных */
+    .nav-menu {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .nav-menu li {
+        width: 100%;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .nav-menu a {
+        padding: 1rem;
+        font-size: 1rem;
+        border-bottom: none;
+    }
+    
+    .nav-menu .sub-menu {
+        position: static;
+        display: none;
+        border: none;
+        box-shadow: none;
+        background: #f8f9fa;
+        width: 100%;
+    }
+    
+    .nav-menu .sub-menu a {
+        padding-left: 2rem;
+        font-size: 0.9rem;
+    }
+    
+    .nav-menu li.menu-item-has-children > a {
+        position: relative;
+    }
+    
+    .nav-menu li.menu-item-has-children > a::after {
+        content: "▼";
+        position: absolute;
+        right: 1rem;
+        font-size: 0.75em;
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .nav-menu li.menu-item-has-children.open > a::after {
+        transform: rotate(180deg);
+    }
+    
+    .nav-menu li.menu-item-has-children.open .sub-menu {
+        display: block;
+    }
+    
+    /* Сайдбар для мобильных */
+    .sidebar {
+        margin-top: 2rem;
+        padding: 0.75rem;
+    }
+    
+    .widget {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+    }
+    
+    .widget-title {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Формы для мобильных */
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="search"],
+    textarea,
+    select {
+        font-size: 16px; /* Предотвращает зум на iOS */
+        padding: 0.75rem;
+        width: 100%;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        margin-bottom: 1rem;
+    }
+    
+    button,
+    input[type="submit"],
+    .btn {
+        font-size: 16px;
+        padding: 0.75rem 1.5rem;
+        width: 100%;
+        margin-bottom: 0.5rem;
+        border: none;
+        border-radius: 0.375rem;
+        background-color: #007cba;
+        color: #fff;
+        cursor: pointer;
+        transition: background-color 0.2s ease-in-out;
+    }
+    
+    button:hover,
+    input[type="submit"]:hover,
+    .btn:hover {
+        background-color: #005a87;
+    }
+    
+    /* Таблицы для мобильных */
+    .table-responsive {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+    }
+    
+    table {
+        width: 100%;
+        margin-bottom: 0;
+        font-size: 0.875rem;
+    }
+    
+    table th,
+    table td {
+        padding: 0.5rem;
+        white-space: nowrap;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    table th {
+        font-weight: 600;
+        background-color: #f8f9fa;
+    }
+}
+
+/* Очень маленькие мобильные устройства (до 480px) */
+@media (max-width: 480px) {
+    html {
+        font-size: 14px;
+    }
+    
+    .container,
+    .container-fluid {
+        padding-right: 8px;
+        padding-left: 8px;
+    }
+    
+    .row {
+        margin-right: -8px;
+        margin-left: -8px;
+    }
+    
+    .col,
+    .col-12,
+    .col-md-6,
+    .col-lg-4,
+    .col-lg-8,
+    .col-xl-3 {
+        padding-right: 8px;
+        padding-left: 8px;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    h2 {
+        font-size: 1.375rem;
+    }
+    
+    h3 {
+        font-size: 1.125rem;
+    }
+    
+    .nav-menu a {
+        padding: 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .nav-menu .sub-menu a {
+        padding-left: 1.5rem;
+        font-size: 0.85rem;
+    }
+    
+    .widget {
+        padding: 0.5rem;
+    }
+    
+    .widget-title {
+        font-size: 0.9rem;
+    }
+    
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="search"],
+    textarea,
+    select {
+        padding: 0.5rem;
+        font-size: 16px;
+    }
+    
+    button,
+    input[type="submit"],
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 14px;
+    }
+    
+    table th,
+    table td {
+        padding: 0.375rem 0.5rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* ===========================
+   ЛАНДШАФТНАЯ ОРИЕНТАЦИЯ
+   =========================== */
+
+/* Планшеты в ландшафтной ориентации */
+@media (max-width: 1024px) and (orientation: landscape) {
+    .nav-menu {
+        flex-direction: row;
+        justify-content: space-around;
+    }
+    
+    .nav-menu .sub-menu {
+        position: absolute;
+        display: none;
+        top: 100%;
+        left: 0;
+        background: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .nav-menu li:hover .sub-menu {
+        display: block;
+    }
+    
+    .sidebar {
+        margin-top: 1rem;
+    }
+}
+
+/* Мобильные устройства в ландшафтной ориентации */
+@media (max-height: 500px) and (orientation: landscape) {
+    body.admin-bar {
+        margin-top: 0;
+    }
+    
+    #wpadminbar {
+        display: none;
+    }
+    
+    .widget {
+        margin-bottom: 0.75rem;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        margin-bottom: 0.375rem;
+    }
+    
+    p {
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* ===========================
+   УТИЛИТЫ ДЛЯ АДАПТИВНОСТИ
+   =========================== */
+
+/* Скрытие элементов */
+.d-none {
+    display: none !important;
+}
+
+.d-block {
+    display: block !important;
+}
+
+.d-inline {
+    display: inline !important;
+}
+
+.d-inline-block {
+    display: inline-block !important;
+}
+
+/* Скрытие на мобильных */
+@media (max-width: 767px) {
+    .d-md-none {
+        display: none !important;
+    }
+}
+
+/* Показ только на мобильных */
+.d-mobile-block {
+    display: none !important;
+}
+
+@media (max-width: 767px) {
+    .d-mobile-block {
+        display: block !important;
+    }
+}
+
+/* Текстовые утилиты */
+.text-left {
+    text-align: left !important;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+.text-right {
+    text-align: right !important;
+}
+
+@media (max-width: 767px) {
+    .text-mobile-center {
+        text-align: center !important;
+    }
+}
+
+/* Отступы */
+.mb-0 {
+    margin-bottom: 0 !important;
+}
+
+.mb-1 {
+    margin-bottom: 0.25rem !important;
+}
+
+.mb-2 {
+    margin-bottom: 0.5rem !important;
+}
+
+.mb-3 {
+    margin-bottom: 1rem !important;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem !important;
+}
+
+.mb-5 {
+    margin-bottom: 3rem !important;
+}
+
+/* ===========================
+   ДОСТУПНОСТЬ
+   =========================== */
+
+/* Высокая контрастность */
+@media (prefers-contrast: high) {
+    .nav-menu a {
+        border: 2px solid transparent;
+    }
+    
+    .nav-menu a:hover,
+    .nav-menu a:focus {
+        border-color: #000;
+        background-color: #fff;
+        color: #000;
+    }
+    
+    .widget {
+        border-width: 2px;
+    }
+    
+    button,
+    input[type="submit"],
+    .btn {
+        border: 2px solid #000;
+    }
+}
+
+/* Уменьшенная анимация */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ===========================
+   ТЕМНАЯ ТЕМА
+   =========================== */
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #121212;
+        color: #e0e0e0;
+    }
+    
+    .widget,
+    .sidebar {
+        background-color: #1e1e1e;
+        border-color: #333;
+        color: #e0e0e0;
+    }
+    
+    .nav-menu a {
+        color: #e0e0e0;
+    }
+    
+    .nav-menu a:hover,
+    .nav-menu a:focus {
+        background-color: #333;
+        color: #fff;
+    }
+    
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="search"],
+    textarea,
+    select {
+        background-color: #333;
+        color: #e0e0e0;
+        border-color: #555;
+    }
+    
+    table {
+        color: #e0e0e0;
+    }
+    
+    table th {
+        background-color: #333;
+    }
+    
+    table th,
+    table td {
+        border-color: #555;
+    }
+}
+
+/* ===========================
+   ПЕЧАТЬ
+   =========================== */
+
+@media print {
+    * {
+        background: transparent !important;
+        color: black !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+    
+    body {
+        font-size: 12pt;
+        line-height: 1.5;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        page-break-after: avoid;
+        page-break-inside: avoid;
+    }
+    
+    p, blockquote {
+        orphans: 3;
+        widows: 3;
+    }
+    
+    ul, ol {
+        page-break-inside: avoid;
+    }
+    
+    .nav-menu,
+    .sidebar,
+    #wpadminbar,
+    button,
+    input[type="submit"],
+    .btn {
+        display: none !important;
+    }
+    
+    .container {
+        max-width: none;
+        width: 100%;
+    }
+    
+    .widget {
+        border: 1px solid #000;
+        page-break-inside: avoid;
+    }
+    
+    a[href]:after {
+        content: " (" attr(href) ")";
+        font-size: 0.8em;
+    }
+    
+    img {
+        max-width: 100% !important;
+    }
+}

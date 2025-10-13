@@ -34,6 +34,12 @@ class Bootstrap
             [Roles::class, 'addRoles']
         );
 
+        // Activation: Neo Capabilities hinzufügen
+        register_activation_hook(
+            NEO_DASHBOARD_PLUGIN_FILE,
+            [AccessControl::class, 'addNeoCapabilities']
+        );
+
         // Deactivation: Rewrite-Rules flushen und Custom roles entfernen
         register_deactivation_hook(
             NEO_DASHBOARD_PLUGIN_FILE,
@@ -50,6 +56,23 @@ class Bootstrap
 
         // Runtime-Init: Router, Dashboard & Assets konfigurieren
         add_action('init', [self::class, 'init']);
+
+        // Access Control initialisieren после загрузки WordPress
+        add_action('wp_loaded', function() {
+            AccessControl::init();
+        });
+
+        // Security Enforcer initialisieren
+        SecurityEnforcer::init();
+
+        // Регистрируем шорткод для тестирования
+        add_action('init', function() {
+            add_shortcode('neo_auth_test', function() {
+                ob_start();
+                include NEO_DASHBOARD_TEMPLATE_PATH . 'auth-test.php';
+                return ob_get_clean();
+            });
+        });
 
         // Standard-WordPress-Rollen entfernen
         add_action('init', [Roles::class, 'removeDefaultRoles']);

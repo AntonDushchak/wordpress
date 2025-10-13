@@ -700,10 +700,448 @@ header.mb-3 {
     transform: translateY(-1px);
 }
 
-/* Адаптивность для виджета */
+/* ===========================
+   АДАПТИВНЫЕ СТИЛИ NEO-UMFRAGE
+   =========================== */
+
+/* Планшеты (768px - 1024px) */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .neo-umfrage-container {
+        max-width: 100%;
+        margin: 15px 0;
+    }
+    
+    .neo-umfrage-header {
+        padding: 15px;
+    }
+    
+    .neo-umfrage-title {
+        font-size: 20px;
+    }
+    
+    .neo-umfrage-card {
+        margin-bottom: 15px;
+    }
+    
+    .neo-umfrage-card-header {
+        padding: 12px 15px;
+    }
+    
+    .neo-umfrage-card-title {
+        font-size: 15px;
+    }
+    
+    /* Таблицы становятся прокручиваемыми */
+    .neo-umfrage-table-container {
+        overflow-x: auto;
+    }
+    
+    .neo-umfrage-table {
+        min-width: 600px;
+    }
+    
+    .neo-umfrage-table th,
+    .neo-umfrage-table td {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
+    /* Кнопки */
+    .neo-umfrage-button {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+}
+
+/* Мобильные устройства (до 767px) */
+@media (max-width: 767px) {
+    .neo-umfrage-container {
+        max-width: 100%;
+        margin: 10px 0;
+    }
+    
+    .neo-umfrage-header {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    .neo-umfrage-title {
+        font-size: 18px;
+        line-height: 1.3;
+    }
+    
+    .neo-umfrage-subtitle {
+        font-size: 13px;
+    }
+    
+    /* Карточки */
+    .neo-umfrage-card {
+        margin-bottom: 15px;
+        border-radius: 6px;
+    }
+    
+    .neo-umfrage-card-header {
+        padding: 12px 15px;
+    }
+    
+    .neo-umfrage-card-title {
+        font-size: 14px;
+        line-height: 1.4;
+    }
+    
+    .neo-umfrage-card-body {
+        padding: 15px;
+    }
+    
+    /* Формы */
+    .neo-umfrage-form-group {
+        margin-bottom: 15px;
+    }
+    
+    .neo-umfrage-form-label {
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+    
+    .neo-umfrage-form-control {
+        font-size: 16px; /* Предотвращает зум на iOS */
+        padding: 12px;
+        border-radius: 6px;
+    }
+    
+    .neo-umfrage-textarea {
+        min-height: 80px;
+    }
+    
+    /* Кнопки */
+    .neo-umfrage-button {
+        width: 100%;
+        padding: 12px;
+        font-size: 14px;
+        margin-bottom: 10px;
+        border-radius: 6px;
+    }
+    
+    .neo-umfrage-button + .neo-umfrage-button {
+        margin-left: 0;
+    }
+    
+    .neo-umfrage-button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    /* Таблицы - карточный вид для мобильных */
+    .neo-umfrage-table-responsive {
+        display: none;
+    }
+    
+    .neo-umfrage-mobile-cards {
+        display: block;
+    }
+    
+    .neo-umfrage-mobile-card {
+        background: #fff;
+        border: 1px solid #ccd0d4;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 10px;
+    }
+    
+    .neo-umfrage-mobile-card-header {
+        font-weight: 600;
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .neo-umfrage-mobile-card-body {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    
+    .neo-umfrage-mobile-card-field {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        padding: 5px 0;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .neo-umfrage-mobile-card-label {
+        font-weight: 600;
+        color: #666;
+        flex: 0 0 40%;
+    }
+    
+    .neo-umfrage-mobile-card-value {
+        flex: 1;
+        text-align: right;
+    }
+    
+    /* Виджеты */
+    .neo-umfrage-widget {
+        padding: 10px;
+    }
+    
+    .neo-umfrage-widget-title {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+    
+    .neo-umfrage-widget-content {
+        font-size: 14px;
+    }
+    
+    /* Статистика */
+    .neo-umfrage-stats {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .neo-umfrage-stat-item {
+        text-align: center;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 6px;
+    }
+    
+    .neo-umfrage-stat-number {
+        font-size: 24px;
+        font-weight: 700;
+        color: #0073aa;
+        display: block;
+    }
+    
+    .neo-umfrage-stat-label {
+        font-size: 12px;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    /* Модальные окна */
+    .neo-umfrage-modal {
+        padding: 10px;
+    }
+    
+    .neo-umfrage-modal-content {
+        max-width: 95%;
+        margin: 20px auto;
+        border-radius: 8px;
+    }
+    
+    .neo-umfrage-modal-header {
+        padding: 15px;
+    }
+    
+    .neo-umfrage-modal-body {
+        padding: 15px;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    
+    .neo-umfrage-modal-footer {
+        padding: 15px;
+        flex-direction: column;
+    }
+    
+    .neo-umfrage-modal-footer .neo-umfrage-button {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+/* Маленькие мобильные устройства (до 480px) */
 @media (max-width: 480px) {
+    .neo-umfrage-header {
+        padding: 10px;
+    }
+    
+    .neo-umfrage-title {
+        font-size: 16px;
+    }
+    
+    .neo-umfrage-subtitle {
+        font-size: 12px;
+    }
+    
+    .neo-umfrage-card-header {
+        padding: 10px 12px;
+    }
+    
+    .neo-umfrage-card-title {
+        font-size: 13px;
+    }
+    
+    .neo-umfrage-card-body {
+        padding: 12px;
+    }
+    
+    .neo-umfrage-form-control {
+        padding: 10px;
+        font-size: 16px;
+    }
+    
+    .neo-umfrage-button {
+        padding: 10px;
+        font-size: 13px;
+    }
+    
+    .neo-umfrage-mobile-card {
+        padding: 12px;
+    }
+    
+    .neo-umfrage-mobile-card-field {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 10px;
+    }
+    
+    .neo-umfrage-mobile-card-label {
+        flex: none;
+        margin-bottom: 3px;
+        font-size: 12px;
+    }
+    
+    .neo-umfrage-mobile-card-value {
+        flex: none;
+        text-align: left;
+        font-size: 14px;
+    }
+    
+    .neo-umfrage-stat-number {
+        font-size: 20px;
+    }
+    
+    .neo-umfrage-stat-label {
+        font-size: 11px;
+    }
+    
+    /* Адаптивность для виджета */
     .neo-umfrage-widget-actions .neo-umfrage-button {
         padding: 12px 16px;
         font-size: 15px;
+    }
+}
+
+/* Ландшафтная ориентация на мобильных */
+@media (max-width: 767px) and (orientation: landscape) {
+    .neo-umfrage-stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .neo-umfrage-button-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .neo-umfrage-button {
+        flex: 1;
+        min-width: calc(50% - 5px);
+        margin-right: 10px;
+    }
+    
+    .neo-umfrage-button:nth-child(even) {
+        margin-right: 0;
+    }
+    
+    .neo-umfrage-modal-content {
+        max-height: 85vh;
+    }
+    
+    .neo-umfrage-modal-body {
+        max-height: 55vh;
+    }
+}
+
+/* Очень маленькая высота экрана */
+@media (max-height: 500px) and (orientation: landscape) {
+    .neo-umfrage-modal-content {
+        max-height: 90vh;
+        margin: 10px auto;
+    }
+    
+    .neo-umfrage-modal-body {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    
+    .neo-umfrage-header {
+        padding: 8px;
+    }
+    
+    .neo-umfrage-card {
+        margin-bottom: 10px;
+    }
+}
+
+/* Настольные компьютеры с большими экранами */
+@media (min-width: 1200px) {
+    .neo-umfrage-container {
+        max-width: 1140px;
+        margin: 30px auto;
+    }
+    
+    .neo-umfrage-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+    
+    .neo-umfrage-table-responsive {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+}
+
+/* Темная тема */
+@media (prefers-color-scheme: dark) {
+    .neo-umfrage-card {
+        background: #343a40;
+        border-color: #495057;
+        color: #e9ecef;
+    }
+    
+    .neo-umfrage-card-header {
+        background: #495057;
+        border-color: #6c757d;
+    }
+    
+    .neo-umfrage-form-control {
+        background-color: #495057;
+        border-color: #6c757d;
+        color: #e9ecef;
+    }
+    
+    .neo-umfrage-mobile-card {
+        background: #343a40;
+        border-color: #495057;
+        color: #e9ecef;
+    }
+    
+    .neo-umfrage-stat-item {
+        background: #495057;
+        color: #e9ecef;
+    }
+}
+
+/* Печать */
+@media print {
+    .neo-umfrage-button,
+    .neo-umfrage-widget-actions {
+        display: none !important;
+    }
+    
+    .neo-umfrage-card {
+        border: 1px solid #000;
+        page-break-inside: avoid;
+    }
+    
+    .neo-umfrage-container {
+        max-width: 100%;
+        margin: 0;
     }
 }

@@ -1,169 +1,169 @@
-# Neo Dashboard WordPress Project
+# Neo Dashboard WordPress Projekt
 
-Современный dashboard для WordPress с использованием плагина Neo Dashboard Core.
+Modernes Dashboard für WordPress unter Verwendung des Neo Dashboard Core Plugins.
 
-## 🚀 Быстрый старт
+## 🚀 Schnellstart
 
-### Требования
-- **PHP:** 8.1 или выше
-- **WordPress:** 6.0 или выше
-- **XAMPP/WAMP/MAMP** или аналогичный локальный сервер
+### Voraussetzungen
+- **PHP:** 8.1 oder höher
+- **WordPress:** 6.0 oder höher
+- **XAMPP/WAMP/MAMP** oder ähnlicher lokaler Server
 - **Git**
 
-### Установка за 5 минут
+### Installation in 5 Minuten
 
-1. **Клонируйте репозиторий:**
+1. **Repository klonen:**
 ```bash
 git clone https://github.com/your-username/neo-dashboard-wordpress.git
 cd neo-dashboard-wordpress
 ```
 
-2. **Запустите XAMPP:**
-   - Запустите Apache и MySQL
-   - Убедитесь, что порты 80 и 3306 свободны
+2. **XAMPP starten:**
+   - Starten Sie Apache und MySQL
+   - Stellen Sie sicher, dass die Ports 80 und 3306 frei sind
 
-3. **Импортируйте базу данных:**
-   - Откройте phpMyAdmin: `http://localhost/phpmyadmin`
-   - Создайте новую базу данных: `wordpress_neo`
-   - Импортируйте файл `database/wordpress_neo.sql`
+3. **Datenbank importieren:**
+   - Öffnen Sie phpMyAdmin: `http://localhost/phpmyadmin`
+   - Erstellen Sie eine neue Datenbank: `wordpress_neo`
+   - Importieren Sie die Datei `database/wordpress_neo.sql`
 
-4. **Настройте WordPress:**
-   - Скопируйте папку `wordpress` в `htdocs`
-   - Откройте `http://localhost/wordpress`
-   - Следуйте инструкциям установки WordPress
-   - Используйте данные базы данных: `wordpress_neo`
+4. **WordPress konfigurieren:**
+   - Kopieren Sie den Ordner `wordpress` in `htdocs`
+   - Öffnen Sie `http://localhost/wordpress`
+   - Folgen Sie den WordPress-Installationsanweisungen
+   - Verwenden Sie die Datenbankdaten: `wordpress_neo`
 
-5. **Активируйте плагины:**
-   - Войдите в админ-панель: `http://localhost/wordpress/wp-admin`
-   - Перейдите в **Плагины**
-   - Активируйте **Neo Dashboard Core**
-   - Активируйте **Neo Dashboard Examples**
+5. **Plugins aktivieren:**
+   - Melden Sie sich im Admin-Panel an: `http://localhost/wordpress/wp-admin`
+   - Gehen Sie zu **Plugins**
+   - Aktivieren Sie **Neo Dashboard Core**
+   - Aktivieren Sie **Neo Dashboard Examples**
 
-6. **Откройте dashboard:**
-   - Перейдите по ссылке: `http://localhost/wordpress/neo-dashboard`
+6. **Dashboard öffnen:**
+   - Navigieren Sie zu: `http://localhost/wordpress/neo-dashboard`
 
-## 📁 Структура проекта
+## 📁 Projektstruktur
 
 ```
 neo-dashboard-wordpress/
-├── wordpress/                          # WordPress файлы
+├── wordpress/                          # WordPress Dateien
 │   ├── wp-content/
 │   │   ├── plugins/
-│   │   │   ├── neo-dashboard/         # Основной плагин
-│   │   │   └── neo-dashboard-examples/ # Примеры
+│   │   │   ├── neo-dashboard/         # Haupt-Plugin
+│   │   │   └── neo-dashboard-examples/ # Beispiele
 │   │   └── themes/
 │   ├── wp-config.php
 │   └── index.php
-├── database/                           # База данных
+├── database/                           # Datenbank
 │   └── wordpress_neo.sql
-├── docs/                              # Документация
-├── scripts/                           # Скрипты установки
+├── docs/                              # Dokumentation
+├── scripts/                           # Installationsskripte
 └── README.md
 ```
 
-## 🔧 Настройка
+## 🔧 Konfiguration
 
-### Изменение портов (если нужно)
-Если порт 80 занят, измените в `apache/conf/httpd.conf`:
+### Ports ändern (falls erforderlich)
+Wenn Port 80 belegt ist, ändern Sie in `apache/conf/httpd.conf`:
 ```apache
 Listen 8080
 ServerName localhost:8080
 ```
 
-### Изменение URL базы данных
-В `wp-config.php` измените:
+### Datenbank-URL ändern
+In `wp-config.php` ändern Sie:
 ```php
 define('WP_HOME','http://localhost:8080/wordpress');
 define('WP_SITEURL','http://localhost:8080/wordpress');
 ```
 
-## 🌟 Возможности
+## 🌟 Features
 
-- **Современный UI** на Bootstrap 5.3
-- **Адаптивный дизайн** для всех устройств
-- **Модульная архитектура** для расширения
-- **REST API** для интеграции
-- **Система уведомлений**
-- **Виджеты и секции**
-- **Группировка в sidebar**
+- **Modernes UI** mit Bootstrap 5.3
+- **Responsives Design** für alle Geräte
+- **Modulare Architektur** zur Erweiterung
+- **REST API** für Integration
+- **Benachrichtigungssystem**
+- **Widgets und Sektionen**
+- **Sidebar-Gruppierung**
 
-## 🛠️ Разработка
+## 🛠️ Entwicklung
 
-### Добавление новых секций
+### Neue Sektionen hinzufügen
 ```php
 add_action('neo_dashboard_init', function() {
     do_action('neo_dashboard_register_section', [
         'slug'          => 'my-section',
-        'label'         => 'Моя секция',
+        'label'         => 'Meine Sektion',
         'icon'          => 'bi-star',
         'template_path' => plugin_dir_path(__FILE__) . 'templates/my-section.php',
     ]);
 });
 ```
 
-### Добавление виджетов
+### Widgets hinzufügen
 ```php
 add_action('neo_dashboard_init', function() {
     do_action('neo_dashboard_register_widget', [
         'id'       => 'my-widget',
-        'label'    => 'Мой виджет',
+        'label'    => 'Mein Widget',
         'icon'     => 'bi-graph-up',
         'priority' => 10,
         'callback' => function() {
-            echo '<p>Содержимое виджета</p>';
+            echo '<p>Widget-Inhalt</p>';
         },
     ]);
 });
 ```
 
-## 📚 Документация
+## 📚 Dokumentation
 
 - [Neo Dashboard Core](docs/neo-dashboard-core.md)
-- [API Reference](docs/api-reference.md)
-- [Примеры использования](docs/examples.md)
-- [Troubleshooting](docs/troubleshooting.md)
+- [API Referenz](docs/api-reference.md)
+- [Verwendungsbeispiele](docs/examples.md)
+- [Fehlerbehebung](docs/troubleshooting.md)
 
-## 🐛 Устранение неполадок
+## 🐛 Fehlerbehebung
 
-### Плагин не активируется
-- Проверьте версию PHP (должна быть 8.1+)
-- Проверьте права доступа к папкам
-- Очистите кэш WordPress
+### Plugin aktiviert sich nicht
+- Überprüfen Sie die PHP-Version (sollte 8.1+ sein)
+- Überprüfen Sie Ordnerberechtigungen
+- Leeren Sie den WordPress-Cache
 
-### Страница dashboard не найдена
-- Создайте страницу с slug "neo-dashboard"
-- Добавьте shortcode `[neo-dashboard]`
-- Обновите permalinks
+### Dashboard-Seite nicht gefunden
+- Erstellen Sie eine Seite mit Slug "neo-dashboard"
+- Fügen Sie den Shortcode `[neo-dashboard]` hinzu
+- Aktualisieren Sie die Permalinks
 
-### Стили не загружаются
-- Проверьте, что CSS файлы существуют
-- Очистите кэш браузера
-- Проверьте консоль браузера на ошибки
+### Stile laden nicht
+- Überprüfen Sie, ob CSS-Dateien existieren
+- Leeren Sie den Browser-Cache
+- Überprüfen Sie die Browser-Konsole auf Fehler
 
-## 🤝 Вклад в проект
+## 🤝 Zum Projekt beitragen
 
-1. Fork репозитория
-2. Создайте feature branch: `git checkout -b feature/amazing-feature`
-3. Commit изменения: `git commit -m 'Add amazing feature'`
-4. Push в branch: `git push origin feature/amazing-feature`
-5. Откройте Pull Request
+1. Repository forken
+2. Feature Branch erstellen: `git checkout -b feature/amazing-feature`
+3. Änderungen committen: `git commit -m 'Add amazing feature'`
+4. Push zum Branch: `git push origin feature/amazing-feature`
+5. Pull Request öffnen
 
-## 📄 Лицензия
+## 📄 Lizenz
 
-Этот проект распространяется под лицензией GPL-2.0-or-later.
+Dieses Projekt wird unter der GPL-2.0-or-later Lizenz veröffentlicht.
 
-## 🆘 Поддержка
+## 🆘 Support
 
 - **Issues:** [GitHub Issues](https://github.com/your-username/neo-dashboard-wordpress/issues)
 - **Discussions:** [GitHub Discussions](https://github.com/your-username/neo-dashboard-wordpress/discussions)
 - **Wiki:** [GitHub Wiki](https://github.com/your-username/neo-dashboard-wordpress/wiki)
 
-## 🙏 Благодарности
+## 🙏 Danksagungen
 
 - WordPress Community
 - Bootstrap Team
-- Все участники проекта
+- Alle Projektmitarbeiter
 
 ---
 
-**Сделано с ❤️ для WordPress сообщества**
+**Mit ❤️ für die WordPress Community erstellt**

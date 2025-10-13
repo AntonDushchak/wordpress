@@ -1,27 +1,27 @@
-# WordPress Job Board Plugin - Next.js API Integration Documentation
+# WordPress Job Board Plugin - Next.js API Integration Dokumentation
 
-## Обзор изменений
+## Übersicht der Änderungen
 
-WordPress плагин отправляет данные заявок на Next.js API по адресу `http://192.168.1.102:3000/api/admin/applications` со следующими параметрами аутентификации:
+Das WordPress-Plugin sendet Bewerbungsdaten an die Next.js API unter der Adresse `http://192.168.1.102:3000/api/admin/applications` mit folgenden Authentifizierungsparametern:
 - `api_key`: `wp_admin_key_2025`
 - `user_id`: `cmg1kapf90000v32kqqp0f0f7`
 
-## Специальные типы полей
+## Spezielle Feldtypen
 
-Плагин поддерживает 5 специальных типов полей с фиксированными названиями:
+Das Plugin unterstützt 5 spezielle Feldtypen mit festen Namen:
 
-1. **position** - Желаемые позиции (множественные)
-2. **bildung** - Образование (множественное)
-3. **berufserfahrung** - Опыт работы (множественный)
-4. **sprachkenntnisse** - Языковые навыки (множественные)
-5. **fuehrerschein** - Водительские права (checkbox list)
+1. **position** - Gewünschte Positionen (mehrfach)
+2. **bildung** - Bildung/Ausbildung (mehrfach)
+3. **berufserfahrung** - Berufserfahrung (mehrfach)
+4. **sprachkenntnisse** - Sprachkenntnisse (mehrfach)
+5. **fuehrerschein** - Führerschein (Checkbox-Liste)
 
-## Структура JSON данных для каждого специального поля
+## JSON-Datenstruktur für jedes spezielle Feld
 
-### 1. Position (Желаемые позиции)
+### 1. Position (Gewünschte Positionen)
 
-**Название поля:** `position`
-**Тип:** Массив объектов
+**Feldname:** `position`
+**Typ:** Array von Objekten
 
 ```json
 {
@@ -42,14 +42,14 @@ WordPress плагин отправляет данные заявок на Next.
 }
 ```
 
-**Поля:**
-- `position` (string) - Название желаемой позиции
-- `priority` (integer) - Приоритет позиции (1, 2, 3)
+**Felder:**
+- `position` (string) - Name der gewünschten Position
+- `priority` (integer) - Priorität der Position (1, 2, 3)
 
-### 2. Bildung (Образование)
+### 2. Bildung (Bildung/Ausbildung)
 
-**Название поля:** `bildung`
-**Тип:** Массив объектов
+**Feldname:** `bildung`
+**Typ:** Array von Objekten
 
 ```json
 {
@@ -79,17 +79,17 @@ WordPress плагин отправляет данные заявок на Next.
 }
 ```
 
-**Поля:**
-- `institution` (string) - Название учебного заведения
-- `degree` (string) - Тип/название степени или диплома  
-- `start_date` (string) - Дата начала обучения (YYYY-MM-DD)
-- `end_date` (string) - Дата окончания обучения (YYYY-MM-DD или пустая)
-- `is_current` (integer) - Флаг текущего обучения (1 = еще учится, 0 = закончил)
+**Felder:**
+- `institution` (string) - Name der Bildungseinrichtung
+- `degree` (string) - Art/Name des Abschlusses oder Diploms  
+- `start_date` (string) - Startdatum der Ausbildung (YYYY-MM-DD)
+- `end_date` (string) - Enddatum der Ausbildung (YYYY-MM-DD oder leer)
+- `is_current` (integer) - Flag für aktuelle Ausbildung (1 = noch in Ausbildung, 0 = abgeschlossen)
 
-### 3. Berufserfahrung (Опыт работы)
+### 3. Berufserfahrung (Berufserfahrung)
 
-**Название поля:** `berufserfahrung`
-**Тип:** Массив объектов
+**Feldname:** `berufserfahrung`
+**Typ:** Array von Objekten
 
 ```json
 {
@@ -119,17 +119,17 @@ WordPress плагин отправляет данные заявок на Next.
 }
 ```
 
-**Поля:**
-- `position` (string) - Должность
-- `company` (string) - Название компании
-- `start_date` (string) - Дата начала работы (YYYY-MM-DD)
-- `end_date` (string) - Дата окончания работы (YYYY-MM-DD или пустая)
-- `is_current` (integer) - Флаг текущей работы (1 = работает сейчас, 0 = уволился)
+**Felder:**
+- `position` (string) - Position/Stelle
+- `company` (string) - Firmenname
+- `start_date` (string) - Startdatum der Tätigkeit (YYYY-MM-DD)
+- `end_date` (string) - Enddatum der Tätigkeit (YYYY-MM-DD oder leer)
+- `is_current` (integer) - Flag für aktuelle Tätigkeit (1 = derzeit tätig, 0 = beendet)
 
-### 4. Sprachkenntnisse (Языковые навыки)
+### 4. Sprachkenntnisse (Sprachkenntnisse)
 
-**Название поля:** `sprachkenntnisse`
-**Тип:** Массив объектов
+**Feldname:** `sprachkenntnisse`
+**Typ:** Array von Objekten
 
 ```json
 {
@@ -154,14 +154,14 @@ WordPress плагин отправляет данные заявок на Next.
 }
 ```
 
-**Поля:**
-- `language` (string) - Название языка
-- `level` (string) - Уровень владения языком
+**Felder:**
+- `language` (string) - Name der Sprache
+- `level` (string) - Sprachniveau
 
-**Доступные языки:**
+**Verfügbare Sprachen:**
 - Deutsch, Englisch, Französisch, Spanisch, Italienisch, Russisch, Türkisch, Polnisch, Niederländisch, Portugiesisch, Chinesisch, Japanisch, Arabisch
 
-**Доступные уровни:**
+**Verfügbare Niveaustufen:**
 - A1 (Anfänger)
 - A2 (Grundkenntnisse) 
 - B1 (Mittlere Kenntnisse)
@@ -169,10 +169,10 @@ WordPress плагин отправляет данные заявок на Next.
 - C1 (Sehr gute Kenntnisse)
 - C2 (Muttersprachlich)
 
-### 5. Führerschein (Водительские права)
+### 5. Führerschein (Führerschein)
 
-**Название поля:** `fuehrerschein`
-**Тип:** Массив строк (checkbox values)
+**Feldname:** `fuehrerschein`
+**Typ:** Array von Strings (Checkbox-Werte)
 
 ```json
 {
@@ -184,7 +184,7 @@ WordPress плагин отправляет данные заявок на Next.
 }
 ```
 
-**Стандартные опции:**
+**Standardoptionen:**
 - Klasse AM (Moped)
 - Klasse A1 (Leichtkraftrad)
 - Klasse A2 (Kraftrad)
@@ -198,7 +198,7 @@ WordPress плагин отправляет данные заявок на Next.
 - Klasse D (Bus)
 - Klasse DE (Bus mit Anhänger)
 
-## Полный пример JSON заявки
+## Vollständiges JSON-Beispiel einer Bewerbung
 
 ```json
 {
@@ -268,11 +268,11 @@ WordPress плагин отправляет данные заявок на Next.
 
 ## GDPR Compliance
 
-Важно! Поля, помеченные как персональные данные (`is_personal = true`) в шаблоне, НЕ отправляются на внешний API. Они сохраняются только в локальной базе данных WordPress.
+Wichtig! Felder, die als persönliche Daten markiert sind (`is_personal = true`) im Template, werden NICHT an die externe API gesendet. Sie werden nur in der lokalen WordPress-Datenbank gespeichert.
 
-Персональные данные всегда исключаются из `filled_data` перед отправкой на Next.js API.
+Persönliche Daten werden immer aus `filled_data` ausgeschlossen, bevor sie an die Next.js API gesendet werden.
 
-## Заголовки HTTP запроса
+## HTTP-Request Headers
 
 ```
 POST /api/admin/applications
@@ -280,25 +280,25 @@ Content-Type: application/json
 User-Agent: WordPress/Neo-Job-Board-Plugin
 ```
 
-## Эндпоинты API
+## API Endpunkte
 
-1. **Создание/обновление шаблона:**
+1. **Template erstellen/aktualisieren:**
    - URL: `http://192.168.1.102:3000/api/admin/templates` 
    - Method: POST
    - Auth: api_key + user_id
 
-2. **Отправка заполненной заявки:**
+2. **Ausgefüllte Bewerbung senden:**
    - URL: `http://192.168.1.102:3000/api/admin/applications`
    - Method: POST  
    - Auth: api_key + user_id
 
-## Обновления для Next.js API
+## Updates für die Next.js API
 
-Ваш Next.js API должен быть обновлен для поддержки:
+Ihre Next.js API sollte aktualisiert werden, um folgendes zu unterstützen:
 
-1. **Новое поле `positions`** (массив объектов с position и priority)
-2. **Множественные записи** для всех специальных полей
-3. **Правильная обработка** структуры данных с вложенными объектами
-4. **Валидация** специальных полей согласно их схемам
+1. **Neues Feld `positions`** (Array von Objekten mit position und priority)
+2. **Mehrfache Einträge** für alle speziellen Felder
+3. **Korrekte Verarbeitung** von Datenstrukturen mit verschachtelten Objekten
+4. **Validierung** spezieller Felder gemäß ihren Schemas
 
-Все специальные поля имеют фиксированные названия и не могут быть изменены пользователем в админке WordPress.
+Alle speziellen Felder haben feste Namen und können nicht vom Benutzer im WordPress-Admin geändert werden.
