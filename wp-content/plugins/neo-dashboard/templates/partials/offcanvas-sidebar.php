@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 ?>
-<div class="offcanvas offcanvas-start bg-light d-md-none" id="sidebarOffcanvas" tabindex="-1">
+<div class="offcanvas offcanvas-start d-md-none" id="sidebarOffcanvas" tabindex="-1">
     <div class="offcanvas-header border-bottom">
         <h5 class="offcanvas-title">Neo Dashboard</h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Schließen"></button>

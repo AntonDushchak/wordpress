@@ -3,7 +3,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 ?>
-<nav class="navbar navbar-light bg-light sticky-top shadow" id="neo-navbar">
+<nav class="navbar sticky-top shadow" id="neo-navbar">
     <div class="container-fluid">
         <a class="navbar-brand me-0 d-flex align-items-center" href="<?php echo esc_url( home_url( '/neo-dashboard/' ) ); ?>">
             <?php 
@@ -33,26 +33,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const html = document.documentElement;
-    const button = document.getElementById('theme-toggle-navbar');
-    
-    function updateTheme(theme) {
-        html.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        if (button) button.textContent = theme === 'light' ? '🌙' : '☀️';
-    }
-    
-    updateTheme(localStorage.getItem('theme') || 'light');
-    
-    if (button) {
-        button.onclick = function() {
-            const current = html.getAttribute('data-theme') || 'light';
-            updateTheme(current === 'light' ? 'dark' : 'light');
-            this.style.transform = 'scale(0.9)';
-            setTimeout(() => this.style.transform = 'scale(1)', 150);
-        };
-    }
-    
     document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(toggle => {
         toggle.onclick = function() {
             const target = this.getAttribute('href').substring(1);

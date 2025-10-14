@@ -384,27 +384,6 @@ function optimize_for_mobile() {
 }
 add_action('wp_enqueue_scripts', 'optimize_for_mobile', 100);
 
-/**
- * Theme switcher integration with Neo Dashboard
- */
-function add_theme_switcher_to_neo_dashboard() {
-    if (is_plugin_active('neo-dashboard/neo-dashboard-core.php')) {
-        // Проверяем существование функции перед вызовом
-        if (function_exists('do_action')) {
-            do_action('neo_dashboard_register_notification', [
-                'slug' => 'theme-switcher',
-                'content' => '<div class="theme-switcher">
-                    <button id="theme-toggle" class="btn btn-outline-secondary">
-                        <i class="bi bi-moon-fill"></i>
-                    </button>
-                </div>',
-                'type' => 'info',
-                'dismissible' => false
-            ]);
-        }
-    }
-}
-add_action('neo_dashboard_init', 'add_theme_switcher_to_neo_dashboard');
 
 /**
  * Theme switcher styles and script for Neo Dashboard integration

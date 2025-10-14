@@ -18,10 +18,8 @@ use NeoDashboard\Core\Router;
     <title><?php echo esc_html( get_bloginfo( 'name' ) . ' – Dashboard' ); ?></title>
 
     <?php
-    /**
-     * Hier werden alle CSS-Dateien eingebunden.
-     * z. B. über add_action('neo_dashboard_head', [ AssetManager, 'enqueueAssets' ]);
-     */
+    wp_head();
+    
     do_action( 'neo_dashboard_head' );
     ?>
 </head>
@@ -48,10 +46,8 @@ use NeoDashboard\Core\Router;
     ?>
 
     <?php
-    /**
-     * Hier werden alle JS-Dateien eingebunden.
-     * z. B. über add_action('neo_dashboard_footer', [ AssetManager, 'enqueueAssets' ]);
-     */
+    wp_footer();
+    
     do_action( 'neo_dashboard_footer' );
     ?>
 </body>

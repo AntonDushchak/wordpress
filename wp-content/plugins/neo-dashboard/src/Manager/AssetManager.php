@@ -6,179 +6,191 @@ namespace NeoDashboard\Core\Manager;
 
 use NeoDashboard\Core\Router;
 use NeoDashboard\Core\Logger;
+use NeoDashboard\Core\Registry;
 
-/**
- * AssetManager v3.4.0
- * -------------------------------------------------
- *  • Использует стандартные WordPress хуки wp_enqueue_script/style
- *  • Автоматическое определение зависимостей
- *  • Hooks для плагинов остаются сохранены
- *  • REST-Config через wp_localize_script
- *  • Исправлены проблемы с timing и определением страниц
- */
-class AssetManager
+final class AssetManager
 {
     private const BOOTSTRAP_VERSION = '5.3.2';
     private const ICONS_VERSION     = '1.10.5';
 
-    private static array $assets_registered = [];
+    private static array $registered_contexts = [];
+    private array $plugin_assets = [];
+
+    private ContextResolver $context;
+    private FaviconManager $favicon;
+
+    public function __construct()
+    {
+        $this->context = new ContextResolver();
+        $this->favicon = new FaviconManager();
+    }
 
     public function register(): void
     {
         add_action('wp_enqueue_scripts', [$this, 'enqueueAssets'], 5);
         add_action('admin_enqueue_scripts', [$this, 'enqueueAssets'], 5);
-        add_action('neo_dashboard_head', [$this, 'printHeadAssets'], 5);
-        add_action('wp_head', [$this, 'addFavicon'], 1);
-        add_action('neo_dashboard_footer', [$this, 'printFooterAssets'], 5);
+
+        add_action('neo_dashboard_head', fn() => $this->printAssets('css'), 5);
+        add_action('neo_dashboard_footer', fn() => $this->printAssets('js'), 5);
+
+        add_action('wp_head', [$this->favicon, 'addFavicon'], 1);
         add_filter('show_admin_bar', [$this, 'maybeHideAdminBar']);
+
+        add_action('neo_dashboard_register_plugin_assets', [$this, 'registerPluginAssets'], 10, 2);
+        add_action('neo_dashboard_register_page_assets', [$this, 'registerPageAssets'], 10, 3);
     }
 
     public function enqueueAssets(): void
     {
-        $section = get_query_var(Router::QUERY_VAR_SECTION, '');
-
-        if (isset(self::$assets_registered[$section])) {
+        if (!$this->context->isDashboard()) {
             return;
         }
 
-        $base = plugin_dir_url(NEO_DASHBOARD_PLUGIN_FILE);
+        $context = $this->context->current();
 
-        // Bootstrap CSS
-        wp_enqueue_style(
-            'neo-dashboard-bootstrap',
+        if (isset(self::$registered_contexts[$context])) {
+            return;
+        }
+
+        Logger::info('Loading core assets', ['context' => $context]);
+        $this->enqueueCoreAssets();
+
+        self::$registered_contexts[$context] = true;
+    }
+
+    private function enqueueCoreAssets(): void
+    {
+        $this->enqueueCDNAssets();
+        $this->enqueueLocalAsset('assets/dashboard.css', 'style', 'neo-dashboard-core', ['neo-dashboard-bootstrap']);
+        $this->enqueueLocalAsset('assets/js/dashboard.js', 'script', 'neo-dashboard-core', ['neo-dashboard-bootstrap']);
+        $this->enqueueLocalAsset('assets/js/notifications.js', 'script', 'neo-dashboard-notifications', ['neo-dashboard-core']);
+    }
+
+    private function enqueueCDNAssets(): void
+    {
+        wp_enqueue_style('neo-dashboard-bootstrap',
             "https://cdn.jsdelivr.net/npm/bootstrap@" . self::BOOTSTRAP_VERSION . "/dist/css/bootstrap.min.css",
             [],
             self::BOOTSTRAP_VERSION
         );
 
-        // Bootstrap Icons
-        wp_enqueue_style(
-            'neo-dashboard-bootstrap-icons',
+        wp_enqueue_style('neo-dashboard-bootstrap-icons',
             "https://cdn.jsdelivr.net/npm/bootstrap-icons@" . self::ICONS_VERSION . "/font/bootstrap-icons.css",
             [],
             self::ICONS_VERSION
         );
 
-        // Core CSS
-        if ($this->fileExists('assets/dashboard.css')) {
-            wp_enqueue_style(
-                'neo-dashboard-core',
-                $base . 'assets/dashboard.css',
-                ['neo-dashboard-bootstrap'],
-                NEO_DASHBOARD_VERSION
-            );
-        }
-        
-        // Theme Switcher CSS
-        if ($this->fileExists('assets/theme-switcher.css')) {
-            wp_enqueue_style(
-                'neo-dashboard-theme-switcher',
-                $base . 'assets/theme-switcher.css',
-                ['neo-dashboard-core'],
-                NEO_DASHBOARD_VERSION
-            );
-        }
-
-        // Bootstrap JS
-        wp_enqueue_script(
-            'neo-dashboard-bootstrap',
+        wp_enqueue_script('neo-dashboard-bootstrap',
             "https://cdn.jsdelivr.net/npm/bootstrap@" . self::BOOTSTRAP_VERSION . "/dist/js/bootstrap.bundle.min.js",
             ['jquery'],
             self::BOOTSTRAP_VERSION,
             true
         );
+    }
 
-        // Core JS
-        if ($this->fileExists('assets/js/dashboard.js')) {
-            wp_enqueue_script(
-                'neo-dashboard-core',
-                $base . 'assets/js/dashboard.js',
-                ['neo-dashboard-bootstrap', 'jquery'],
-                NEO_DASHBOARD_VERSION,
-                true
-            );
+    private function enqueueLocalAsset(string $path, string $type, string $handle, array $deps = []): void
+    {
+        if (!$this->coreFileExists($path)) {
+            return;
         }
 
-        // Notifications
-        if ($this->fileExists('assets/js/notifications.js')) {
-            wp_enqueue_script(
-                'neo-dashboard-notifications',
-                $base . 'assets/js/notifications.js',
-                ['neo-dashboard-core'],
-                NEO_DASHBOARD_VERSION,
-                true
-            );
+        $src = plugin_dir_url(NEO_DASHBOARD_PLUGIN_FILE) . $path;
+
+        if ($type === 'style') {
+            wp_enqueue_style($handle, $src, $deps, NEO_DASHBOARD_VERSION);
+        } else {
+            wp_enqueue_script($handle, $src, $deps, NEO_DASHBOARD_VERSION, true);
+            wp_localize_script('neo-dashboard-core', 'NeoDash', [
+                'restUrl' => rest_url('neo-dashboard/v1'),
+                'nonce'   => wp_create_nonce('wp_rest'),
+                'context' => $this->context->current(),
+                'section' => get_query_var(Router::QUERY_VAR_SECTION, ''),
+            ]);
+        }
+    }
+
+    public function printAssets(string $type): void
+    {
+        if (!$this->context->isDashboard()) {
+            return;
         }
 
-        wp_localize_script('neo-dashboard-core', 'NeoDash', [
-            'restUrl' => rest_url('neo-dashboard/v1'),
-            'nonce'   => wp_create_nonce('wp_rest'),
+        $context = $this->context->current();
+        $section = get_query_var(Router::QUERY_VAR_SECTION, '');
+
+        if ($type === 'css') {
+            $this->favicon->printLinks();
+        }
+
+        Logger::info("Loading {$type} assets", compact('context', 'section'));
+
+        $this->triggerPluginAssetHooks($section, $type);
+        do_action("neo_dashboard_enqueue_page_{$type}", $context, $section);
+
+        $fn = $type === 'css' ? 'wp_print_styles' : 'wp_print_scripts';
+        if (function_exists($fn)) {
+            $fn();
+        }
+    }
+
+    public function registerPluginAssets(string $plugin_id, array $assets): void
+    {
+        $this->plugin_assets[$plugin_id] = $assets;
+
+        Logger::info('Registered plugin assets', [
+            'plugin_id' => $plugin_id,
+            'css' => count($assets['css'] ?? []),
+            'js' => count($assets['js'] ?? []),
         ]);
-
-        self::$assets_registered[$section] = true;
     }
 
-    public function printHeadAssets(): void
+    public function registerPageAssets(string $page_slug, string $type, array $config): void
     {
-        $section = get_query_var(Router::QUERY_VAR_SECTION, '');
-        $this->enqueueAssets();
+        $handle = $config['handle'] ?? '';
+        if (!$handle) {
+            Logger::error('Missing handle in page asset config', ['page' => $page_slug]);
+            return;
+        }
 
-        // Add favicon links
-        $this->printFaviconLinks();
+        $this->plugin_assets['page_specific'][$type][$handle] = array_merge($config, [
+            'contexts' => [$page_slug]
+        ]);
+    }
 
-        if ($section !== '') {
-            $plugin_prefix = $this->getPluginPrefixFromSection($section);
+    private function triggerPluginAssetHooks(string $section, string $type): void
+    {
+        $prefix = $this->getPluginPrefixFromSection($section);
+        if ($prefix) {
+            do_action("neo_dashboard_enqueue_{$prefix}_assets_{$type}", $section);
+        }
 
-            if ($plugin_prefix) {
-                $hook_name = "neo_dashboard_enqueue_{$plugin_prefix}_assets_css";
-                do_action($hook_name, $section);
+        $this->loadPluginAssets($section, $type);
+    }
+
+    private function loadPluginAssets(string $context, string $type): void
+    {
+        foreach ($this->plugin_assets as $plugin => $assets) {
+            foreach ($assets[$type] ?? [] as $handle => $config) {
+                $contexts = $config['contexts'] ?? ['*'];
+                if (!in_array('*', $contexts) && !in_array($context, $contexts)) {
+                    continue;
+                }
+
+                $src = $config['src'] ?? '';
+                if (!$src) {
+                    continue;
+                }
+
+                $deps = $config['deps'] ?? [];
+                $ver = $config['version'] ?? '1.0.0';
+
+                if ($type === 'css') {
+                    wp_enqueue_style($handle, $src, $deps, $ver);
+                } else {
+                    wp_enqueue_script($handle, $src, $deps, $ver, $config['in_footer'] ?? true);
+                }
             }
-        } else if ($section === '') {
-            do_action('neo_dashboard_enqueue_widget_assets_css');
         }
-
-        if (function_exists('wp_print_styles')) {
-            wp_print_styles();
-        }
-    }
-
-    public function printFooterAssets(): void
-    {
-        $section = get_query_var(Router::QUERY_VAR_SECTION, '');
-        $this->enqueueAssets();
-
-        if ($section !== '') {
-            $plugin_prefix = $this->getPluginPrefixFromSection($section);
-
-            if ($plugin_prefix) {
-                $hook_name = "neo_dashboard_enqueue_{$plugin_prefix}_assets_js";
-                do_action($hook_name, $section);
-            }
-        } else if ($section === '') {
-            do_action('neo_dashboard_enqueue_widget_assets_js');
-        }
-
-        if (function_exists('wp_print_scripts')) {
-            wp_print_scripts();
-        }
-    }
-
-    private function fileExists(string $relative_path): bool
-    {
-        return file_exists(plugin_dir_path(NEO_DASHBOARD_PLUGIN_FILE) . $relative_path);
-    }
-
-    public function maybeHideAdminBar(bool $show): bool
-    {
-        return $this->isDashboardPage() ? false : $show;
-    }
-
-    private function isDashboardPage(): bool
-    {
-        $section = get_query_var(Router::QUERY_VAR_SECTION, '');
-        $pagename = get_query_var('pagename', '');
-
-        return $section !== '' || $pagename === 'neo-dashboard' || strpos($_SERVER['REQUEST_URI'] ?? '', '/neo-dashboard') === 0;
     }
 
     private function getPluginPrefixFromSection(string $section): ?string
@@ -186,100 +198,21 @@ class AssetManager
         $parts = explode('/', $section);
         $prefix = $parts[0];
 
-        if (in_array($prefix, ['neo-dashboard', 'dashboard', 'admin'])) {
+        if (in_array($prefix, ['neo-dashboard', 'dashboard', 'admin', 'home'])) {
             return null;
         }
 
-        $registry = \NeoDashboard\Core\Registry::instance();
-        $sections = $registry->getSections();
-        
-        $section_exists = false;
-        
-        if (isset($sections[$section])) {
-            $section_exists = true;
-        }
-        
-        if (!$section_exists && strpos($section, '/') !== false) {
-            $section_without_slash = str_replace('/', '', $section);
-            if (isset($sections[$section_without_slash])) {
-                $section_exists = true;
-            }
-        }
-        
-        if (!$section_exists) {
-            if (isset($sections[$prefix])) {
-                $section_exists = true;
-            }
-        }
-
-        if ($section_exists) {
-            return $prefix;
-        } else {
-            return null;
-        }
+        $sections = Registry::instance()->getSections();
+        return isset($sections[$section]) || isset($sections[$prefix]) ? $prefix : null;
     }
 
-    public function addFavicon(): void
+    public function maybeHideAdminBar(bool $show): bool
     {
-        if ($this->isDashboardPage()) {
-            $base = plugin_dir_url(NEO_DASHBOARD_PLUGIN_FILE);
-            
-            if ($this->fileExists('assets/images/favicon.ico')) {
-                echo '<link rel="icon" href="' . $base . 'assets/images/favicon.ico" type="image/x-icon">' . "\n";
-            }
-            if ($this->fileExists('assets/images/favicon-32x32.png')) {
-                echo '<link rel="icon" type="image/png" sizes="32x32" href="' . $base . 'assets/images/favicon-32x32.png">' . "\n";
-            }
-            if ($this->fileExists('assets/images/favicon-16x16.png')) {
-                echo '<link rel="icon" type="image/png" sizes="16x16" href="' . $base . 'assets/images/favicon-16x16.png">' . "\n";
-            }
-        }
+        return $this->context->isDashboard() ? false : $show;
     }
 
-    private function printFaviconLinks(): void
+    private function coreFileExists(string $path): bool
     {
-        if (!$this->isDashboardPage()) {
-            return;
-        }
-
-        $base = plugin_dir_url(NEO_DASHBOARD_PLUGIN_FILE);
-        $favicon_path = 'assets/images/favicon/';
-
-        // Standard favicon
-        if ($this->fileExists($favicon_path . 'favicon.ico')) {
-            echo '<link rel="icon" href="' . $base . $favicon_path . 'favicon.ico" type="image/x-icon">' . "\n";
-        }
-
-        // PNG favicons
-        if ($this->fileExists($favicon_path . 'favicon-16x16.png')) {
-            echo '<link rel="icon" type="image/png" sizes="16x16" href="' . $base . $favicon_path . 'favicon-16x16.png">' . "\n";
-        }
-        if ($this->fileExists($favicon_path . 'favicon-32x32.png')) {
-            echo '<link rel="icon" type="image/png" sizes="32x32" href="' . $base . $favicon_path . 'favicon-32x32.png">' . "\n";
-        }
-
-        // Apple Touch Icon
-        if ($this->fileExists($favicon_path . 'apple-touch-icon.png')) {
-            echo '<link rel="apple-touch-icon" href="' . $base . $favicon_path . 'apple-touch-icon.png">' . "\n";
-        }
-
-        // Android Chrome icons
-        if ($this->fileExists($favicon_path . 'android-chrome-192x192.png')) {
-            echo '<link rel="icon" type="image/png" sizes="192x192" href="' . $base . $favicon_path . 'android-chrome-192x192.png">' . "\n";
-        }
-        if ($this->fileExists($favicon_path . 'android-chrome-512x512.png')) {
-            echo '<link rel="icon" type="image/png" sizes="512x512" href="' . $base . $favicon_path . 'android-chrome-512x512.png">' . "\n";
-        }
-
-        // Web App Manifest
-        if ($this->fileExists($favicon_path . 'site.webmanifest')) {
-            echo '<link rel="manifest" href="' . $base . $favicon_path . 'site.webmanifest">' . "\n";
-        }
-
-        // PWA meta tags
-        echo '<meta name="theme-color" content="#ffffff">' . "\n";
-        echo '<meta name="apple-mobile-web-app-capable" content="yes">' . "\n";
-        echo '<meta name="apple-mobile-web-app-status-bar-style" content="default">' . "\n";
-        echo '<meta name="apple-mobile-web-app-title" content="Neo Dashboard">' . "\n";
+        return file_exists(plugin_dir_path(NEO_DASHBOARD_PLUGIN_FILE) . $path);
     }
 }
