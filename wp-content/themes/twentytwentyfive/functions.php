@@ -156,3 +156,22 @@ if ( ! function_exists( 'twentytwentyfive_format_binding' ) ) :
 		}
 	}
 endif;
+
+
+if (file_exists(get_template_directory() . '/../responsive-functions.php')) {
+	require_once get_template_directory() . '/../responsive-functions.php';
+}
+
+if (file_exists(get_template_directory() . '/../responsive-integration.php')) {
+	require_once get_template_directory() . '/../responsive-integration.php';
+}
+
+// Добавляем диагностический инструмент для отладки
+if (file_exists(get_template_directory() . '/../theme-debug.php')) {
+	require_once get_template_directory() . '/../theme-debug.php';
+}
+
+// Временное решение - простой theme switcher без зависимостей
+if (file_exists(get_template_directory() . '/../simple-theme-switcher.php')) {
+	require_once get_template_directory() . '/../simple-theme-switcher.php';
+}

@@ -1,8 +1,4 @@
 <?php
-/**
- * Template: Access Denied Page
- * Страница отказа в доступе для Neo Dashboard
- */
 
 if (!defined('ABSPATH')) {
     exit;

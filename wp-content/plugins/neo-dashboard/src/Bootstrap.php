@@ -65,7 +65,6 @@ class Bootstrap
         // Security Enforcer initialisieren
         SecurityEnforcer::init();
 
-        // Регистрируем шорткод для тестирования
         add_action('init', function() {
             add_shortcode('neo_auth_test', function() {
                 ob_start();

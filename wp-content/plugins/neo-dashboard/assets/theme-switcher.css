@@ -1,0 +1,120 @@
+:root {
+    --theme-bg: #ffffff;
+    --theme-text: #212529;
+    --theme-primary: #007cba;
+    --theme-secondary-bg: #f8f9fa;
+}
+
+html[data-theme="dark"] {
+    --theme-bg: #1e1e1e;
+    --theme-text: #f0f0f0;
+    --theme-primary: #0ea5e9;
+    --theme-secondary-bg: #2a2a2a;
+    --theme-accent: #3f3f3f;
+    --theme-border: #404040;
+}
+
+html[data-theme="dark"] body,
+html[data-theme="dark"] .container,
+html[data-theme="dark"] .container-fluid,
+html[data-theme="dark"] main,
+html[data-theme="dark"] .navbar,
+html[data-theme="dark"] .navbar.bg-light {
+    background-color: var(--theme-bg) !important;
+    color: var(--theme-text) !important;
+}
+
+html[data-theme="dark"] .bg-light,
+html[data-theme="dark"] aside.bg-light,
+html[data-theme="dark"] .desktop-sidebar,
+html[data-theme="dark"] .offcanvas,
+html[data-theme="dark"] .offcanvas-body {
+    background-color: var(--theme-secondary-bg) !important;
+    border-color: var(--theme-border) !important;
+    color: var(--theme-text) !important;
+}
+
+html[data-theme="dark"] .nav-link,
+html[data-theme="dark"] .sidebar-nav-link,
+html[data-theme="dark"] .navbar-nav .nav-link,
+html[data-theme="dark"] .navbar-brand,
+html[data-theme="dark"] a,
+html[data-theme="dark"] .dropdown-toggle {
+    color: var(--theme-text) !important;
+}
+
+html[data-theme="dark"] .nav-link:hover,
+html[data-theme="dark"] .sidebar-nav-link:hover {
+    background-color: var(--theme-accent) !important;
+    color: var(--theme-primary) !important;
+}
+
+html[data-theme="dark"] .nav-link.active,
+html[data-theme="dark"] .sidebar-nav-link.active {
+    background-color: var(--theme-primary) !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .table,
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .btn-outline-secondary {
+    background-color: var(--theme-secondary-bg) !important;
+    border-color: var(--theme-border) !important;
+    color: var(--theme-text) !important;
+}
+
+html[data-theme="dark"] .table th,
+html[data-theme="dark"] .table td {
+    border-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] .btn-primary {
+    background-color: var(--theme-primary) !important;
+    border-color: var(--theme-primary) !important;
+}
+
+html[data-theme="dark"] .dropdown-menu {
+    background-color: var(--theme-secondary-bg) !important;
+    border-color: var(--theme-border) !important;
+}
+
+html[data-theme="dark"] .dropdown-item {
+    color: var(--theme-text) !important;
+}
+
+html[data-theme="dark"] .dropdown-item:hover,
+html[data-theme="dark"] .dropdown-item:focus {
+    background-color: var(--theme-accent) !important;
+    color: var(--theme-primary) !important;
+}
+
+body {
+    background-color: var(--theme-bg) !important;
+    color: var(--theme-text) !important;
+    transition: all 0.3s ease;
+    min-height: 100vh;
+}
+
+.navbar .navbar-brand,
+.navbar .navbar-nav .nav-link,
+.dropdown-toggle {
+    color: var(--theme-text) !important;
+}
+
+#theme-toggle-navbar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--theme-text);
+    background: var(--theme-secondary-bg);
+    color: var(--theme-text);
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+#theme-toggle-navbar:hover {
+    transform: scale(1.05);
+    background: var(--theme-primary);
+    color: white;
+}

@@ -15,10 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
         <ul class="nav nav-pills flex-column mb-0">
             <?php foreach ( $sidebar as $slug => $item ) :
                 $is_active = ( $slug === $current_section ) ? ' active' : '';
-                // Prüfen, ob eine Kind-Section gerade aktiv ist
                 $has_children = ! empty( $item['children'] );
                 $child_active = $has_children && isset( $item['children'][ $current_section ] );
-                // Soll Collapse geöffnet sein?
                 $show = $child_active ? ' show' : '';
             ?>
                 <?php if ( ! empty( $item['is_group'] ) ) : ?>

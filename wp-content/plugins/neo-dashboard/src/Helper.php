@@ -73,7 +73,7 @@ class Helper
 
             return sprintf(
                 '<div class="dropdown text-end">
-                    <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">%s<span>%s</span></a>
+                    <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle" data-bs-toggle="dropdown">%s<span>%s</span></a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="%s">Abmelden</a></li>
                     </ul>
