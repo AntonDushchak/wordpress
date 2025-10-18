@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="d-flex align-items-center">
-            <button id="theme-toggle-navbar" class="btn btn-outline-secondary me-2" title="Switch theme" onclick="toggleTheme()">
+            <button id="theme-toggle-navbar" class="btn btn-outline-secondary me-2" title="Переключить тему">
                 🌙
             </button>
             <div class="d-none d-md-block">

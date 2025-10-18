@@ -98,6 +98,137 @@ class Neo_Dashboard_Theme_Switcher {
             color: white !important;
         }
 
+        /* Bootstrap button theming */
+        .neo-dashboard-standalone .btn-primary {
+            background-color: var(--neo-theme-primary) !important;
+            border-color: var(--neo-theme-primary) !important;
+        }
+
+        .neo-dashboard-standalone .btn-outline-primary {
+            color: var(--neo-theme-primary) !important;
+            border-color: var(--neo-theme-primary) !important;
+        }
+
+        .neo-dashboard-standalone .btn-outline-primary:hover {
+            background-color: var(--neo-theme-primary) !important;
+            border-color: var(--neo-theme-primary) !important;
+        }
+
+        .neo-dashboard-standalone .btn-secondary {
+            background-color: var(--neo-theme-accent) !important;
+            border-color: var(--neo-theme-border) !important;
+            color: var(--neo-theme-text) !important;
+        }
+
+        .neo-dashboard-standalone .btn-outline-secondary {
+            color: var(--neo-theme-text) !important;
+            border-color: var(--neo-theme-border) !important;
+        }
+
+        .neo-dashboard-standalone .btn-outline-secondary:hover {
+            background-color: var(--neo-theme-accent) !important;
+            border-color: var(--neo-theme-border) !important;
+            color: var(--neo-theme-text) !important;
+        }
+
+        /* Form controls */
+        .neo-dashboard-standalone .form-control,
+        .neo-dashboard-standalone .form-select {
+            background-color: var(--neo-theme-bg) !important;
+            border-color: var(--neo-theme-border) !important;
+            color: var(--neo-theme-text) !important;
+        }
+
+        .neo-dashboard-standalone .form-control:focus,
+        .neo-dashboard-standalone .form-select:focus {
+            background-color: var(--neo-theme-bg) !important;
+            border-color: var(--neo-theme-primary) !important;
+            color: var(--neo-theme-text) !important;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+        }
+
+        /* Modal theming */
+        .neo-dashboard-standalone .modal-content {
+            background-color: var(--neo-theme-bg) !important;
+            color: var(--neo-theme-text) !important;
+            border-color: var(--neo-theme-border) !important;
+        }
+
+        .neo-dashboard-standalone .modal-header {
+            border-bottom-color: var(--neo-theme-border) !important;
+        }
+
+        .neo-dashboard-standalone .modal-footer {
+            border-top-color: var(--neo-theme-border) !important;
+        }
+
+        /* Close button for dark theme */
+        html[data-neo-theme="dark"] .neo-dashboard-standalone .btn-close {
+            filter: invert(1);
+        }
+
+        /* Alert theming */
+        .neo-dashboard-standalone .alert {
+            border-color: var(--neo-theme-border) !important;
+        }
+
+        .neo-dashboard-standalone .alert-info {
+            background-color: rgba(13, 202, 240, 0.1) !important;
+            color: var(--neo-theme-text) !important;
+        }
+
+        .neo-dashboard-standalone .alert-success {
+            background-color: rgba(25, 135, 84, 0.1) !important;
+            color: var(--neo-theme-text) !important;
+        }
+
+        .neo-dashboard-standalone .alert-warning {
+            background-color: rgba(255, 193, 7, 0.1) !important;
+            color: var(--neo-theme-text) !important;
+        }
+
+        .neo-dashboard-standalone .alert-danger {
+            background-color: rgba(220, 53, 69, 0.1) !important;
+            color: var(--neo-theme-text) !important;
+        }
+
+        /* General text and heading colors */
+        .neo-dashboard-standalone h1,
+        .neo-dashboard-standalone h2,
+        .neo-dashboard-standalone h3,
+        .neo-dashboard-standalone h4,
+        .neo-dashboard-standalone h5,
+        .neo-dashboard-standalone h6,
+        .neo-dashboard-standalone p,
+        .neo-dashboard-standalone span,
+        .neo-dashboard-standalone div,
+        .neo-dashboard-standalone label {
+            color: var(--neo-theme-text) !important;
+        }
+
+        /* Card headers and footers */
+        .neo-dashboard-standalone .card-header,
+        .neo-dashboard-standalone .card-footer {
+            background-color: var(--neo-theme-accent) !important;
+            border-color: var(--neo-theme-border) !important;
+            color: var(--neo-theme-text) !important;
+        }
+
+        /* Table theming */
+        .neo-dashboard-standalone .table {
+            color: var(--neo-theme-text) !important;
+        }
+
+        .neo-dashboard-standalone .table th,
+        .neo-dashboard-standalone .table td {
+            border-color: var(--neo-theme-border) !important;
+        }
+
+        .neo-dashboard-standalone .table-striped > tbody > tr:nth-of-type(odd) > td,
+        .neo-dashboard-standalone .table-striped > tbody > tr:nth-of-type(odd) > th {
+            background-color: var(--neo-theme-accent) !important;
+        }
+
         /* Container fluid should have no background */
         .neo-dashboard-standalone .container-fluid {
             background: none !important;

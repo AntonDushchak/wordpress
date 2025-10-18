@@ -1,0 +1,143 @@
+#neo-calendar h2{
+    margin-bottom: 20px;
+}
+
+/* Формы подстраиваются под содержимое */
+.calendar-form {
+    display: inline-block;
+}
+
+/* Поля формы */
+.calendar-form .form-control {
+    margin-bottom: 10px;
+    min-width: 120px; /* Минимальная ширина полей */
+}
+
+.calendar-form input[type="date"] {
+    min-width: 140px !important; /* Поле даты чуть шире */
+}
+
+/* Гибкие колонки */
+.calendar-form .col-md-2,
+.calendar-form .col-md-3,
+.calendar-form .col-md-4,
+.calendar-form .col-md-6 {
+    flex: 0 0 auto; /* Колонки подстраиваются под содержимое */
+    max-width: none;
+    margin-right: 0;
+}
+
+.calendar-form .btn {
+    min-width: 120px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn-toggle-form {
+    min-width: 140px !important;
+    white-space: nowrap;
+}
+
+.modal-open {
+    padding-right: 0 !important;
+}
+
+.modal {
+    padding-right: 0 !important;
+}
+
+.modal.fade .modal-dialog {
+    transition: transform 0.2s ease-out;
+    transform: translate(0, -25px);
+}
+
+.modal.show .modal-dialog {
+    transform: translate(0, 0);
+}
+
+body.modal-open {
+    padding-right: 0 !important;
+    overflow-y: auto !important;
+}
+
+#editEventModal .modal-dialog {
+    margin: 1.75rem auto;
+}
+
+#editEventModal .modal-content {
+    border-radius: 8px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+#editEventModal .modal-header {
+    border-bottom: 1px solid #dee2e6;
+    padding: 1rem 1.5rem;
+}
+
+#editEventModal .modal-body {
+    padding: 1.5rem;
+}
+
+#editEventModal .modal-footer {
+    border-top: 1px solid #dee2e6;
+    padding: 1rem 1.5rem;
+}
+
+/* Стили для календаря FullCalendar */
+#calendar {
+    margin-top: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 15px;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .calendar-form {
+        display: block; /* На мобильных форма занимает всю ширину */
+        min-width: 100%;
+    }
+    
+    .calendar-form .row {
+        flex-wrap: wrap; /* Поля переносятся на новую строку */
+        gap: 10px;
+    }
+    
+    .calendar-form .col-md-2,
+    .calendar-form .col-md-3,
+    .calendar-form .col-md-4,
+    .calendar-form .col-md-6 {
+        flex: 1 1 100%; /* Поля занимают всю ширину */
+        margin-bottom: 15px;
+    }
+    
+    .calendar-form .btn {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .btn-toggle-form {
+        width: 100% !important;
+        margin-right: 0 !important;
+    }
+}
+
+/* Адаптивность для планшетов */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .calendar-form {
+        min-width: auto; /* Форма подстраивается под содержимое */
+    }
+    
+    .calendar-form .row {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .calendar-form input[type="date"] {
+        min-width: 130px !important;
+    }
+}
+

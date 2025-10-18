@@ -4,7 +4,7 @@ declare(strict_types=1);
  * Plugin Name:     Neo Dashboard Core
  * Description:     Modernes Dashboard‑Framework mit PSR‑4‑Autoloader und Manager‑Architektur.
  * Version:         3.0.2
- * Author:          Code Copilot
+ * Author:          Neo
  * Text Domain:     neo-dashboard-core
  */
 
@@ -62,9 +62,20 @@ add_action('plugins_loaded', function() {
 }, 1);
 
 /* ------------------------------------------------------------------------- *
+ * Logger System
+ * ------------------------------------------------------------------------- */
+require_once __DIR__ . '/src/Logger.php';
+require_once __DIR__ . '/src/LifecycleLogger.php';
+
+/* ------------------------------------------------------------------------- *
  * Helper Funktionen
  * ------------------------------------------------------------------------- */
 require_once __DIR__ . '/src/functions.php';
+
+/* ------------------------------------------------------------------------- *
+ * UI Component System
+ * ------------------------------------------------------------------------- */
+require_once __DIR__ . '/src/UIComponent.php';
 
 /* ------------------------------------------------------------------------- *
  * Theme Switcher
