@@ -523,7 +523,6 @@ add_action('plugins_loaded', static function () {
 
     // AJAX обработчик für Abrufen von Ereignisdaten zum Bearbeiten
     add_action('wp_ajax_neo_calendar_get_event', function () {
-        // Проверяем nonce für Sicherheit
         if (!wp_verify_nonce($_POST['nonce'], 'neo_calendar_nonce')) {
             wp_send_json_error('Security check failed');
         }
