@@ -47,6 +47,7 @@ final class AssetManager
         }
 
         $context = $this->context->current();
+        error_log("AssetManager: enqueueAssets called, context: '{$context}', URI: " . ($_SERVER['REQUEST_URI'] ?? 'undefined'));
 
         if (isset(self::$registered_contexts[$context])) {
             return;
@@ -124,7 +125,7 @@ final class AssetManager
 
         Logger::info("Loading {$type} assets", compact('context', 'section'));
 
-        $this->triggerPluginAssetHooks($section, $type);
+        $this->triggerPluginAssetHooks($context, $type); // Используем $context вместо $section
         do_action("neo_dashboard_enqueue_page_{$type}", $context, $section);
 
         $fn = $type === 'css' ? 'wp_print_styles' : 'wp_print_scripts';
@@ -157,37 +158,72 @@ final class AssetManager
         ]);
     }
 
-    private function triggerPluginAssetHooks(string $section, string $type): void
+    private function triggerPluginAssetHooks(string $context, string $type): void
     {
-        $prefix = $this->getPluginPrefixFromSection($section);
+        error_log("AssetManager: triggerPluginAssetHooks called - context: '{$context}', type: {$type}");
+        
+        $prefix = $this->getPluginPrefixFromSection($context);
         if ($prefix) {
-            do_action("neo_dashboard_enqueue_{$prefix}_assets_{$type}", $section);
+            do_action("neo_dashboard_enqueue_{$prefix}_assets_{$type}", $context);
         }
 
-        $this->loadPluginAssets($section, $type);
+        $this->loadPluginAssets($context, $type);
     }
 
     private function loadPluginAssets(string $context, string $type): void
     {
+        error_log("AssetManager: Loading plugin assets for context: {$context}, type: {$type}");
+        error_log("AssetManager: Available plugins: " . print_r(array_keys($this->plugin_assets), true));
+        
         foreach ($this->plugin_assets as $plugin => $assets) {
+            error_log("AssetManager: Processing plugin: {$plugin}");
             foreach ($assets[$type] ?? [] as $handle => $config) {
                 $contexts = $config['contexts'] ?? ['*'];
+                error_log("AssetManager: Asset {$handle} contexts: " . print_r($contexts, true) . ", current: {$context}");
+                
                 if (!in_array('*', $contexts) && !in_array($context, $contexts)) {
+                    Logger::debug("Skipping asset {$handle} for context {$context}", [
+                        'required_contexts' => $contexts,
+                        'current_context' => $context
+                    ]);
+                    error_log("AssetManager: Skipping asset {$handle} for context {$context}");
                     continue;
                 }
 
                 $src = $config['src'] ?? '';
                 if (!$src) {
+                    Logger::warning("Missing src for asset {$handle}");
                     continue;
                 }
 
                 $deps = $config['deps'] ?? [];
                 $ver = $config['version'] ?? '1.0.0';
 
+                Logger::info("Loading {$type} asset: {$handle}", [
+                    'src' => $src,
+                    'context' => $context,
+                    'plugin' => $plugin
+                ]);
+
                 if ($type === 'css') {
                     wp_enqueue_style($handle, $src, $deps, $ver);
+                    error_log("AssetManager: Successfully enqueued CSS: {$handle} from {$src} for context {$context}");
                 } else {
                     wp_enqueue_script($handle, $src, $deps, $ver, $config['in_footer'] ?? true);
+                    
+                    if (isset($config['localize']) && is_array($config['localize'])) {
+                        $localize_config = $config['localize'];
+                        $object_name = $localize_config['object_name'] ?? '';
+                        $data = $localize_config['data'] ?? [];
+                        
+                        if ($object_name && !empty($data)) {
+                            wp_localize_script($handle, $object_name, $data);
+                            Logger::info("Localized script {$handle}", [
+                                'object_name' => $object_name,
+                                'data_keys' => array_keys($data)
+                            ]);
+                        }
+                    }
                 }
             }
         }

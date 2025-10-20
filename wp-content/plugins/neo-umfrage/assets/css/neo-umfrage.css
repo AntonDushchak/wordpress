@@ -1145,3 +1145,143 @@ header.mb-3 {
         margin: 0;
     }
 }
+
+/* DataTables стили */
+.dataTables_wrapper {
+    margin-top: 20px;
+}
+
+.dataTables_filter {
+    float: right;
+    margin-bottom: 15px;
+}
+
+.dataTables_filter input {
+    padding: 6px 12px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    margin-left: 10px;
+}
+
+.dataTables_length {
+    float: left;
+    margin-bottom: 15px;
+}
+
+.dataTables_length select {
+    padding: 6px 12px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.dataTables_info {
+    float: left;
+    clear: left;
+    padding-top: 10px;
+}
+
+.dataTables_paginate {
+    float: right;
+    padding-top: 10px;
+}
+
+.dataTables_paginate .paginate_button {
+    display: inline-block;
+    padding: 6px 12px;
+    margin-left: 2px;
+    text-decoration: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    color: #0073aa;
+    cursor: pointer;
+}
+
+.dataTables_paginate .paginate_button:hover {
+    background: #f5f5f5;
+    border-color: #0073aa;
+}
+
+.dataTables_paginate .paginate_button.current {
+    background: #0073aa;
+    border-color: #0073aa;
+    color: #fff;
+}
+
+.dataTables_paginate .paginate_button.disabled {
+    color: #999;
+    cursor: not-allowed;
+    background: #f9f9f9;
+}
+
+.dataTables_processing {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    z-index: 1000;
+}
+
+/* Стили для таблицы DataTables */
+table.dataTable {
+    width: 100% !important;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+table.dataTable thead th {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    padding: 12px 8px;
+    font-weight: 600;
+    text-align: left;
+}
+
+table.dataTable tbody td {
+    border: 1px solid #ddd;
+    padding: 12px 8px;
+    vertical-align: middle;
+}
+
+table.dataTable tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+table.dataTable tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* Адаптивность для DataTables */
+@media (max-width: 768px) {
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        float: none;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    
+    .neo-umfrage-filters {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .neo-umfrage-filters > div {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .neo-umfrage-filters .neo-umfrage-select {
+        margin-left: 0 !important;
+    }
+}

@@ -1,0 +1,75 @@
+/**
+ * Neo Calendar Widget Styles
+ * Стили для виджета календаря на главной странице dashboard
+ */
+
+.widget-card {
+    margin-bottom: 1rem;
+}
+
+.widget-card .form-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+}
+
+.widget-card .form-control {
+    border-radius: 0.375rem;
+    border: 1px solid #dee2e6;
+    padding: 0.5rem 0.75rem;
+}
+
+.widget-card .form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.widget-card .btn {
+    border-radius: 0.375rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.widget-card .btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.widget-card .btn-success {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.widget-card .btn-outline-secondary {
+    color: #6c757d;
+    border-color: #6c757d;
+}
+
+.widget-card .btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+.widget-card hr {
+    margin: 1rem 0;
+    border-color: #dee2e6;
+}
+
+/* Анимации для переключения форм */
+#widget-work-form,
+#widget-vacation-form {
+    transition: all 0.3s ease;
+}
+
+/* Responsive для мобильных устройств */
+@media (max-width: 768px) {
+    .widget-card .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .widget-card .btn:last-child {
+        margin-bottom: 0;
+    }
+}

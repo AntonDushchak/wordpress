@@ -26,20 +26,8 @@
             // Инициализируем модальные окна при первой загрузке
             this.init();
             
-            $.ajax({
-                url: neoUmfrageAjax.ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'neo_umfrage_get_templates',
-                    nonce: neoUmfrageAjax.nonce,
-                    show_only_active: 0 // Показываем все шаблоны в админке
-                },
-                success: function (response) {
-                    if (response.success) {
-                        NeoUmfrageTemplates.renderTemplatesList(response.data);
-                    }
-                }
-            });
+            // Инициализируем DataTables
+            this.initTemplatesDataTable();
         },
 
         // Загрузка шаблонов для фильтра (только активные)
@@ -140,43 +128,118 @@
             });
         },
 
-        // Отображение списка шаблонов
-        renderTemplatesList: function (templates) {
+        // Инициализация DataTables для шаблонов
+        initTemplatesDataTable: function () {
             const $container = $('#templates-list');
+            
+            // Создаем HTML для DataTables
+            $container.html(`
+                <div class="neo-umfrage-filters" style="margin-bottom: 20px; display: flex; gap: 20px; align-items: center;">
+                    <div>
+                        <label class="neo-umfrage-label">Filter nach Status:</label>
+                        <select id="filter-status" class="neo-umfrage-select" style="margin-left: 10px;">
+                            <option value="">Alle Status</option>
+                            <option value="1">Aktiv</option>
+                            <option value="0">Inaktiv</option>
+                        </select>
+                    </div>
+                </div>
+                <table id="templates-table" class="display" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Beschreibung</th>
+                            <th>Status</th>
+                            <th>Erstellt am</th>
+                            <th>Aktionen</th>
+                        </tr>
+                    </thead>
+                </table>
+            `);
 
-            if (templates.length === 0) {
-                $container.html('<p>Keine Vorlagen gefunden.</p>');
-                return;
-            }
-
-            let html = '<table class="neo-umfrage-table">';
-            html += '<thead><tr><th>Name</th><th>Beschreibung</th><th>Status</th><th>Erstellungsdatum</th><th>Aktionen</th></tr></thead>';
-            html += '<tbody>';
-
-            templates.forEach(template => {
-                const statusText = template.is_active == 1 ? 'Aktiv' : 'Inaktiv';
-                const statusClass = template.is_active == 1 ? 'status-active' : 'status-inactive';
-                
-                html += `
-            <tr>
-                <td>${template.name}</td>
-                <td>${template.description || 'Keine Beschreibung'}</td>
-                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                <td>${new Date(template.created_at).toLocaleDateString()}</td>
-                <td>
-                    <button class="neo-umfrage-button neo-umfrage-button-secondary" onclick="editTemplate(${template.id}, ${template.user_id || 0})">Bearbeiten</button>
-                    ${template.is_active == 1 ? 
-                        `<button class="neo-umfrage-button neo-umfrage-button-warning" onclick="deactivateTemplate(${template.id})">Deaktivieren</button>` : 
-                        `<button class="neo-umfrage-button neo-umfrage-button-success" onclick="activateTemplate(${template.id})">Aktivieren</button>`
+            // Инициализируем DataTable
+            const table = $('#templates-table').DataTable({
+                ajax: {
+                    url: neoUmfrageAjax.ajaxurl,
+                    type: 'POST',
+                    data: function(d) {
+                        d.action = 'neo_umfrage_get_templates';
+                        d.nonce = neoUmfrageAjax.nonce;
+                        d.show_only_active = $('#filter-status').val() === '' ? 'all' : $('#filter-status').val();
                     }
-                    <button class="neo-umfrage-button neo-umfrage-button-danger" onclick="deleteTemplateWithSurveys(${template.id})">Löschen</button>
-                </td>
-            </tr>
-        `;
+                },
+                columns: [
+                    { data: 'id' },
+                    { data: 'name' },
+                    { 
+                        data: 'description',
+                        render: function(data, type, row) {
+                            return data || 'Keine Beschreibung';
+                        }
+                    },
+                    { 
+                        data: 'is_active',
+                        render: function(data, type, row) {
+                            const statusText = data == 1 ? 'Aktiv' : 'Inaktiv';
+                            const statusClass = data == 1 ? 'status-active' : 'status-inactive';
+                            return `<span class="status-badge ${statusClass}">${statusText}</span>`;
+                        }
+                    },
+                    { 
+                        data: 'created_at',
+                        render: function(data, type, row) {
+                            if (type === 'display' && data) {
+                                return new Date(data).toLocaleDateString('de-DE', {
+                                    timeZone: 'Europe/Berlin',
+                                    year: 'numeric',
+                                    month: '2-digit',
+                                    day: '2-digit'
+                                });
+                            }
+                            return data;
+                        }
+                    },
+                    { 
+                        data: 'actions',                        
+                        orderable: false, 
+                        searchable: false,
+                        render: function(data, type, row) {
+                            let actions = '';
+                            if (NeoUmfrage.canEdit(row.user_id)) {
+                                actions += `<button class="neo-umfrage-button neo-umfrage-button-secondary" onclick="editTemplate(${row.id}, ${row.user_id || 0})">Bearbeiten</button> `;
+                            }
+                            if (row.is_active == 1) {
+                                actions += `<button class="neo-umfrage-button neo-umfrage-button-warning" onclick="deactivateTemplate(${row.id})">Deaktivieren</button> `;
+                            } else {
+                                actions += `<button class="neo-umfrage-button neo-umfrage-button-success" onclick="activateTemplate(${row.id})">Aktivieren</button> `;
+                            }
+                            if (NeoUmfrage.canDelete(row.user_id)) {
+                                actions += `<button class="neo-umfrage-button neo-umfrage-button-danger" onclick="deleteTemplateWithSurveys(${row.id})">Löschen</button>`;
+                            }
+                            return actions;
+                        }
+                    }
+                ],
+                language: {url: 'https://cdn.datatables.net/plug-ins/1.13.6/i18n/de-DE.json'},
+                processing: true,
+                serverSide: false,
+                responsive: true,
+                searching: true,
+                order: [[0, 'desc']]
             });
 
-            html += '</tbody></table>';
-            $container.html(html);
+            // Обновление таблицы при смене фильтра
+            $('#filter-status').on('change', function() {
+                table.ajax.reload();
+            });
+        },
+
+        // Отображение списка шаблонов (оставляем для совместимости, но заменяем на DataTables)
+        renderTemplatesList: function (templates) {
+            // Эта функция больше не используется, так как мы используем DataTables
+            // Оставляем для совместимости
+            console.log('renderTemplatesList вызвана, но используется DataTables');
         },
 
         // Деактивация шаблона
@@ -193,7 +256,12 @@
                     success: function (response) {
                         if (response.success) {
                             NeoUmfrage.showMessage('success', response.data.message);
-                            NeoUmfrageTemplates.loadTemplates();
+                            // Обновляем DataTable
+                            if ($.fn.DataTable && $('#templates-table').length) {
+                                $('#templates-table').DataTable().ajax.reload();
+                            } else {
+                                NeoUmfrageTemplates.loadTemplates();
+                            }
                         } else {
                             NeoUmfrage.showMessage('error', response.data.message || neoUmfrageAjax.strings.error);
                         }
@@ -216,7 +284,12 @@
                 success: function (response) {
                     if (response.success) {
                         NeoUmfrage.showMessage('success', response.data.message);
-                        NeoUmfrageTemplates.loadTemplates();
+                        // Обновляем DataTable
+                        if ($.fn.DataTable && $('#templates-table').length) {
+                            $('#templates-table').DataTable().ajax.reload();
+                        } else {
+                            NeoUmfrageTemplates.loadTemplates();
+                        }
                     } else {
                         NeoUmfrage.showMessage('error', response.data.message || neoUmfrageAjax.strings.error);
                     }
@@ -244,7 +317,12 @@
                     success: function (response) {
                         if (response.success) {
                             NeoUmfrage.showMessage('success', response.data.message);
-                            NeoUmfrageTemplates.loadTemplates();
+                            // Обновляем DataTable
+                            if ($.fn.DataTable && $('#templates-table').length) {
+                                $('#templates-table').DataTable().ajax.reload();
+                            } else {
+                                NeoUmfrageTemplates.loadTemplates();
+                            }
                         } else {
                             NeoUmfrage.showMessage('error', response.data.message || neoUmfrageAjax.strings.error);
                         }
@@ -339,6 +417,15 @@
             `;
             
             $fieldsContainer.append(fieldHtml);
+        },
+
+        // Обновление DataTable после изменений
+        refreshTemplatesTable: function() {
+            if ($.fn.DataTable && $('#templates-table').length) {
+                $('#templates-table').DataTable().ajax.reload();
+            } else {
+                this.loadTemplates();
+            }
         }
     };
 

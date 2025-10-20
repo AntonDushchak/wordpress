@@ -188,8 +188,8 @@
                                 NeoUmfrageSurveys.loadSurveys();
                             }
                         } else if (formId === 'template-form') {
-                            if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.loadTemplates) {
-                                NeoUmfrageTemplates.loadTemplates();
+                            if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.refreshTemplatesTable) {
+                                NeoUmfrageTemplates.refreshTemplatesTable();
                             }
                             if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.loadTemplatesForFilter) {
                                 NeoUmfrageTemplates.loadTemplatesForFilter();
@@ -595,8 +595,8 @@
                         $form[0].reset();
 
                         // Обновляем список шаблонов
-                        if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.loadTemplates) {
-                            NeoUmfrageTemplates.loadTemplates();
+                        if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.refreshTemplatesTable) {
+                            NeoUmfrageTemplates.refreshTemplatesTable();
                         }
                     } else {
                         const errorMessage = (response && response.data && response.data.message) ? response.data.message :

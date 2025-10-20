@@ -68,12 +68,15 @@ class Neo_Calendar {
             'priority' => 10,
         ]);
 
+        error_log('Neo Calendar: registering plugin assets');
+        error_log('Neo Calendar: widget CSS path = ' . plugin_dir_url(__FILE__) . 'assets/css/neo-calendar-widget.css');
+        
         do_action('neo_dashboard_register_plugin_assets', 'neo-calendar', [
             'css' => [
                 'flatpickr-css' => [
                     'src' => 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css',
                     'deps' => [],
-                    'contexts' => ['neo-calendar', 'dashboard']
+                    'contexts' => ['*']
                 ],
                 'neo-calendar-core' => [
                     'src' => plugin_dir_url(__FILE__) . 'assets/css/neo-calendar-core.css',
@@ -82,8 +85,8 @@ class Neo_Calendar {
                 ],
                 'neo-calendar-widget' => [
                     'src' => plugin_dir_url(__FILE__) . 'assets/css/neo-calendar-widget.css',
-                    'deps' => ['neo-dashboard-core', 'flatpickr-css'],
-                    'contexts' => ['dashboard']
+                    'deps' => [],
+                    'contexts' => ['dashboard-home']
                 ]
             ],
             'js' => [
@@ -100,12 +103,12 @@ class Neo_Calendar {
                 'flatpickr-js' => [
                     'src' => 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js',
                     'deps' => [],
-                    'contexts' => ['neo-calendar', 'dashboard']
+                    'contexts' => ['*']
                 ],
                 'neo-calendar-common' => [
                     'src' => plugin_dir_url(__FILE__) . 'assets/js/neo-calendar-common.js',
                     'deps' => ['jquery', 'flatpickr-js'],
-                    'contexts' => ['neo-calendar', 'dashboard'],
+                    'contexts' => ['*'],
                     'localize' => [
                         'object_name' => 'neoCalendarAjax',
                         'data' => [
@@ -138,7 +141,7 @@ class Neo_Calendar {
                 'neo-calendar-widget' => [
                     'src' => plugin_dir_url(__FILE__) . 'assets/js/neo-calendar-widget.js',
                     'deps' => ['jquery', 'neo-calendar-common'],
-                    'contexts' => ['dashboard']
+                    'contexts' => ['dashboard-home']
                 ]
             ]
         ]);
@@ -160,9 +163,6 @@ class Neo_Calendar {
     }
 
     public function enqueue_calendar_scripts() {
-        if (is_admin()) {
-            return;
-        }
 
     }
 

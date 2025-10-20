@@ -1,14 +1,16 @@
+version: '3.8'
+
 services:
-  # MySQL база данных
+  # MySQL
   mysql:
     image: mysql:8.0
     container_name: wordpress_mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_ROOT_PASSWORD: MyS3cur3R00tP@ssw0rd2025!
       MYSQL_DATABASE: wordpress
       MYSQL_USER: wordpress_user
-      MYSQL_PASSWORD: wordpress_password
+      MYSQL_PASSWORD: W0rdPr3ss_S3cur3P@ss2025!
     volumes:
       - mysql_data:/var/lib/mysql
     ports:
@@ -28,7 +30,7 @@ services:
       WORDPRESS_DB_HOST: mysql:3306
       WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DB_USER: wordpress_user
-      WORDPRESS_DB_PASSWORD: wordpress_password
+      WORDPRESS_DB_PASSWORD: W0rdPr3ss_S3cur3P@ss2025!
       WORDPRESS_DEBUG: 1
       WORDPRESS_CONFIG_EXTRA: |
         define('WP_HOME', 'http://localhost:8080');
@@ -36,6 +38,7 @@ services:
     volumes:
       - ./:/var/www/html
       - ./wp-content:/var/www/html/wp-content
+    working_dir: /var/www/html
     ports:
       - "8080:80"
     networks:
@@ -43,7 +46,7 @@ services:
 
   # phpMyAdmin
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin:latest
+    image: arm64v8/phpmyadmin:latest
     container_name: wordpress_phpmyadmin
     restart: unless-stopped
     depends_on:
@@ -52,7 +55,7 @@ services:
       PMA_HOST: mysql
       PMA_PORT: 3306
       PMA_USER: root
-      PMA_PASSWORD: root_password
+      PMA_PASSWORD: MyS3cur3R00tP@ssw0rd2025!
     ports:
       - "8081:80"
     networks:
@@ -60,7 +63,6 @@ services:
 
 volumes:
   mysql_data:
-    driver: local
 
 networks:
   wordpress_network:
