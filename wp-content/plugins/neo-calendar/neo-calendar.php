@@ -141,7 +141,7 @@ add_action('plugins_loaded', static function () {
         // Erstelle Gruppe in Sidebar
         do_action('neo_dashboard_register_sidebar_item', [
             'slug'     => 'neo-calendar-group',
-            'label'    => 'Neo Calendar',
+            'label'    => 'Neo Calendar TEST',
             'icon'     => 'bi-calendar-event',
             'url'      => '/neo-dashboard/neo-calendar',
             'position' => 25,
