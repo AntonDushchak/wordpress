@@ -137,8 +137,7 @@
         if (addVacationBtn) {
             addVacationBtn.addEventListener('click', function () {
                 window.NeoCalendar.addVacation(
-                    document.getElementById('vacation-date-from'),
-                    document.getElementById('vacation-date-to')
+                    document.getElementById('vacation-date-range')
                 );
             });
         }
@@ -446,6 +445,19 @@
 
         if (eventTime) {
             window.NeoCalendar.initTimePicker("event-time");
+        }
+
+        // Инициализация Date Picker для Einzeldaten
+        if (window.NeoCalendar && window.NeoCalendar.initDatePicker) {
+            window.NeoCalendar.initDatePicker("work-date");
+            window.NeoCalendar.initDatePicker("event-date");
+            window.NeoCalendar.initDatePicker("edit-event-start-date");
+            window.NeoCalendar.initDatePicker("edit-event-end-date");
+        }
+
+        // Инициализация Range Date Picker для Urlaubsdaten
+        if (window.NeoCalendar && window.NeoCalendar.initDateRangePicker) {
+            window.NeoCalendar.initDateRangePicker("vacation-date-range");
         }
 
         // Füge Event-Handler für Buttons

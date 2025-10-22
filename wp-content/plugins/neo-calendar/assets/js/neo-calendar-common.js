@@ -31,11 +31,11 @@
     }
 
     function addWorkTime(dateEl, fromEl, toEl) {
-        const date = dateEl.value;
+        const dateFormatted = dateEl.value;
         const timeFrom = fromEl.value;
         const timeTo = toEl.value;
 
-        if (!date || !timeFrom || !timeTo) {
+        if (!dateFormatted || !timeFrom || !timeTo) {
             alert('Bitte füllen Sie alle Felder aus!');
             return;
         }
@@ -45,20 +45,44 @@
             return;
         }
 
+        function convertDateFormat(dateStr) {
+            const parts = dateStr.split('-');
+            if (parts.length !== 3) return dateStr;
+            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        }
+
+        const date = convertDateFormat(dateFormatted);
         const startDateTime = date + 'T' + timeFrom + ':00';
         const endDateTime = date + 'T' + timeTo + ':00';
 
         saveEventToDB('arbeitsstunde', '', startDateTime, endDateTime, '');
     }
 
-    function addVacation(dateFromEl, dateToEl) {
-        const dateFrom = dateFromEl.value;
-        const dateTo = dateToEl.value;
+    function addVacation(dateRangeEl) {
+        const dateRange = dateRangeEl.value;
 
-        if (!dateFrom || !dateTo) {
-            alert('Bitte füllen Sie alle Felder aus!');
+        if (!dateRange) {
+            alert('Bitte wählen Sie einen Datumsbereich aus!');
             return;
         }
+
+        const dates = dateRange.split(' до ');
+        if (dates.length !== 2) {
+            alert('Bitte wählen Sie einen gültigen Datumsbereich aus!');
+            return;
+        }
+
+        const dateFromFormatted = dates[0].trim();
+        const dateToFormatted = dates[1].trim();
+
+        function convertDateFormat(dateStr) {
+            const parts = dateStr.split('-');
+            if (parts.length !== 3) return dateStr;
+            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        }
+
+        const dateFrom = convertDateFormat(dateFromFormatted);
+        const dateTo = convertDateFormat(dateToFormatted);
 
         if (dateFrom > dateTo) {
             alert('Das Datum "von" muss kleiner oder gleich dem Datum "bis" sein!');
@@ -73,15 +97,22 @@
     }
 
     function addEvent(dateEl, timeEl, titleEl) {
-        const date = dateEl.value;
+        const dateFormatted = dateEl.value;
         const time = timeEl.value;
         const title = titleEl.value;
 
-        if (!date || !time || !title) {
+        if (!dateFormatted || !time || !title) {
             alert('Bitte füllen Sie alle Felder aus!');
             return;
         }
 
+        function convertDateFormat(dateStr) {
+            const parts = dateStr.split('-');
+            if (parts.length !== 3) return dateStr;
+            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        }
+
+        const date = convertDateFormat(dateFormatted);
         const startDateTime = date + 'T' + time + ':00';
         const endDateTime = date + 'T' + time + ':00'; // Für Veranstaltung verwenden wir dieselbe Zeit
 
@@ -168,6 +199,14 @@
         
         if (el._flatpickr) return;
 
+        const isDarkTheme = isDarkThemeActive();
+
+        if (isDarkTheme) {
+            loadFlatpickrDarkTheme();
+        } else {
+            removeFlatpickrDarkTheme();
+        }
+
         flatpickr(el, {
             enableTime: true,
             noCalendar: true,
@@ -175,7 +214,202 @@
             time_24hr: true,
             minuteIncrement: 15,
             allowInput: false,
+            theme: isDarkTheme ? "dark" : "light"
         });
+        
+        el.setAttribute('data-flatpickr-initialized', 'true');
+    }
+
+    function loadFlatpickrDarkTheme() {
+        const existingDarkTheme = document.querySelector('link[href*="flatpickr/dist/themes/dark.css"]');
+        if (existingDarkTheme) {
+            return;
+        }
+        
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.type = 'text/css';
+        link.href = 'https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css';
+        link.id = 'flatpickr-dark-theme';
+        document.head.appendChild(link);
+    }
+
+    function removeFlatpickrDarkTheme() {
+        const darkThemeLink = document.querySelector('#flatpickr-dark-theme');
+        if (darkThemeLink) {
+            darkThemeLink.remove();
+        }
+    }
+
+    function isDarkThemeActive() {
+        if (document.body.classList.contains('dark-theme') || 
+            document.documentElement.classList.contains('dark-theme')) {
+            return true;
+        }
+        
+        if (document.body.getAttribute('data-theme') === 'dark' ||
+            document.documentElement.getAttribute('data-theme') === 'dark') {
+            return true;
+        }
+        
+        if (document.body.classList.contains('dark') || 
+            document.documentElement.classList.contains('dark')) {
+            return true;
+        }
+        
+        if (document.body.classList.contains('neo-dark') || 
+            document.documentElement.classList.contains('neo-dark') ||
+            document.body.getAttribute('data-neo-theme') === 'dark' ||
+            document.documentElement.getAttribute('data-neo-theme') === 'dark') {
+            return true;
+        }
+        
+        if (!document.body.getAttribute('data-theme') && 
+            !document.documentElement.getAttribute('data-theme') &&
+            window.matchMedia && 
+            window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    function initDatePicker(elementId) {
+        if (typeof flatpickr === 'undefined') {
+            console.error("Flatpickr not loaded");
+            return;
+        }
+    
+        const el = document.getElementById(elementId);
+        if (!el) {
+            console.warn(`Element with id "${elementId}" not found`);
+            return;
+        }
+        
+        if (el._flatpickr) return;
+
+        const isDarkTheme = isDarkThemeActive();
+
+        if (isDarkTheme) {
+            loadFlatpickrDarkTheme();
+        } else {
+            removeFlatpickrDarkTheme();
+        }
+
+        flatpickr(el, {
+            dateFormat: "d-m-Y",
+            allowInput: false,
+            theme: isDarkTheme ? "dark" : "light"
+        });
+        
+        el.setAttribute('data-flatpickr-initialized', 'true');
+    }
+
+    function initDateRangePicker(elementId) {
+        if (typeof flatpickr === 'undefined') {
+            console.error("Flatpickr not loaded");
+            return;
+        }
+    
+        const el = document.getElementById(elementId);
+        if (!el) {
+            console.warn(`Element with id "${elementId}" not found`);
+            return;
+        }
+        
+        if (el._flatpickr) return;
+
+        const isDarkTheme = isDarkThemeActive();
+
+        if (isDarkTheme) {
+            loadFlatpickrDarkTheme();
+        } else {
+            removeFlatpickrDarkTheme();
+        }
+
+        flatpickr(el, {
+            mode: "range",
+            dateFormat: "d-m-Y",
+            allowInput: false,
+            theme: isDarkTheme ? "dark" : "light",
+            locale: {
+                rangeSeparator: " до "
+            }
+        });
+        
+        el.setAttribute('data-flatpickr-initialized', 'true');
+    }
+
+    function watchThemeChanges() {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && 
+                    (mutation.attributeName === 'class' || 
+                     mutation.attributeName === 'data-theme' ||
+                     mutation.attributeName === 'data-neo-theme')) {
+                    updateFlatpickrTheme();
+                }
+            });
+        });
+
+        observer.observe(document.body, { 
+            attributes: true, 
+            attributeFilter: ['class', 'data-theme', 'data-neo-theme'] 
+        });
+        observer.observe(document.documentElement, { 
+            attributes: true, 
+            attributeFilter: ['class', 'data-theme', 'data-neo-theme'] 
+        });
+
+        if (window.matchMedia) {
+            const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+            mediaQuery.addListener(() => {
+                updateFlatpickrTheme();
+            });
+        }
+        
+        document.addEventListener('neo-theme-changed', (e) => {
+            setTimeout(updateFlatpickrTheme, 100);
+        });
+        
+        document.addEventListener('themeChanged', updateFlatpickrTheme);
+        document.addEventListener('theme-update', updateFlatpickrTheme);
+        window.addEventListener('neo-dashboard-theme-changed', updateFlatpickrTheme);
+    }
+
+    function updateFlatpickrTheme() {
+        const isDarkTheme = isDarkThemeActive();
+        
+        if (isDarkTheme) {
+            loadFlatpickrDarkTheme();
+        } else {
+            removeFlatpickrDarkTheme();
+        }
+
+        document.querySelectorAll('[data-flatpickr-initialized]').forEach(el => {
+            if (el._flatpickr) {
+                el._flatpickr.set('theme', isDarkTheme ? 'dark' : 'light');
+            }
+        });
+    }
+
+    function debugTheme() {
+        const isDark = isDarkThemeActive();
+        const darkCSS = document.querySelector('#flatpickr-dark-theme');
+        
+        if (isDark) {
+            loadFlatpickrDarkTheme();
+        } else {
+            removeFlatpickrDarkTheme();
+        }
+        
+        updateFlatpickrTheme();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', watchThemeChanges);
+    } else {
+        watchThemeChanges();
     }
 
     window.NeoCalendar = {
@@ -187,6 +421,9 @@
         showVacationForm,
         showWorkForm,
         showEventForm,
-        initTimePicker
+        initTimePicker,
+        initDatePicker,
+        initDateRangePicker,
+        updateFlatpickrTheme
     };
 })(jQuery);

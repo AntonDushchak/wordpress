@@ -528,7 +528,7 @@ class Neo_Calendar {
                             <div class="row">
                                 <div class="col-md-2">
                                     <label for="work-date" class="form-label">Datum</label>
-                                    <input type="date" class="form-control" id="work-date" value="<?php echo date('Y-m-d'); ?>">
+                                    <input type="text" class="form-control date-picker" id="work-date" value="<?php echo date('d-m-Y'); ?>" readonly>
                                 </div>
                                 <div class="col-md-2">
                                     <label for="work-time-from" class="form-label">Zeit von</label>
@@ -556,13 +556,9 @@ class Neo_Calendar {
                         <div id="vacation-form" class="calendar-form mb-4" style="display: none;">
                             <h4>Urlaub hinzufügen</h4>
                             <div class="row">
-                                <div class="col-md-4">
-                                    <label for="vacation-date-from" class="form-label">Datum von</label>
-                                    <input type="date" class="form-control" id="vacation-date-from" value="<?php echo date('Y-m-d'); ?>">
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="vacation-date-to" class="form-label">Datum bis</label>
-                                    <input type="date" class="form-control" id="vacation-date-to" value="<?php echo date('Y-m-d'); ?>">
+                                <div class="col-md-8">
+                                    <label for="vacation-date-range" class="form-label">Urlaubsbereich</label>
+                                    <input type="text" class="form-control date-range-picker" id="vacation-date-range" placeholder="Wählen Sie einen Datumsbereich" readonly>
                                 </div>
                                 <div class="col-md-4 d-flex align-items-end">
                                     <button type="button" class="btn btn-primary me-2" id="add-vacation-btn">
@@ -581,7 +577,7 @@ class Neo_Calendar {
                             <div class="row">
                                 <div class="col-md-3">
                                     <label for="event-date" class="form-label">Datum</label>
-                                    <input type="date" class="form-control" id="event-date" value="<?php echo date('Y-m-d'); ?>">
+                                    <input type="text" class="form-control date-picker" id="event-date" value="<?php echo date('d-m-Y'); ?>" readonly>
                                 </div>
                                 <div class="col-md-3">
                                     <label for="event-time" class="form-label">Zeit</label>
@@ -645,7 +641,7 @@ class Neo_Calendar {
                                             <div class="row mt-3">
                                                 <div class="col-md-3">
                                                     <label for="edit-event-start-date" class="form-label">Start Datum</label>
-                                                    <input type="date" class="form-control" id="edit-event-start-date" required>
+                                                    <input type="text" class="form-control date-picker" id="edit-event-start-date" readonly required>
                                                 </div>
                                                 <div class="col-md-3">
                                                     <label for="edit-event-start-time" class="form-label">Start Zeit</label>
@@ -653,7 +649,7 @@ class Neo_Calendar {
                                                 </div>
                                                 <div class="col-md-3">
                                                     <label for="edit-event-end-date" class="form-label">Ende Datum</label>
-                                                    <input type="date" class="form-control" id="edit-event-end-date">
+                                                    <input type="text" class="form-control date-picker" id="edit-event-end-date" readonly>
                                                 </div>
                                                 <div class="col-md-3">
                                                     <label for="edit-event-end-time" class="form-label">Ende Zeit</label>
@@ -694,7 +690,7 @@ class Neo_Calendar {
             <div class="row" id="widget-work-form">
                 <div class="col-md-4">
                     <label for="widget-work-date" class="form-label">Datum</label>
-                    <input type="date" class="form-control" id="widget-work-date" value="<?php echo date('Y-m-d'); ?>">
+                    <input type="text" class="form-control date-picker" id="widget-work-date" value="<?php echo date('d-m-Y'); ?>" readonly>
                 </div>
                 <div class="col-md-4">
                     <label for="widget-work-time-from" class="form-label">Zeit von</label>
@@ -708,13 +704,9 @@ class Neo_Calendar {
 
             <!-- Urlaubformular (Standardmäßig ausgeblendet) -->
             <div class="row" id="widget-vacation-form" style="display: none;">
-                <div class="col-md-6">
-                    <label for="widget-vacation-date-from" class="form-label">Datum von</label>
-                    <input type="date" class="form-control" id="widget-vacation-date-from" value="<?php echo date('Y-m-d'); ?>">
-                </div>
-                <div class="col-md-6">
-                    <label for="widget-vacation-date-to" class="form-label">Datum bis</label>
-                    <input type="date" class="form-control" id="widget-vacation-date-to" value="<?php echo date('Y-m-d'); ?>">
+                <div class="col-12">
+                    <label for="widget-vacation-date-range" class="form-label">Urlaubsbereich</label>
+                    <input type="text" class="form-control date-range-picker" id="widget-vacation-date-range" placeholder="Wählen Sie einen Datumsbereich" readonly>
                 </div>
             </div>
 

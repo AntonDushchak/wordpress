@@ -117,7 +117,6 @@ main {
 
 .widget-card {
     background: #fff;
-    border: 1px solid #dee2e6;
     border-radius: 0.375rem;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     margin-bottom: 1.5rem;
@@ -125,7 +124,6 @@ main {
 
 .widget-card-header {
     padding: 1rem 1.25rem;
-    border-bottom: 1px solid #dee2e6;
     background-color: #f8f9fa;
     border-radius: 0.375rem 0.375rem 0 0;
 }
@@ -139,6 +137,14 @@ main {
 
 .widget-card-body {
     padding: 1.25rem;
+}
+
+.widget-card hr {
+    border: 0;
+}
+
+.card-body .card {
+    border: none;
 }
 
 .form-control {

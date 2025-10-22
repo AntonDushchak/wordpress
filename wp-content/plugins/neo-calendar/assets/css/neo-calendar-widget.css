@@ -15,13 +15,29 @@
 
 .widget-card .form-control {
     border-radius: 0.375rem;
-    border: 1px solid #dee2e6;
-    padding: 0.5rem 0.75rem;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    margin: 0;
 }
 
 .widget-card .form-control:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    border: none;
+    box-shadow: none;
+    outline: none;
+}
+
+.widget-card .col-md-4 {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+}
+
+.widget-card .col-md-4:first-child {
+    padding-left: 0;
+}
+
+.widget-card .col-md-4:last-child {
+    padding-right: 0;
 }
 
 .widget-card .btn {
@@ -53,16 +69,14 @@
 
 .widget-card hr {
     margin: 1rem 0;
-    border-color: #dee2e6;
 }
 
-/* Анимации для переключения форм */
+
 #widget-work-form,
 #widget-vacation-form {
     transition: all 0.3s ease;
 }
 
-/* Responsive для мобильных устройств */
 @media (max-width: 768px) {
     .widget-card .btn {
         width: 100%;

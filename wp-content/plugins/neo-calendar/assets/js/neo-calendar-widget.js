@@ -19,8 +19,7 @@
         if (addVacationBtn) {
             addVacationBtn.addEventListener('click', function () {
                 window.NeoCalendar.addVacation(
-                    document.getElementById('widget-vacation-date-from'),
-                    document.getElementById('widget-vacation-date-to')
+                    document.getElementById('widget-vacation-date-range')
                 );
             });
         }
@@ -42,6 +41,14 @@
             window.NeoCalendar.initTimePicker("widget-work-time-to");
         } else {
             console.log("Time-Picker-Elemente nicht gefunden:", { from, to });
+        }
+
+        if (window.NeoCalendar && window.NeoCalendar.initDatePicker) {
+            window.NeoCalendar.initDatePicker("widget-work-date");
+        }
+
+        if (window.NeoCalendar && window.NeoCalendar.initDateRangePicker) {
+            window.NeoCalendar.initDateRangePicker("widget-vacation-date-range");
         }
     });
 
