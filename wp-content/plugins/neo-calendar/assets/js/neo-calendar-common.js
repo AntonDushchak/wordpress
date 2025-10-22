@@ -214,7 +214,8 @@
             time_24hr: true,
             minuteIncrement: 15,
             allowInput: false,
-            theme: isDarkTheme ? "dark" : "light"
+            theme: isDarkTheme ? "dark" : "light",
+            locale: "de"
         });
         
         el.setAttribute('data-flatpickr-initialized', 'true');
@@ -299,7 +300,8 @@
         flatpickr(el, {
             dateFormat: "d-m-Y",
             allowInput: false,
-            theme: isDarkTheme ? "dark" : "light"
+            theme: isDarkTheme ? "dark" : "light",
+            locale: "de"
         });
         
         el.setAttribute('data-flatpickr-initialized', 'true');
@@ -332,9 +334,7 @@
             dateFormat: "d-m-Y",
             allowInput: false,
             theme: isDarkTheme ? "dark" : "light",
-            locale: {
-                rangeSeparator: " до "
-            }
+            locale: "de"
         });
         
         el.setAttribute('data-flatpickr-initialized', 'true');

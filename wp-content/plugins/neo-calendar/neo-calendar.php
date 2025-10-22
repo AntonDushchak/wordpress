@@ -105,9 +105,14 @@ class Neo_Calendar {
                     'deps' => [],
                     'contexts' => ['*']
                 ],
+                'flatpickr-locale-de' => [
+                    'src' => 'https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/de.js',
+                    'deps' => ['flatpickr-js'],
+                    'contexts' => ['*']
+                ],
                 'neo-calendar-common' => [
                     'src' => plugin_dir_url(__FILE__) . 'assets/js/neo-calendar-common.js',
-                    'deps' => ['jquery', 'flatpickr-js'],
+                    'deps' => ['jquery', 'flatpickr-js', 'flatpickr-locale-de'],
                     'contexts' => ['*'],
                     'localize' => [
                         'object_name' => 'neoCalendarAjax',

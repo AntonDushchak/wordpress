@@ -524,12 +524,12 @@ function add_neo_dashboard_theme_assets() {
         color: color-mix(in srgb, var(--theme-primary-color) 80%, white 20%) !important;
     }
     
-    /* Forms */
+    /* Forms 
     input, textarea, select {
         background-color: var(--theme-secondary-bg) !important;
         color: var(--theme-text-color) !important;
         border-color: var(--theme-border-color) !important;
-    }
+    }*/
     
     /* Responsive design for theme switcher */
     @media (max-width: 768px) {
