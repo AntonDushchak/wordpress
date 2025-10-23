@@ -67,9 +67,6 @@ class Neo_Calendar {
             'callback' => [$this, 'render_widget'],
             'priority' => 10,
         ]);
-
-        error_log('Neo Calendar: registering plugin assets');
-        error_log('Neo Calendar: widget CSS path = ' . plugin_dir_url(__FILE__) . 'assets/css/neo-calendar-widget.css');
         
         do_action('neo_dashboard_register_plugin_assets', 'neo-calendar', [
             'css' => [
@@ -527,7 +524,6 @@ class Neo_Calendar {
                     <div id="neo-calendar">
                         <h2>Mitarbeiterkalender</h2>
 
-                        <!-- Arbeitszeitformular (Standardmäßig sichtbar) -->
                         <div id="work-time-form" class="calendar-form mb-4">
                             <h4>Arbeitszeit hinzufügen</h4>
                             <div class="row">
@@ -557,15 +553,14 @@ class Neo_Calendar {
                             </div>
                         </div>
 
-                        <!-- Urlaubformular (Standardmäßig ausgeblendet) -->
                         <div id="vacation-form" class="calendar-form mb-4" style="display: none;">
                             <h4>Urlaub hinzufügen</h4>
                             <div class="row">
-                                <div class="col-md-8">
+                                <div class="col-md-4">
                                     <label for="vacation-date-range" class="form-label">Urlaubsbereich</label>
                                     <input type="text" class="form-control date-range-picker" id="vacation-date-range" placeholder="Wählen Sie einen Datumsbereich" readonly>
                                 </div>
-                                <div class="col-md-4 d-flex align-items-end">
+                                <div class="col-md-8 d-flex align-items-end">
                                     <button type="button" class="btn btn-primary me-2" id="add-vacation-btn">
                                         <i class="bi bi-plus-circle"></i> Hinzufügen
                                     </button>
@@ -576,23 +571,22 @@ class Neo_Calendar {
                             </div>
                         </div>
 
-                        <!-- Veranstaltungsformular (Standardmäßig ausgeblendet) -->
                         <div id="event-form" class="calendar-form mb-4" style="display: none;">
                             <h4>Veranstaltung hinzufügen</h4>
                             <div class="row">
                                 <div class="col-md-3">
-                                    <label for="event-date" class="form-label">Datum</label>
-                                    <input type="text" class="form-control date-picker" id="event-date" value="<?php echo date('d-m-Y'); ?>" readonly>
+                                    <label for="event-date-range" class="form-label">Datumsbereich</label>
+                                    <input type="text" class="form-control date-range-picker" id="event-date-range" placeholder="Wählen Sie einen Datumsbereich" readonly>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-md-2">
                                     <label for="event-time" class="form-label">Zeit</label>
-                                    <input type="text" class="form-control" id="event-time" value="10:00">
+                                    <input type="text" class="form-control" id="event-time" value="">
                                 </div>
                                 <div class="col-md-3">
                                     <label for="event-title" class="form-label">Titel</label>
                                     <input type="text" class="form-control" id="event-title" placeholder="Titel eingeben">
                                 </div>
-                                <div class="col-md-3 d-flex align-items-end">
+                                <div class="col-md-4 d-flex align-items-end">
                                     <button type="button" class="btn btn-primary me-2" id="add-event-btn">
                                         <i class="bi bi-plus-circle"></i> Hinzufügen
                                     </button>
@@ -605,14 +599,12 @@ class Neo_Calendar {
 
                         <div id="calendar"></div>
 
-                        <!-- Информационное сообщение, если нет событий -->
                         <div id="no-events-message" class="alert alert-info mt-3" style="display: none;">
                             <i class="bi bi-info-circle"></i>
                             <strong>Keine Ereignisse vorhanden</strong><br>
                             Der Kalender ist leer. Fügen Sie Arbeitszeiten oder Urlaub hinzu, um den Kalender zu füllen.
                         </div>
 
-                        <!-- Modal для редактирования событий -->
                         <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
                             <div class="modal-dialog modal-lg">
                                 <div class="modal-content">
@@ -639,7 +631,6 @@ class Neo_Calendar {
                                                 <div class="col-md-6" id="edit-event-employee-container" style="display: none;">
                                                     <label for="edit-event-employee" class="form-label">Mitarbeiter</label>
                                                     <select class="form-control" id="edit-event-employee">
-                                                        <!-- Опции добавляются через JavaScript -->
                                                     </select>
                                                 </div>
                                             </div>
@@ -691,7 +682,6 @@ class Neo_Calendar {
     public function render_widget() {
         ?>
         <div class="card widget-card" style="border-color: transparent;">
-            <!-- Arbeitszeitformular (Standardmäßig sichtbar) -->
             <div class="row" id="widget-work-form">
                 <div class="col-md-4">
                     <label for="widget-work-date" class="form-label">Datum</label>
@@ -707,7 +697,6 @@ class Neo_Calendar {
                 </div>
             </div>
 
-            <!-- Urlaubformular (Standardmäßig ausgeblendet) -->
             <div class="row" id="widget-vacation-form" style="display: none;">
                 <div class="col-12">
                     <label for="widget-vacation-date-range" class="form-label">Urlaubsbereich</label>
@@ -745,7 +734,7 @@ class Neo_Calendar {
             user_name VARCHAR(100) NOT NULL,
             first_name VARCHAR(100) NOT NULL,
             last_name VARCHAR(100) NOT NULL,
-            type VARCHAR(20) NOT NULL COMMENT 'veranstaltung, urlaub, arbeitsstunde',
+            type VARCHAR(20) NOT NULL,
             title VARCHAR(255) NOT NULL,
             start DATETIME NOT NULL,
             end DATETIME DEFAULT NULL,
@@ -764,5 +753,4 @@ class Neo_Calendar {
     }
 }
 
-// Инициализация плагина
 new Neo_Calendar();

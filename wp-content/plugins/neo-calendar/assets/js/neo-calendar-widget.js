@@ -2,7 +2,6 @@
     'use strict';
 
     $(document).ready(function () {
-        // Button zum Hinzufügen von Arbeitszeit
         const addWorkTimeBtn = document.getElementById('widget-add-work-time-btn');
         if (addWorkTimeBtn) {
             addWorkTimeBtn.addEventListener('click', function () {
@@ -14,7 +13,6 @@
             });
         }
 
-        // Button zum Hinzufügen von Urlaub
         const addVacationBtn = document.getElementById('widget-add-vacation-btn');
         if (addVacationBtn) {
             addVacationBtn.addEventListener('click', function () {
@@ -24,7 +22,6 @@
             });
         }
 
-        // Button zum Umschalten auf Urlaubsformular
         const showVacationBtn = document.getElementById('widget-show-vacation-form-btn');
         if (showVacationBtn) {
             showVacationBtn.addEventListener('click', function () {
@@ -32,7 +29,6 @@
             });
         }
 
-        // Initialisierung der Time-Picker für Widget
         const from = document.getElementById("widget-work-time-from");
         const to = document.getElementById("widget-work-time-to");
     

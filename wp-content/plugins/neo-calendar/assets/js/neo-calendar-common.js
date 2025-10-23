@@ -96,12 +96,12 @@
         saveEventToDB('urlaub', '', dateFrom, endDateStr, '');
     }
 
-    function addEvent(dateEl, timeEl, titleEl) {
-        const dateFormatted = dateEl.value;
+    function addEvent(dateRangeEl, timeEl, titleEl) {
+        const dateRange = dateRangeEl.value;
         const time = timeEl.value;
         const title = titleEl.value;
 
-        if (!dateFormatted || !time || !title) {
+        if (!dateRange || !time || !title) {
             alert('Bitte füllen Sie alle Felder aus!');
             return;
         }
@@ -112,14 +112,35 @@
             return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
         }
 
-        const date = convertDateFormat(dateFormatted);
-        const startDateTime = date + 'T' + time + ':00';
-        const endDateTime = date + 'T' + time + ':00'; // Für Veranstaltung verwenden wir dieselbe Zeit
+        if (dateRange.includes(' bis ')) {
+            const dates = dateRange.split(' bis ');
+            if (dates.length !== 2) {
+                alert('Bitte wählen Sie einen gültigen Datumsbereich aus!');
+                return;
+            }
 
-        saveEventToDB('veranstaltung', title, startDateTime, endDateTime, '');
+            const dateFromFormatted = dates[0].trim();
+            const dateToFormatted = dates[1].trim();
+            const dateFrom = convertDateFormat(dateFromFormatted);
+            const dateTo = convertDateFormat(dateToFormatted);
+
+            if (dateFrom > dateTo) {
+                alert('Das Datum "von" muss kleiner oder gleich dem Datum "bis" sein!');
+                return;
+            }
+
+            const startDateTime = dateFrom + 'T' + time + ':00';
+            const endDateTime = dateTo + 'T' + time + ':00';
+            
+            saveEventToDB('veranstaltung', title, startDateTime, endDateTime, '');
+        } else {
+            const date = convertDateFormat(dateRange);
+            const startDateTime = date + 'T' + time + ':00';
+            const endDateTime = date + 'T' + time + ':00';
+            
+            saveEventToDB('veranstaltung', title, startDateTime, endDateTime, '');
+        }
     }
-
-    // Funktion zum Umschalten von Formularen im Widget
     function toggleWidgetForms() {
         const workForm = document.getElementById('widget-work-form');
         const vacationForm = document.getElementById('widget-vacation-form');
@@ -129,14 +150,12 @@
         
         if (workForm && vacationForm && addWorkBtn && addVacationBtn && toggleBtn) {
             if (workForm.style.display !== 'none') {
-                // Zeige Urlaubsformular
                 workForm.style.display = 'none';
                 vacationForm.style.display = 'flex';
                 addWorkBtn.style.display = 'none';
                 addVacationBtn.style.display = 'inline-block';
                 toggleBtn.innerHTML = '<i class="bi bi-arrow-left"></i> Zurück';
             } else {
-                // Zeige Arbeitszeitformular
                 workForm.style.display = 'flex';
                 vacationForm.style.display = 'none';
                 addWorkBtn.style.display = 'inline-block';
@@ -146,7 +165,6 @@
         }
     }
 
-    // Funktion zum Umschalten auf Urlaubsformular in der Hauptform
     function showVacationForm() {
         const workForm = document.getElementById('work-time-form');
         const vacationForm = document.getElementById('vacation-form');
@@ -159,7 +177,6 @@
         }
     }
 
-    // Funktion zum Zurückkehren zur Arbeitszeitformular in der Hauptform
     function showWorkForm() {
         const workForm = document.getElementById('work-time-form');
         const vacationForm = document.getElementById('vacation-form');
@@ -172,7 +189,6 @@
         }
     }
 
-    // Funktion zum Anzeigen der Veranstaltungsformular
     function showEventForm() {
         const workForm = document.getElementById('work-time-form');
         const vacationForm = document.getElementById('vacation-form');

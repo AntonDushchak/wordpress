@@ -1,8 +1,3 @@
-/**
- * Neo Calendar - JavaScript
- * Hauptfunktionalität für Kalender
- */
-
 (function ($) {
     'use strict';
 
@@ -26,7 +21,6 @@
     });
     
     function initializeCalendar() {
-        // --- Kalender ---
         if ($('#calendar').length && typeof FullCalendar !== 'undefined') {
             const calendarEl = document.getElementById('calendar');
             const calendar = new FullCalendar.Calendar(calendarEl, {
@@ -52,7 +46,6 @@
                 eventClick: function (info) {
                     const props = info.event.extendedProps;
 
-                    // Öffne sofort das Bearbeitungsformular
                     if (props.can_manage || props.is_owner) {
                         editEvent(info.event);
                     } else {
@@ -60,10 +53,42 @@
                     }
                 },
                 dateClick: function (info) {
-                    // Setze ausgewähltes Datum im work-date Feld
-                    const workDateInput = document.getElementById('work-date');
-                    if (workDateInput) {
-                        workDateInput.value = info.dateStr;
+                    const clickedDate = new Date(info.dateStr);
+                    const formattedDate = clickedDate.getDate().toString().padStart(2, '0') + '-' + 
+                                        (clickedDate.getMonth() + 1).toString().padStart(2, '0') + '-' + 
+                                        clickedDate.getFullYear();
+
+                    const workForm = document.getElementById('work-time-form');
+                    const vacationForm = document.getElementById('vacation-form');
+                    const eventForm = document.getElementById('event-form');
+
+                    if (workForm && workForm.style.display !== 'none') {
+                        const workDateInput = document.getElementById('work-date');
+                        if (workDateInput && window.NeoCalendar && window.NeoCalendar.initDatePicker) {
+                            if (workDateInput._flatpickr) {
+                                workDateInput._flatpickr.setDate(formattedDate);
+                            } else {
+                                workDateInput.value = formattedDate;
+                            }
+                        }
+                    } else if (vacationForm && vacationForm.style.display !== 'none') {
+                        const vacationDateInput = document.getElementById('vacation-date-range');
+                        if (vacationDateInput && window.NeoCalendar && window.NeoCalendar.initDateRangePicker) {
+                            if (vacationDateInput._flatpickr) {
+                                vacationDateInput._flatpickr.setDate(formattedDate);
+                            } else {
+                                vacationDateInput.value = formattedDate;
+                            }
+                        }
+                    } else if (eventForm && eventForm.style.display !== 'none') {
+                        const eventDateInput = document.getElementById('event-date-range');
+                        if (eventDateInput && window.NeoCalendar && window.NeoCalendar.initDateRangePicker) {
+                            if (eventDateInput._flatpickr) {
+                                eventDateInput._flatpickr.setDate(formattedDate);
+                            } else {
+                                eventDateInput.value = formattedDate;
+                            }
+                        }
                     }
                 }
             });
@@ -71,14 +96,12 @@
             window.neoCalendar = calendar;
         }
         
-        // Füge Event-Handler für Lösch-Button im Bearbeitungsformular hinzu
         const deleteEventBtn = document.getElementById('delete-event-btn');
         if (deleteEventBtn) {
             deleteEventBtn.addEventListener('click', function () {
                 const eventId = document.getElementById('edit-event-id').value;
                 if (eventId && confirm('Ereignis wirklich löschen?')) {
                     deleteEventFromDB(eventId);
-                    // Schließe Modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('editEventModal'));
                     modal.hide();
                 }
@@ -86,9 +109,7 @@
         }
     }
 
-    // Funktion zur Initialisierung der Formular-Buttons
     function initializeFormButtons() {
-        // Button zum Anzeigen des Urlaubsformulars
         const showVacationBtn = document.getElementById('show-vacation-form-btn');
         if (showVacationBtn) {
             showVacationBtn.addEventListener('click', function () {
@@ -96,7 +117,6 @@
             });
         }
 
-        // Button zum Zurückkehren zum Arbeitszeitformular
         const backToWorkBtn = document.getElementById('back-to-work-form-btn');
         if (backToWorkBtn) {
             backToWorkBtn.addEventListener('click', function () {
@@ -104,7 +124,6 @@
             });
         }
 
-        // Button zum Anzeigen des Veranstaltungsformulars
         const showEventBtn = document.getElementById('show-event-form-btn');
         if (showEventBtn) {
             showEventBtn.addEventListener('click', function () {
@@ -112,7 +131,6 @@
             });
         }
 
-        // Button zum Zurückkehren zum Arbeitszeitformular aus dem Veranstaltungsformular
         const backToWorkFromEventBtn = document.getElementById('back-to-work-from-event-btn');
         if (backToWorkFromEventBtn) {
             backToWorkFromEventBtn.addEventListener('click', function () {
@@ -120,7 +138,6 @@
             });
         }
 
-        // Button zum Hinzufügen von Arbeitszeit
         const addWorkTimeBtn = document.getElementById('add-work-time-btn');
         if (addWorkTimeBtn) {
             addWorkTimeBtn.addEventListener('click', function () {
@@ -132,7 +149,6 @@
             });
         }
 
-        // Button zum Hinzufügen von Urlaub
         const addVacationBtn = document.getElementById('add-vacation-btn');
         if (addVacationBtn) {
             addVacationBtn.addEventListener('click', function () {
@@ -142,19 +158,17 @@
             });
         }
 
-        // Button zum Hinzufügen von Veranstaltungen
         const addEventBtn = document.getElementById('add-event-btn');
         if (addEventBtn) {
             addEventBtn.addEventListener('click', function () {
                 window.NeoCalendar.addEvent(
-                    document.getElementById('event-date'),
+                    document.getElementById('event-date-range'),
                     document.getElementById('event-time'),
                     document.getElementById('event-title')
                 );
             });
         }
 
-        // Button zum Speichern von Änderungen im Bearbeitungsformular
         const saveEventChangesBtn = document.getElementById('save-event-changes-btn');
         if (saveEventChangesBtn) {
             saveEventChangesBtn.addEventListener('click', saveEventChanges);
@@ -180,23 +194,19 @@
     }
 
     function editEvent(event) {
-        // Fülle das Formular mit Ereignisdaten
         document.getElementById('edit-event-id').value = event.id;
         document.getElementById('edit-event-type').value = event.extendedProps.type || 'arbeitsstunde';
         document.getElementById('edit-event-title').value = event.title || '';
         document.getElementById('edit-event-description').value = event.extendedProps.description || '';
 
-        // Konvertiere Daten in separate Felder
         const startDate = new Date(event.start);
         const endDate = event.end ? new Date(event.end) : null;
 
-        // Fülle Datumsfelder
         document.getElementById('edit-event-start-date').value = startDate.toISOString().split('T')[0];
         if (endDate) {
             document.getElementById('edit-event-end-date').value = endDate.toISOString().split('T')[0];
         }
 
-        // Fülle Zeitfelder
         document.getElementById('edit-event-start-time').value = startDate.toTimeString().slice(0, 5);
         if (endDate) {
             document.getElementById('edit-event-end-time').value = endDate.toTimeString().slice(0, 5);
@@ -204,7 +214,6 @@
 
 
 
-        // Zeige das Modal-Fenster (используем существующий экземпляр или создаем новый)
         let modal = bootstrap.Modal.getInstance(document.getElementById('editEventModal'));
         if (!modal) {
             modal = new bootstrap.Modal(document.getElementById('editEventModal'), {
@@ -214,29 +223,23 @@
         }
         modal.show();
 
-        // Initialisiere Time-Pickers für Zeitfelder
         if (window.NeoCalendar && window.NeoCalendar.initTimePicker) {
             window.NeoCalendar.initTimePicker('edit-event-start-time');
             window.NeoCalendar.initTimePicker('edit-event-end-time');
         }
 
-        // Füge Event-Handler für Typänderung hinzu
         const typeSelect = document.getElementById('edit-event-type');
         typeSelect.addEventListener('change', handleEventTypeChange);
 
-        // Initialisiere Felder basierend auf dem aktuellen Typ
         handleEventTypeChange();
 
-        // Lade Benutzerliste, falls der Benutzer Berechtigungen hat
         loadUsersIfNeeded().then(() => {
-            // Setze ausgewählten Mitarbeiter nach dem Laden der Liste
             const employeeSelect = document.getElementById('edit-event-employee');
             if (employeeSelect) {
                 employeeSelect.value = event.extendedProps.user_id || '';
             }
         });
 
-        // Zeige Lösch-Button für bestehendes Ereignis
         const deleteBtn = document.getElementById('delete-event-btn');
         if (deleteBtn) {
             deleteBtn.style.display = 'block';
@@ -254,20 +257,17 @@
         const employeeContainer = document.getElementById('edit-event-employee-container');
 
         if (type === 'urlaub') {
-            // Für Urlaub: nur Datum, keine Zeit
             startTimeInput.style.display = 'none';
             endTimeInput.style.display = 'none';
             titleContainer.style.display = 'none';
             if (employeeContainer) employeeContainer.style.display = 'none';
         } else if (type === 'veranstaltung') {
-            // Für Veranstaltungen: Datum und Zeit + Pflichtfeld Titel
             startTimeInput.style.display = 'block';
             endTimeInput.style.display = 'block';
             titleContainer.style.display = 'block';
             titleInput.required = true;
             if (employeeContainer) employeeContainer.style.display = 'none';
         } else {
-            // Für Arbeitszeit: Datum und Zeit, Titel versteckt
             startTimeInput.style.display = 'block';
             endTimeInput.style.display = 'block';
             titleContainer.style.display = 'none';
@@ -276,15 +276,12 @@
         }
     }
 
-    // Funktion zum Laden der Benutzerliste
     function loadUsersIfNeeded() {
         const employeeContainer = document.getElementById('edit-event-employee-container');
         const employeeSelect = document.getElementById('edit-event-employee');
 
         if (!employeeContainer || !employeeSelect) return Promise.resolve();
 
-        // Prüfe, ob der Benutzer Berechtigungen zum Verwalten des Kalenders hat
-        // Das kann man anhand der Anwesenheit bestimmter Elemente oder über AJAX feststellen
         const formData = new FormData();
         formData.append('action', 'neo_calendar_get_users');
         formData.append('nonce', neoCalendarAjax.nonce);
@@ -293,41 +290,34 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    // Leere vorhandene Optionen
                     employeeSelect.innerHTML = '';
 
-                    // Füge Optionen für Benutzer hinzu
                     data.data.forEach(user => {
                         const option = document.createElement('option');
                         option.value = user.id;
-                        // Formuliere angezeigten Namen: Vorname + Nachname oder display_name als Fallback
                         let displayName = '';
                         if (user.first_name && user.last_name) {
                             displayName = user.first_name + ' ' + user.last_name;
                         } else if (user.first_name) {
                             displayName = user.first_name;
                         } else {
-                            displayName = user.name; // Fallback auf display_name
+                            displayName = user.name;
                         }
                         option.textContent = displayName;
                         employeeSelect.appendChild(option);
                     });
 
-                    // Zeige Container an, falls Benutzer vorhanden sind
                     if (data.data.length > 0) {
                         employeeContainer.style.display = 'block';
 
-                        // Prüfe, ob der aktuelle Benutzer mitarbeiter ist
                         const currentUserId = neoCalendarAjax.current_user_id;
                         const currentUser = data.data.find(user => user.id == currentUserId);
                         const isMitarbeiter = currentUser && currentUser.role === 'neo_mitarbeiter';
 
                         if (isMitarbeiter) {
-                            // Für mitarbeiter machen Sie das Feld nur zum Lesen
                             employeeSelect.disabled = true;
                             employeeSelect.style.backgroundColor = '#f8f9fa';
 
-                            // Deaktiviere auch das Typ-Ereignisfeld
                             const eventTypeSelect = document.getElementById('edit-event-type');
                             if (eventTypeSelect) {
                                 eventTypeSelect.disabled = true;
@@ -361,11 +351,9 @@
             return;
         }
 
-        // Formuliere vollständige Daten und Zeiten
         const start = startDate + (startTime ? 'T' + startTime + ':00' : 'T00:00:00');
         const end = endDate && endTime ? endDate + 'T' + endTime + ':00' : (endDate ? endDate + 'T23:59:59' : null);
 
-        // Für Arbeitszeit speichern wir keinen Titel
         const finalTitle = type === 'arbeitsstunde' ? '' : title;
 
         const formData = new FormData();
@@ -380,7 +368,6 @@
         formData.append('end', end);
         formData.append('description', description);
 
-        // Füge Mitarbeiter-ID hinzu, falls ausgewählt
         if (employeeSelect && employeeSelect.value) {
             formData.append('employee_id', employeeSelect.value);
         }
@@ -390,10 +377,8 @@
             .then(data => {
                 if (data.success) {
                     alert(isNewEvent ? 'Ereignis erfolgreich erstellt!' : 'Ereignis erfolgreich aktualisiert!');
-                    // Schließe das Modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('editEventModal'));
                     modal.hide();
-                    // Aktualisiere Kalender
                     if (window.neoCalendar) {
                         window.neoCalendar.refetchEvents();
                     }
@@ -447,20 +432,17 @@
             window.NeoCalendar.initTimePicker("event-time");
         }
 
-        // Инициализация Date Picker для Einzeldaten
         if (window.NeoCalendar && window.NeoCalendar.initDatePicker) {
             window.NeoCalendar.initDatePicker("work-date");
-            window.NeoCalendar.initDatePicker("event-date");
             window.NeoCalendar.initDatePicker("edit-event-start-date");
             window.NeoCalendar.initDatePicker("edit-event-end-date");
         }
 
-        // Инициализация Range Date Picker для Urlaubsdaten
         if (window.NeoCalendar && window.NeoCalendar.initDateRangePicker) {
             window.NeoCalendar.initDateRangePicker("vacation-date-range");
+            window.NeoCalendar.initDateRangePicker("event-date-range");
         }
 
-        // Füge Event-Handler für Buttons
         initializeFormButtons();
     });
 
