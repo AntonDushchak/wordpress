@@ -564,6 +564,18 @@ main {
     }
 }
 
+@media (min-width: 768px) and (max-width: 1024px) {
+    .tablet-sidebar-narrow {
+        flex: 0 0 18% !important;
+        max-width: 18% !important;
+    }
+    
+    .main-content-tablet {
+        flex: 0 0 82% !important;
+        max-width: 82% !important;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     * {
         animation-duration: 0.01ms !important;

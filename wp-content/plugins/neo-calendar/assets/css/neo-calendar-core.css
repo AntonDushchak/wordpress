@@ -87,6 +87,23 @@ body.modal-open {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     padding: 15px;
+    font-size: 0.9rem;
+}
+
+#calendar .fc-event-title {
+    font-size: 0.85rem;
+}
+
+#calendar .fc-daygrid-event {
+    font-size: 0.8rem;
+}
+
+#calendar .fc-col-header-cell {
+    font-size: 0.9rem;
+}
+
+#calendar .fc-daygrid-day-number {
+    font-size: 0.85rem;
 }
 
 @media (max-width: 768px) {

@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 ?>
 
-<aside class="col-md-3 col-lg-3 d-none d-md-flex flex-column desktop-sidebar">
+<aside class="col-md-3 col-lg-3 d-none d-md-flex flex-column desktop-sidebar tablet-sidebar-narrow">
     <ul class="nav nav-pills flex-column mb-0 p-3">
         <?php foreach ( $sidebar as $slug => $item ) :
             $is_active    = ( $slug === $current_section ) ? ' active' : '';

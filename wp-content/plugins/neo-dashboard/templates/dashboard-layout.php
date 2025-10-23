@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     <div class="row">
         <?php include __DIR__ . '/partials/desktop-sidebar.php'; ?>
 
-        <main class="col-12 col-md-9 col-lg-9 px-md-4 py-4">
+        <main class="col-12 col-md-9 col-lg-9 px-md-4 py-4 main-content-tablet">
             <?php // Notifications jetzt immer anzeigen ?>
             <?php include __DIR__ . '/partials/notifications.php'; ?>
 
