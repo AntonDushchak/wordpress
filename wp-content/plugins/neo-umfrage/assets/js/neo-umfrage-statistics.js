@@ -1,14 +1,7 @@
-/**
- * Neo Umfrage - Статистика
- * Version: 1.0.0
- */
-
 (function ($) {
     'use strict';
     
     window.NeoUmfrageStatistics = {
-        
-        // Загрузка статистики
         loadStatistics: function () {
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
@@ -25,7 +18,6 @@
             });
         },
 
-        // Отображение статистики
         renderStatistics: function (data) {
             const $container = $('#statistics-stats');
             
@@ -36,25 +28,21 @@
 
             let html = '<div class="neo-umfrage-stats-grid">';
             
-            // Общее количество анкет
             html += '<div class="neo-umfrage-stat-card">';
             html += '<h3>Всего анкет</h3>';
             html += '<div class="neo-umfrage-stat-number">' + (data.total_surveys || 0) + '</div>';
             html += '</div>';
 
-            // Анкеты за сегодня
             html += '<div class="neo-umfrage-stat-card">';
             html += '<h3>Сегодня</h3>';
             html += '<div class="neo-umfrage-stat-number">' + (data.today_surveys || 0) + '</div>';
             html += '</div>';
 
-            // Анкеты за неделю
             html += '<div class="neo-umfrage-stat-card">';
             html += '<h3>За неделю</h3>';
             html += '<div class="neo-umfrage-stat-number">' + (data.week_surveys || 0) + '</div>';
             html += '</div>';
 
-            // Анкеты за месяц
             html += '<div class="neo-umfrage-stat-card">';
             html += '<h3>За месяц</h3>';
             html += '<div class="neo-umfrage-stat-number">' + (data.month_surveys || 0) + '</div>';
@@ -65,7 +53,6 @@
             $container.html(html);
         },
 
-        // Загрузка последних анкет
         loadRecentSurveys: function () {
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
@@ -82,7 +69,6 @@
             });
         },
 
-        // Отображение последних анкет
         renderRecentSurveys: function (surveys) {
             const $container = $('#recent-surveys');
             

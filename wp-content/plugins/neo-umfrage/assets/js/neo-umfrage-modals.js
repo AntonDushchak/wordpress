@@ -8,9 +8,7 @@
     
     window.NeoUmfrageModals = {
         
-        // Erstellung der modalen Fenster
         createModals: function () {
-            // Modales Fenster für das Hinzufügen von Umfragen
             if (!$('#add-survey-modal').length) {
                 $('body').append(`
             <div id="add-survey-modal" class="neo-umfrage-modal">
@@ -45,7 +43,6 @@
         `);
             }
 
-            // Модальное окно для добавления шаблона
             if (!$('#add-template-modal').length) {
                 $('body').append(`
             <div id="add-template-modal" class="neo-umfrage-modal">
@@ -108,18 +105,15 @@
             }
         },
 
-        // Verarbeitung der Formularübermittlung
         handleFormSubmit: function (e, $form) {
             e.preventDefault();
             
-            // Wenn das Formular als Parameter übergeben wurde, verwenden wir es, sonst verwenden wir this
             if (!$form) {
                 $form = $(this);
             }
             
             const formId = $form.attr('id');
 
-            // Проверяем, что выбран шаблон для формы анкеты
             if (formId === 'survey-form') {
                 const templateId = $('#survey-template-select').val();
                 if (!templateId) {
@@ -128,7 +122,6 @@
                 }
             }
 
-            // Suchen nach der Speichern-Schaltfläche im modalen Fenster
             let $submitBtn;
             if (formId === 'survey-form') {
                 $submitBtn = $('#add-survey-modal .neo-umfrage-modal-footer button:last');
@@ -136,20 +129,16 @@
                 $submitBtn = $('#add-template-modal .neo-umfrage-modal-footer button:last');
             }
             
-            // Wenn die Schaltfläche nicht gefunden wurde, suchen wir nach dem Text
             if (!$submitBtn || !$submitBtn.length) {
                 $submitBtn = $form.closest('.neo-umfrage-modal').find('button:contains("Speichern")');
             }
 
-            // Ladeanzeige anzeigen
             if ($submitBtn && $submitBtn.length) {
                 $submitBtn.prop('disabled', true).html('<span class="neo-umfrage-loading"></span>Speichern...');
             }
 
-            // Formulardaten sammeln
             const formData = NeoUmfrageModals.collectFormData($form);
 
-            // Aktion je nach Formular bestimmen
             let action = '';
             if (formId === 'survey-form') {
                 action = 'neo_umfrage_save_survey';
@@ -157,13 +146,11 @@
                 action = 'neo_umfrage_save_template';
             }
 
-            // Prüfen, ob neoUmfrageAjax definiert ist
             if (typeof neoUmfrageAjax === 'undefined') {
                 NeoUmfrage.showMessage('error', 'AJAX-Konfigurationsfehler');
                 return;
             }
 
-            // Отправляем AJAX запрос
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
                 type: 'POST',
@@ -179,9 +166,7 @@
                         NeoUmfrageModals.closeModal();
                         $form[0].reset();
 
-                        // Обновляем соответствующие списки
                         if (formId === 'survey-form') {
-                            // Обновляем DataTable если он существует
                             if ($.fn.DataTable && $('#surveys-table').length) {
                                 $('#surveys-table').DataTable().ajax.reload();
                             } else if (window.NeoUmfrageSurveys && NeoUmfrageSurveys.loadSurveys) {
@@ -213,11 +198,9 @@
             });
         },
 
-        // Сбор данных формы
         collectFormData: function ($form) {
             const formData = {};
 
-            // Собираем обычные поля
             $form.find('input, textarea, select').each(function () {
                 const $field = $(this);
                 const name = $field.attr('name');
@@ -232,7 +215,6 @@
                 }
             });
 
-            // Обрабатываем поля шаблона
             if ($form.attr('id') === 'template-form') {
                 const fields = [];
                 $form.find('.template-field').each(function () {
@@ -246,7 +228,6 @@
                         options: []
                     };
 
-                    // Обрабатываем варианты ответов
                     const optionsText = $field.find('textarea[name*="[options]"]').val();
                     if (optionsText) {
                         fieldData.options = optionsText.split('\n').filter(option => option.trim() !== '');
@@ -255,14 +236,11 @@
                     fields.push(fieldData);
                 });
 
-                // Отправляем как JSON строку
                 formData.fields = JSON.stringify(fields);
             }
 
-            // Обрабатываем поля анкеты
             if ($form.attr('id') === 'survey-form') {
                 const surveyFields = [];
-                // Добавляем дополнительные поля из шаблона
                 $form.find('.survey-field').each(function () {
                     const $field = $(this);
                     const fieldType = $field.data('field-type');
@@ -272,14 +250,12 @@
                     let fieldValue = '';
 
                     if (fieldType === 'checkbox') {
-                        // Для чекбоксов собираем массив значений
                         const values = [];
                         $field.find('input[type="checkbox"]:checked').each(function () {
                             values.push($(this).val());
                         });
                         fieldValue = values;
                     } else {
-                        // Для остальных типов полей
                         fieldValue = $field.find('input, textarea, select').val();
                     }
 
@@ -291,10 +267,8 @@
                     });
                 });
 
-                // Отправляем как JSON строку
                 formData.survey_fields = JSON.stringify(surveyFields);
 
-                // Добавляем ID ответа для редактирования, если есть
                 const responseId = $form.find('input[name="response_id"]').val();
                 if (responseId) {
                     formData.response_id = responseId;
@@ -304,7 +278,6 @@
             return formData;
         },
 
-        // Добавление поля в шаблон
         addField: function () {
             const fieldIndex = $('.template-field').length;
             const $fieldsContainer = $('#template-fields');
@@ -337,11 +310,9 @@
             $fieldsContainer.append(fieldHtml);
         },
 
-        // Удаление поля из шаблона
         removeField: function () {
             $(this).closest('.template-field').remove();
 
-            // Перенумеровываем поля
             $('.template-field').each(function (index) {
                 $(this).attr('data-field-index', index);
                 $(this).find('input, select, textarea').each(function () {
@@ -353,13 +324,11 @@
             });
         },
 
-        // Изменение типа поля
         changeFieldType: function () {
             const $field = $(this).closest('.template-field');
             const fieldType = $(this).val();
             const $options = $field.find('.field-options');
 
-            // Показываем/скрываем поле для вариантов ответов
             if (['radio', 'checkbox', 'select'].includes(fieldType)) {
                 $options.show();
             } else {
@@ -367,7 +336,6 @@
             }
         },
 
-        // Загрузка полей шаблона
         loadTemplateFields: function (templateId, $container) {
             $container.html('<div class="neo-umfrage-loading"></div>');
 
@@ -395,7 +363,6 @@
             });
         },
 
-        // Отображение полей шаблона
         renderTemplateFields: function (fields, $container) {
             if (!fields || fields.length === 0) {
                 $container.html('<div class="neo-umfrage-info">Keine Felder in der Vorlage</div>');
@@ -410,7 +377,6 @@
             $container.html(html);
         },
 
-        // Отображение одного поля анкеты
         renderSurveyField: function (field, defaultValue = '') {
             const required = field.required ? 'required' : '';
             const requiredText = field.required ? ' <span style="color: red;">*</span>' : '';
@@ -466,7 +432,6 @@
                     break;
             }
 
-            // Добавляем скрытые поля для метаданных
             html += `<input type="hidden" name="survey_fields[${field.label}][label]" value="${field.label}">`;
             html += `<input type="hidden" name="survey_fields[${field.label}][type]" value="${field.type}">`;
             html += `<input type="hidden" name="survey_fields[${field.label}][required]" value="${field.required ? '1' : '0'}">`;
@@ -475,16 +440,13 @@
             return html;
         },
 
-        // Открытие модального окна добавления анкеты
         openAddSurveyModal: function () {
-            // Проверяем, существует ли модальное окно
             const $modal = $('#add-survey-modal');
             
             if ($modal.length === 0) {
                 this.createModals();
             }
             
-            // Сбрасываем форму и заголовок
             const $form = $('#survey-form');
             
             if ($form.length > 0) {
@@ -493,24 +455,20 @@
             
             $('#add-survey-modal .neo-umfrage-modal-title').text('Umfrage hinzufügen');
             
-            // Включаем селект шаблона при создании новой анкеты
             $('#survey-template-select').prop('disabled', false);
             $('#survey-template-select').removeClass('disabled');
             
             $('#add-survey-modal').fadeIn(300);
             $('body').addClass('modal-open');
 
-            // Загружаем шаблоны в селект
             if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.loadTemplatesForSelect) {
                 NeoUmfrageTemplates.loadTemplatesForSelect('#survey-template-select');
             }
         },
 
-        // Открытие модального окна редактирования анкеты
         openEditSurveyModal: function () {
             $('#add-survey-modal .neo-umfrage-modal-title').text('Umfrage bearbeiten');
             
-            // Отключаем селект шаблона при редактировании
             $('#survey-template-select').prop('disabled', true);
             $('#survey-template-select').addClass('disabled');
             
@@ -518,67 +476,53 @@
             $('body').addClass('modal-open');
         },
 
-        // Открытие модального окна добавления шаблона
         openAddTemplateModal: function () {
             $('#add-template-modal').fadeIn(300);
             $('body').addClass('modal-open');
         },
 
-        // Закрытие модального окна
         closeModal: function () {
             $('.neo-umfrage-modal').fadeOut(300);
             $('body').removeClass('modal-open');
             
-            // Очищаем все формы в модальных окнах
             $('.neo-umfrage-modal form').each(function() {
                 this.reset();
             });
             
-            // Сбрасываем состояние селекта шаблона
             $('#survey-template-select').prop('disabled', false);
             $('#survey-template-select').removeClass('disabled');
             $('#survey-template-select').html('<option value="">Vorlage auswählen</option>');
             
-            // Очищаем контейнер с полями шаблона
             $('#template-fields-container').empty();
             $('#survey-template-fields').hide();
         },
 
-        // Отправка формы шаблона
         submitTemplateForm: function () {
             const $form = $('#template-form');
             if ($form.length) {
-                // Обрабатываем форму шаблона напрямую
                 NeoUmfrageModals.processTemplateForm($form);
             }
         },
 
-        // Обработка формы шаблона
         processTemplateForm: function ($form) {
             const formId = $form.attr('id');
             
-            // Находим кнопку сохранения
             const $submitBtn = $('#add-template-modal .neo-umfrage-modal-footer button:last');
             
-            // Показываем индикатор загрузки
             if ($submitBtn && $submitBtn.length) {
                 $submitBtn.prop('disabled', true).html('<span class="neo-umfrage-loading"></span>Speichern...');
             }
 
-            // Собираем данные формы
             const formData = NeoUmfrageModals.collectFormData($form);
             
-            // Определяем действие (создание или редактирование)
             const templateId = $form.find('input[name="template_id"]').val();
             const action = templateId ? 'neo_umfrage_update_template' : 'neo_umfrage_save_template';
             
-            // Проверяем, что neoUmfrageAjax определен
             if (typeof neoUmfrageAjax === 'undefined') {
                 NeoUmfrage.showMessage('error', 'AJAX-Konfigurationsfehler');
                 return;
             }
 
-            // Отправляем AJAX запрос
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
                 type: 'POST',
@@ -594,7 +538,6 @@
                         NeoUmfrageModals.closeModal();
                         $form[0].reset();
 
-                        // Обновляем список шаблонов
                         if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.refreshTemplatesTable) {
                             NeoUmfrageTemplates.refreshTemplatesTable();
                         }
@@ -616,7 +559,6 @@
             });
         },
 
-        // Отправка формы анкеты
         submitSurveyForm: function () {
             const $form = $('#survey-form');
             if ($form.length) {
@@ -624,14 +566,12 @@
             }
         },
 
-        // Обработка изменения шаблона
         handleTemplateChange: function () {
             const templateId = $(this).val();
             const $fieldsContainer = $('#survey-template-fields');
             const $fieldsContent = $('#template-fields-container');
 
             if (templateId) {
-                // Загружаем поля шаблона
                 if (window.NeoUmfrageModals && NeoUmfrageModals.loadTemplateFields) {
                     NeoUmfrageModals.loadTemplateFields(templateId, $fieldsContent);
                 }

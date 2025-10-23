@@ -7,30 +7,21 @@
     'use strict';
     
     window.NeoUmfrageTemplates = {
-        
-        // Инициализация
         init: function() {
             this.initializeModals();
         },
 
-        // Инициализация модальных окон для шаблонов
         initializeModals: function() {
-            // Создаем модальные окна если они еще не созданы
             if (window.NeoUmfrageModals && NeoUmfrageModals.createModals) {
                 NeoUmfrageModals.createModals();
             }
         },
         
-        // Загрузка шаблонов для админки (все шаблоны)
         loadTemplates: function () {
-            // Инициализируем модальные окна при первой загрузке
-            this.init();
-            
-            // Инициализируем DataTables
+            this.init();        
             this.initTemplatesDataTable();
         },
 
-        // Загрузка шаблонов для фильтра (только активные)
         loadTemplatesForFilter: function () {
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
@@ -38,7 +29,7 @@
                 data: {
                     action: 'neo_umfrage_get_templates',
                     nonce: neoUmfrageAjax.nonce,
-                    show_only_active: 1 // Показываем только активные шаблоны для фильтра
+                    show_only_active: 1
                 },
                 success: function (response) {
                     if (response.success) {
@@ -54,7 +45,6 @@
             });
         },
 
-        // Vorlagen für Select laden (nur aktive)
         loadTemplatesForSelect: function (selector, callback) {
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
@@ -89,7 +79,6 @@
             });
         },
 
-        // Vorlagenfelder für Bearbeitung laden
         loadTemplateFieldsForEdit: function (templateId, existingFields) {
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
@@ -108,13 +97,11 @@
             });
         },
 
-        // Рендер полей шаблона для редактирования
         renderTemplateFieldsForEdit: function (templateFields, existingFields) {
             const $container = $('#template-fields-container');
             $container.empty();
 
             templateFields.forEach(function (field, index) {
-                // Находим значение из существующих данных
                 let fieldValue = '';
                 if (existingFields) {
                     const existingField = existingFields.find(f => f.label === field.label);
@@ -128,11 +115,9 @@
             });
         },
 
-        // Инициализация DataTables для шаблонов
         initTemplatesDataTable: function () {
             const $container = $('#templates-list');
             
-            // Создаем HTML для DataTables
             $container.html(`
                 <div class="neo-umfrage-filters" style="margin-bottom: 20px; display: flex; gap: 20px; align-items: center;">
                     <div>
@@ -158,7 +143,6 @@
                 </table>
             `);
 
-            // Инициализируем DataTable
             const table = $('#templates-table').DataTable({
                 ajax: {
                     url: neoUmfrageAjax.ajaxurl,
@@ -229,20 +213,15 @@
                 order: [[0, 'desc']]
             });
 
-            // Обновление таблицы при смене фильтра
             $('#filter-status').on('change', function() {
                 table.ajax.reload();
             });
         },
 
-        // Отображение списка шаблонов (оставляем для совместимости, но заменяем на DataTables)
         renderTemplatesList: function (templates) {
-            // Эта функция больше не используется, так как мы используем DataTables
-            // Оставляем для совместимости
             console.log('renderTemplatesList вызвана, но используется DataTables');
         },
 
-        // Деактивация шаблона
         deactivateTemplate: function (templateId) {
             if (confirm('Sind Sie sicher, dass Sie diese Vorlage deaktivieren möchten? Die Vorlage wird nicht in Listen angezeigt, aber bestehende Umfragen bleiben erhalten.')) {
                 $.ajax({
@@ -256,7 +235,6 @@
                     success: function (response) {
                         if (response.success) {
                             NeoUmfrage.showMessage('success', response.data.message);
-                            // Обновляем DataTable
                             if ($.fn.DataTable && $('#templates-table').length) {
                                 $('#templates-table').DataTable().ajax.reload();
                             } else {
@@ -270,7 +248,6 @@
             }
         },
 
-        // Активация шаблона
         activateTemplate: function (templateId) {
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
@@ -284,7 +261,6 @@
                 success: function (response) {
                     if (response.success) {
                         NeoUmfrage.showMessage('success', response.data.message);
-                        // Обновляем DataTable
                         if ($.fn.DataTable && $('#templates-table').length) {
                             $('#templates-table').DataTable().ajax.reload();
                         } else {
@@ -297,7 +273,6 @@
             });
         },
 
-        // Полное удаление шаблона с анкетами
         deleteTemplateWithSurveys: function (templateId) {
             const confirmMessage = 'WARNUNG: Diese Aktion löscht die Vorlage und ALLE zugehörigen Umfragen unwiderruflich!\n\n' +
                                  'Sind Sie absolut sicher, dass Sie fortfahren möchten?\n\n' +
@@ -317,7 +292,6 @@
                     success: function (response) {
                         if (response.success) {
                             NeoUmfrage.showMessage('success', response.data.message);
-                            // Обновляем DataTable
                             if ($.fn.DataTable && $('#templates-table').length) {
                                 $('#templates-table').DataTable().ajax.reload();
                             } else {
@@ -333,9 +307,7 @@
             }
         },
 
-        // Редактирование шаблона
         editTemplate: function (templateId) {
-            // Отправляем AJAX запрос для получения данных шаблона
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
                 type: 'POST',
@@ -357,37 +329,29 @@
             });
         },
 
-        // Открытие модального окна редактирования шаблона
         openEditTemplateModal: function (template) {
-            // Заполняем форму данными шаблона
             $('#template-form input[name="name"]').val(template.name);
             $('#template-form textarea[name="description"]').val(template.description);
             
-            // Добавляем скрытое поле с ID шаблона
             if (!$('#template-form input[name="template_id"]').length) {
                 $('#template-form').append('<input type="hidden" name="template_id" value="' + template.id + '">');
             } else {
                 $('#template-form input[name="template_id"]').val(template.id);
             }
             
-            // Очищаем существующие поля
             $('.template-field').remove();
             
-            // Добавляем поля шаблона
             if (template.fields && template.fields.length > 0) {
                 template.fields.forEach(function(field, index) {
                     NeoUmfrageTemplates.addTemplateField(field, index);
                 });
             }
             
-            // Открываем модальное окно
             NeoUmfrageModals.openAddTemplateModal();
             
-            // Меняем заголовок модального окна
             $('.neo-umfrage-modal-title').text('Vorlage bearbeiten');
         },
 
-        // Добавление поля шаблона при редактировании
         addTemplateField: function (field, index) {
             const $fieldsContainer = $('#template-fields');
             
@@ -419,7 +383,6 @@
             $fieldsContainer.append(fieldHtml);
         },
 
-        // Обновление DataTable после изменений
         refreshTemplatesTable: function() {
             if ($.fn.DataTable && $('#templates-table').length) {
                 $('#templates-table').DataTable().ajax.reload();
@@ -429,7 +392,6 @@
         }
     };
 
-    // Глобальные функции для вызова из HTML
     window.deactivateTemplate = function(templateId) {
         NeoUmfrageTemplates.deactivateTemplate(templateId);
     };
