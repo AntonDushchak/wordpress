@@ -32,14 +32,16 @@
                     show_only_active: 1
                 },
                 success: function (response) {
-                    if (response.success) {
+                    if (response.success && response.data && Array.isArray(response.data.templates)) {
                         const $filter = $('#filter-template');
                         if ($filter.length) {
                             $filter.find('option:not(:first)').remove();
-                            response.data.forEach(template => {
+                            response.data.templates.forEach(template => {
                                 $filter.append(`<option value="${template.id}">${template.name}</option>`);
                             });
                         }
+                    } else {
+                        console.error('response.data.templates is not an array', response);
                     }
                 }
             });
@@ -55,22 +57,22 @@
                     show_only_active: 1
                 },
                 success: function (response) {
-                    if (response.success) {
+                    if (response.success && response.data && Array.isArray(response.data.templates)) {
                         const $select = $(selector);
                         $select.empty();
-                        
-                        if (response.data && response.data.length > 0) {
+                        if (response.data.templates.length > 0) {
                             $select.append('<option value="">Vorlage auswählen</option>');
-                            response.data.forEach(template => {
+                            response.data.templates.forEach(template => {
                                 $select.append(`<option value="${template.id}">${template.name}</option>`);
                             });
                         } else {
                             $select.append('<option value="" disabled>Keine Vorlagen verfügbar</option>');
                         }
-
                         if (typeof callback === 'function') {
                             callback();
                         }
+                    } else {
+                        console.error('response.data.templates is not an array', response);
                     }
                 },
                 error: function (xhr, status, error) {
@@ -151,6 +153,13 @@
                         d.action = 'neo_umfrage_get_templates';
                         d.nonce = neoUmfrageAjax.nonce;
                         d.show_only_active = $('#filter-status').val() === '' ? 'all' : $('#filter-status').val();
+                    },
+                     dataSrc: function(json) {
+                        if (json.success && json.data && Array.isArray(json.data.templates)) {
+                            return json.data.templates;
+                        }
+                        console.error('DataTables: templates not found in response', json);
+                        return [];
                     }
                 },
                 columns: [
@@ -190,17 +199,13 @@
                         searchable: false,
                         render: function(data, type, row) {
                             let actions = '';
-                            if (NeoUmfrage.canEdit(row.user_id)) {
-                                actions += `<button class="neo-umfrage-button neo-umfrage-button-secondary" onclick="editTemplate(${row.id}, ${row.user_id || 0})">Bearbeiten</button> `;
-                            }
+                            actions += `<button class="neo-umfrage-button neo-umfrage-button-secondary" onclick="viewTemplate(${row.id})">Ansehen</button> `;
                             if (row.is_active == 1) {
                                 actions += `<button class="neo-umfrage-button neo-umfrage-button-warning" onclick="deactivateTemplate(${row.id})">Deaktivieren</button> `;
                             } else {
                                 actions += `<button class="neo-umfrage-button neo-umfrage-button-success" onclick="activateTemplate(${row.id})">Aktivieren</button> `;
                             }
-                            if (NeoUmfrage.canDelete(row.user_id)) {
-                                actions += `<button class="neo-umfrage-button neo-umfrage-button-danger" onclick="deleteTemplateWithSurveys(${row.id})">Löschen</button>`;
-                            }
+                            actions += `<button class="neo-umfrage-button neo-umfrage-button-danger" onclick="deleteTemplateWithSurveys(${row.id})">Löschen</button>`;
                             return actions;
                         }
                     }
@@ -307,7 +312,7 @@
             }
         },
 
-        editTemplate: function (templateId) {
+        viewTemplate: function (templateId) {
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
                 type: 'POST',
@@ -318,7 +323,7 @@
                 },
                 success: function (response) {
                     if (response && response.success) {
-                        NeoUmfrageTemplates.openEditTemplateModal(response.data.template);
+                        NeoUmfrageTemplates.openViewTemplateModal(response.data.template);
                     } else {
                         NeoUmfrage.showMessage('error', 'Fehler beim Laden der Vorlage');
                     }
@@ -329,27 +334,23 @@
             });
         },
 
-        openEditTemplateModal: function (template) {
-            $('#template-form input[name="name"]').val(template.name);
-            $('#template-form textarea[name="description"]').val(template.description);
-            
+        openViewTemplateModal: function (template) {
+            $('#template-form input[name="name"]').val(template.name).prop('disabled', true);
+            $('#template-form textarea[name="description"]').val(template.description).prop('disabled', true);
             if (!$('#template-form input[name="template_id"]').length) {
                 $('#template-form').append('<input type="hidden" name="template_id" value="' + template.id + '">');
             } else {
                 $('#template-form input[name="template_id"]').val(template.id);
             }
-            
             $('.template-field').remove();
-            
             if (template.fields && template.fields.length > 0) {
                 template.fields.forEach(function(field, index) {
-                    NeoUmfrageTemplates.addTemplateField(field, index);
+                    NeoUmfrageTemplates.addTemplateField(field, index, true);
                 });
             }
-            
             NeoUmfrageModals.openAddTemplateModal();
-            
-            $('.neo-umfrage-modal-title').text('Vorlage bearbeiten');
+            $('.neo-umfrage-modal-title').text('Vorlage ansehen');
+            $('#add-template-modal .modal-footer .btn-primary').hide();
         },
 
         addTemplateField: function (field, index) {

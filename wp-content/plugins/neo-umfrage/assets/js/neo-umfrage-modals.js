@@ -42,7 +42,7 @@
             </div>
         `);
             }
-
+            
             if (!$('#add-template-modal').length) {
                 $('body').append(`
             <div id="add-template-modal" class="neo-umfrage-modal">
@@ -65,7 +65,6 @@
                                 <label class="neo-umfrage-label">Umfragefelder</label>
                                 
                                 <div id="template-fields">
-                                    <!-- Дополнительные поля (начинаются с индекса 0) -->
                                     <div class="template-field" data-field-index="0">
                                         <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: center;">
                                             <input type="text" class="neo-umfrage-input" name="fields[0][label]" placeholder="Feldname" required>
@@ -102,6 +101,7 @@
                 </div>
             </div>
         `);
+        
             }
         },
 

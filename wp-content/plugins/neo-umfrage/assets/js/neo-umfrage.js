@@ -88,7 +88,10 @@
                         ? [rolesRaw]
                         : [];
             const currentUserId = neoUmfrageAjax.currentUserId;
-
+            console.log("currentUserId:", currentUserId);
+            console.log("objectUserId:", objectUserId);
+            console.log("rolesRaw:", rolesRaw);
+            console.log("roles:", roles);
             if (roles.includes('administrator') || roles.includes('neo-editor')) {
                 return true;
             }
@@ -224,7 +227,7 @@
                         <td>${template.description || 'Keine Beschreibung'}</td>
                         <td>${new Date(template.created_at).toLocaleDateString()}</td>
                         <td>
-                            <button class="neo-umfrage-button neo-umfrage-button-secondary" onclick="NeoUmfrage.editTemplate(${template.id})">Bearbeiten</button>
+                            <button class="neo-umfrage-button neo-umfrage-button-secondary" onclick="NeoUmfrage.viewTemplate(${template.id})">Ansehen</button>
                             <button class="neo-umfrage-button neo-umfrage-button-danger" onclick="NeoUmfrage.deleteTemplate(${template.id})">Löschen</button>
                         </td>
                     </tr>
@@ -309,14 +312,10 @@
         }
     };
 
-    window.editTemplate = function (templateId, userId) {
-        if (!NeoUmfrage.canEdit(userId)) {
-            NeoUmfrage.showMessage('error', 'Sie haben keine Berechtigung, diese Vorlage zu bearbeiten');
-            return;
-        }
 
-        if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.editTemplate) {
-            NeoUmfrageTemplates.editTemplate(templateId);
+    window.viewTemplate = function (templateId) {
+        if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.viewTemplate) {
+            NeoUmfrageTemplates.viewTemplate(templateId);
         }
     };
 
