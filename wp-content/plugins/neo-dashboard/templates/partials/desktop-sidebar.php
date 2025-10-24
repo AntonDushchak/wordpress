@@ -1,7 +1,5 @@
 <?php
-/**
- * Partial: Static Sidebar (Desktop)
- */
+
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }

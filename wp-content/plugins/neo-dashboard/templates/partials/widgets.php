@@ -1,7 +1,5 @@
 <?php
-/**
- * Partial: Widgets Grid
- */
+
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }

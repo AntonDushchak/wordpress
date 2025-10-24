@@ -1,7 +1,5 @@
 <?php
-/**
- * Partial: Offcanvas Sidebar (Mobile)
- */
+
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }

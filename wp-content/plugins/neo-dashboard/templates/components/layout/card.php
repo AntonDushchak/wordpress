@@ -1,22 +1,6 @@
 <?php
-/**
- * Card Component
- * Базовый компонент карточки
- */
 
 if (!defined('ABSPATH')) exit;
-
-/**
- * @param array $args {
- *     @type string $title       Заголовок карточки
- *     @type string $content     HTML содержимое
- *     @type callable $callback  Функция для генерации содержимого
- *     @type string $class       Дополнительные CSS классы
- *     @type array $header_actions Кнопки в заголовке
- *     @type array $footer_actions Кнопки в футере
- *     @type bool $collapsible   Можно ли сворачивать карточку
- * }
- */
 
 $title = $args['title'] ?? '';
 $content = $args['content'] ?? '';

@@ -1,7 +1,5 @@
 <?php
-/**
- * Partial: Active Section
- */
+
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }

@@ -1,23 +1,6 @@
 <?php
-/**
- * Modal Component
- * Базовый компонент модального окна
- */
-
 if (!defined('ABSPATH')) exit;
 
-/**
- * @param array $args {
- *     @type string $id          ID модального окна (обязательно)
- *     @type string $title       Заголовок модального окна
- *     @type string $content     HTML содержимое (опционально, если используется callback)
- *     @type callable $callback  Функция для генерации содержимого
- *     @type string $size        Размер: 'sm', 'lg', 'xl' или пустая строка для обычного
- *     @type bool $backdrop      Закрывать ли при клике вне модала (по умолчанию true)
- *     @type bool $keyboard      Закрывать ли по ESC (по умолчанию true)
- *     @type array $footer_buttons Массив кнопок для футера
- * }
- */
 
 $id = $args['id'] ?? 'modal-' . uniqid();
 $title = $args['title'] ?? '';

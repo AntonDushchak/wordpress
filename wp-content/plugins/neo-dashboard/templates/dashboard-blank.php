@@ -1,8 +1,5 @@
 <?php
-/**
- * Template Name: Dashboard (Standalone) v1
- * Description: Vollständig eigenständige Dashboard‑Ansicht ohne Theme‑Header/Footer.
- */
+
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
@@ -26,22 +23,14 @@ use NeoDashboard\Core\Router;
 <body <?php body_class( 'neo-dashboard-standalone' ); ?>>
 
     <?php
-    /**
-     * Plugins können hier HTML oder Skripte einsetzen,
-     * bevor das Dashboard gerendert wird.
-     */
     do_action( 'neo_dashboard_body_start' );
     ?>
 
     <?php
-    // Rendere das modularisierte Dashboard-Layout
     do_action( 'neo_dashboard_body_content' );
     ?>
 
     <?php
-    /**
-     * Plugins können hier nach dem Dashboard-Inhalt eingreifen.
-     */
     do_action( 'neo_dashboard_body_end' );
     ?>
 

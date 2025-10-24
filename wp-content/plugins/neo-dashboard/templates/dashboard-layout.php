@@ -1,9 +1,4 @@
 <?php
-/**
- * Template: Dashboard Layout (Bootstrap 5.3)
- * Wird von neo_dashboard_render() eingebunden.
- * Variablen: $sidebar, $widgets, $notifications, $sections, $user
- */
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }

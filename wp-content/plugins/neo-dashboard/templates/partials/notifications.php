@@ -1,18 +1,4 @@
 <?php
-/**
- * Notification Banner Partial
- *
- * Wird serverseitig gerendert, falls JS deaktiviert ist
- * oder ein sofortiger Hinweis nötig ist (z. B. nach Plugin-Aktivierung).
- *
- * Erwartet:
- *   @var array<int, array{
- *     id: string,
- *     message: string,
- *     type: string,
- *     dismissible: bool
- *   }> $notifications
- */
 
 if (empty($notifications)) {
     return;
