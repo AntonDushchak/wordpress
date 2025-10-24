@@ -335,8 +335,9 @@
         },
 
         openViewTemplateModal: function (template) {
-            $('#template-form input[name="name"]').val(template.name).prop('disabled', true);
-            $('#template-form textarea[name="description"]').val(template.description).prop('disabled', true);
+            $('#template-form input, #template-form textarea, #template-form select').prop('disabled', true);
+            $('#template-form input[name="name"]').val(template.name);
+            $('#template-form textarea[name="description"]').val(template.description);
             if (!$('#template-form input[name="template_id"]').length) {
                 $('#template-form').append('<input type="hidden" name="template_id" value="' + template.id + '">');
             } else {
@@ -348,9 +349,10 @@
                     NeoUmfrageTemplates.addTemplateField(field, index, true);
                 });
             }
-            NeoUmfrageModals.openAddTemplateModal();
+            $('#add-template-modal').fadeIn(300);
             $('.neo-umfrage-modal-title').text('Vorlage ansehen');
-            $('#add-template-modal .modal-footer .btn-primary').hide();
+            $('#add-template-modal .neo-umfrage-button-danger').hide();
+            $('#add-template-modal .neo-umfrage-button').not('.neo-umfrage-button-secondary').hide();
         },
 
         addTemplateField: function (field, index) {
@@ -382,6 +384,10 @@
             `;
             
             $fieldsContainer.append(fieldHtml);
+            const $lastField = $fieldsContainer.find('.template-field').last();
+            $lastField.find('input').attr('disabled', 'disabled').attr('readonly', 'readonly');
+            $lastField.find('textarea').attr('disabled', 'disabled').attr('readonly', 'readonly');
+            $lastField.find('select').attr('disabled', 'disabled');
         },
 
         refreshTemplatesTable: function() {

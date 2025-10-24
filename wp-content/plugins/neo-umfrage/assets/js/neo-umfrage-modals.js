@@ -42,7 +42,25 @@
             </div>
         `);
             }
-            
+                        if (!$('#view-template-modal').length) {
+                            $('body').append(`
+                            <div id="view-template-modal" class="neo-umfrage-modal">
+                                <div class="neo-umfrage-modal-content" style="max-width: 800px;">
+                                    <div class="neo-umfrage-modal-header">
+                                        <h3 class="neo-umfrage-modal-title">Vorlage ansehen</h3>
+                                        <button class="neo-umfrage-modal-close">&times;</button>
+                                    </div>
+                                    <div class="neo-umfrage-modal-body">
+                                        <div id="view-template-fields-container">
+                                        </div>
+                                    </div>
+                                    <div class="neo-umfrage-modal-footer">
+                                         <button type="button" class="neo-umfrage-button neo-umfrage-button-secondary" onclick="NeoUmfrageModals.closeModal()">Schließen</button>
+                                    </div>
+                                </div>
+                            </div>
+                            `);
+                        }
             if (!$('#add-template-modal').length) {
                 $('body').append(`
             <div id="add-template-modal" class="neo-umfrage-modal">
@@ -466,13 +484,8 @@
             }
         },
 
-        openEditSurveyModal: function () {
-            $('#add-survey-modal .neo-umfrage-modal-title').text('Umfrage bearbeiten');
-            
-            $('#survey-template-select').prop('disabled', true);
-            $('#survey-template-select').addClass('disabled');
-            
-            $('#add-survey-modal').fadeIn(300);
+        openViewTemplateModal: function () {
+            $('#view-template-modal').fadeIn(300);
             $('body').addClass('modal-open');
         },
 
