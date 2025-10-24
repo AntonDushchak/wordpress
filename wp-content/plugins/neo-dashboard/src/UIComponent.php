@@ -4,14 +4,6 @@ declare(strict_types=1);
 namespace NeoDashboard\Core;
 
 class UIComponent {
-
-    /**
-     * Рендерит компонент и возвращает HTML
-     * 
-     * @param string $component_path Путь к компоненту (например: 'layout/modal')
-     * @param array $args Аргументы для компонента
-     * @return string HTML код компонента
-     */
     public static function render(string $component_path, array $args = []): string {
         $component_file = NEO_DASHBOARD_TEMPLATE_PATH . 'components/' . $component_path . '.php';
         
@@ -25,12 +17,6 @@ class UIComponent {
         return ob_get_clean();
     }
     
-    /**
-     * Выводит компонент напрямую
-     * 
-     * @param string $component_path Путь к компоненту
-     * @param array $args Аргументы для компонента
-     */
     public static function output(string $component_path, array $args = []): void {
         echo self::render($component_path, $args);
     }
