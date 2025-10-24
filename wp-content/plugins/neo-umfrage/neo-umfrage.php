@@ -126,6 +126,11 @@ class Neo_Umfrage {
                     'deps' => [],
                     'contexts' => ['neo-umfrage', 'neo-umfrage/surveys', 'neo-umfrage/templates', 'neo-umfrage/statistics', 'dashboard']
                 ],
+                'datatables-css-fix' => [
+                    'src' => plugin_dir_url(__FILE__) . 'assets/css/datatables-theme-fix.css',
+                    'deps' => ['datatables-css'],
+                    'contexts' => ['neo-umfrage', 'neo-umfrage/surveys', 'neo-umfrage/templates', 'neo-umfrage/statistics', 'dashboard']
+                ],
                 'neo-umfrage-css' => [
                     'src' => plugin_dir_url(__FILE__) . 'assets/css/neo-umfrage.css',
                     'deps' => ['neo-dashboard-core'],

@@ -1,15 +1,8 @@
-/**
- * Neo Umfrage - Основные стили
- * Версия: 1.0.0
- */
-
-/* Основной контейнер */
 .neo-umfrage-container {
     max-width: 1200px;
     margin: 20px 0;
 }
 
-/* Заголовок страницы */
 .neo-umfrage-header {
     background: #fff;
     padding: 20px;
@@ -31,9 +24,7 @@
     margin: 0;
 }
 
-/* Карточки */
 .neo-umfrage-card {
-    background: #fff;
     border: 1px solid #ccd0d4;
     border-radius: 4px;
     margin-bottom: 20px;
@@ -43,7 +34,6 @@
 .neo-umfrage-card-header {
     padding: 15px 20px;
     border-bottom: 1px solid #ccd0d4;
-    background: #f9f9f9;
 }
 
 .neo-umfrage-card-title {
@@ -57,7 +47,6 @@
     padding: 20px;
 }
 
-/* Формы */
 .neo-umfrage-form-group {
     margin-bottom: 20px;
 }
@@ -93,7 +82,6 @@
     resize: vertical;
 }
 
-/* Кнопки */
 .neo-umfrage-button {
     background: #0073aa;
     color: #fff;
@@ -142,7 +130,6 @@
     cursor: not-allowed;
 }
 
-/* Таблицы */
 .neo-umfrage-table {
     width: 100%;
     border-collapse: collapse;
@@ -175,7 +162,6 @@
     margin-bottom: 5px;
 }
 
-/* Статистика */
 .neo-umfrage-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -205,7 +191,6 @@
     letter-spacing: 0.5px;
 }
 
-/* Уведомления */
 .neo-umfrage-notice {
     padding: 12px 16px;
     border-radius: 4px;
@@ -237,7 +222,6 @@
     border-left-color: #17a2b8;
 }
 
-/* Модальные окна */
 .neo-umfrage-modal {
     position: fixed;
     top: 0;
@@ -294,7 +278,6 @@
     text-align: right;
 }
 
-/* Индикатор загрузки */
 .neo-umfrage-loading {
     display: inline-block;
     width: 16px;
@@ -311,7 +294,6 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Стили для полей шаблона */
 .template-field {
     margin-bottom: 15px;
     padding: 15px;
@@ -343,7 +325,6 @@
     margin-top: 10px;
 }
 
-/* Стили для полей анкеты */
 .survey-field {
     margin-bottom: 20px;
     padding: 15px;
@@ -375,7 +356,6 @@
     margin-bottom: 0;
 }
 
-/* Стили для просмотра анкеты */
 .neo-umfrage-survey-view {
     max-height: 60vh;
     overflow-y: auto;
@@ -409,7 +389,6 @@
     display: inline-block;
 }
 
-/* Стили для ошибок и информации */
 .neo-umfrage-error {
     color: #d63638;
     background-color: #fcf0f1;
@@ -426,7 +405,6 @@
     border: 1px solid #c5d9ed;
 }
 
-/* Фильтры */
 .neo-umfrage-filters {
     margin-bottom: 20px;
     display: flex;
@@ -434,7 +412,6 @@
     align-items: center;
 }
 
-/* Адаптивность */
 @media (max-width: 768px) {
     .neo-umfrage-stats {
         grid-template-columns: 1fr;
@@ -479,18 +456,15 @@
     }
 }
 
-/* Скрытые элементы */
 .neo-umfrage-hidden {
     display: none !important;
 }
 
-/* Валидация */
 .neo-umfrage-error-field {
     border-color: #dc3545 !important;
     box-shadow: 0 0 0 1px #dc3545 !important;
 }
 
-/* Сообщения */
 .neo-umfrage-message {
     padding: 12px 16px;
     margin: 10px 0;
@@ -543,7 +517,6 @@
     margin-top: 5px;
 }
 
-/* Статистика */
 .neo-umfrage-stats {
     display: flex;
     gap: 20px;
@@ -577,7 +550,6 @@ header.mb-3 {
     display: none;
 }
 
-/* Статусные бейджи для шаблонов */
 .status-badge {
     display: inline-block;
     padding: 4px 8px;
@@ -586,6 +558,10 @@ header.mb-3 {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+html[data-neo-theme="dark"] .status-badge {
+    color: #000 !important;
 }
 
 .status-active {
@@ -600,7 +576,6 @@ header.mb-3 {
     border: 1px solid #f5c6cb;
 }
 
-/* Стили для кнопок */
 .neo-umfrage-button-warning {
     background-color: #ffc107;
     color: #212529;
@@ -623,7 +598,6 @@ header.mb-3 {
     border-color: #1e7e34;
 }
 
-/* Стили для отключенного селекта */
 .neo-umfrage-select.disabled {
     background-color: #f8f9fa;
     color: #6c757d;
@@ -636,7 +610,6 @@ header.mb-3 {
     box-shadow: none;
 }
 
-/* Стили для виджета */
 .neo-umfrage-widget {
     background: #fff;
     border: 1px solid #ccd0d4;
@@ -700,11 +673,6 @@ header.mb-3 {
     transform: translateY(-1px);
 }
 
-/* ===========================
-   АДАПТИВНЫЕ СТИЛИ NEO-UMFRAGE
-   =========================== */
-
-/* Планшеты (768px - 1024px) */
 @media (min-width: 768px) and (max-width: 1024px) {
     .neo-umfrage-container {
         max-width: 100%;
@@ -731,7 +699,6 @@ header.mb-3 {
         font-size: 15px;
     }
     
-    /* Таблицы становятся прокручиваемыми */
     .neo-umfrage-table-container {
         overflow-x: auto;
     }
@@ -746,14 +713,12 @@ header.mb-3 {
         font-size: 14px;
     }
     
-    /* Кнопки */
     .neo-umfrage-button {
         padding: 8px 16px;
         font-size: 14px;
     }
 }
 
-/* Мобильные устройства (до 767px) */
 @media (max-width: 767px) {
     .neo-umfrage-container {
         max-width: 100%;
@@ -774,7 +739,6 @@ header.mb-3 {
         font-size: 13px;
     }
     
-    /* Карточки */
     .neo-umfrage-card {
         margin-bottom: 15px;
         border-radius: 6px;
@@ -793,7 +757,6 @@ header.mb-3 {
         padding: 15px;
     }
     
-    /* Формы */
     .neo-umfrage-form-group {
         margin-bottom: 15px;
     }
@@ -804,7 +767,7 @@ header.mb-3 {
     }
     
     .neo-umfrage-form-control {
-        font-size: 16px; /* Предотвращает зум на iOS */
+        font-size: 16px;
         padding: 12px;
         border-radius: 6px;
     }
@@ -813,7 +776,6 @@ header.mb-3 {
         min-height: 80px;
     }
     
-    /* Кнопки */
     .neo-umfrage-button {
         width: 100%;
         padding: 12px;
@@ -832,7 +794,6 @@ header.mb-3 {
         gap: 10px;
     }
     
-    /* Таблицы - карточный вид для мобильных */
     .neo-umfrage-table-responsive {
         display: none;
     }
@@ -880,7 +841,6 @@ header.mb-3 {
         text-align: right;
     }
     
-    /* Виджеты */
     .neo-umfrage-widget {
         padding: 10px;
     }
@@ -894,7 +854,6 @@ header.mb-3 {
         font-size: 14px;
     }
     
-    /* Статистика */
     .neo-umfrage-stats {
         display: grid;
         grid-template-columns: 1fr;
@@ -921,7 +880,6 @@ header.mb-3 {
         margin-top: 5px;
     }
     
-    /* Модальные окна */
     .neo-umfrage-modal {
         padding: 10px;
     }
@@ -953,7 +911,6 @@ header.mb-3 {
     }
 }
 
-/* Маленькие мобильные устройства (до 480px) */
 @media (max-width: 480px) {
     .neo-umfrage-header {
         padding: 10px;
@@ -1019,14 +976,12 @@ header.mb-3 {
         font-size: 11px;
     }
     
-    /* Адаптивность для виджета */
     .neo-umfrage-widget-actions .neo-umfrage-button {
         padding: 12px 16px;
         font-size: 15px;
     }
 }
 
-/* Ландшафтная ориентация на мобильных */
 @media (max-width: 767px) and (orientation: landscape) {
     .neo-umfrage-stats {
         grid-template-columns: repeat(2, 1fr);
@@ -1057,7 +1012,6 @@ header.mb-3 {
     }
 }
 
-/* Очень маленькая высота экрана */
 @media (max-height: 500px) and (orientation: landscape) {
     .neo-umfrage-modal-content {
         max-height: 90vh;
@@ -1078,7 +1032,6 @@ header.mb-3 {
     }
 }
 
-/* Настольные компьютеры с большими экранами */
 @media (min-width: 1200px) {
     .neo-umfrage-container {
         max-width: 1140px;
@@ -1097,38 +1050,7 @@ header.mb-3 {
     }
 }
 
-/* Темная тема */
-@media (prefers-color-scheme: dark) {
-    .neo-umfrage-card {
-        background: #343a40;
-        border-color: #495057;
-        color: #e9ecef;
-    }
-    
-    .neo-umfrage-card-header {
-        background: #495057;
-        border-color: #6c757d;
-    }
-    
-    .neo-umfrage-form-control {
-        background-color: #495057;
-        border-color: #6c757d;
-        color: #e9ecef;
-    }
-    
-    .neo-umfrage-mobile-card {
-        background: #343a40;
-        border-color: #495057;
-        color: #e9ecef;
-    }
-    
-    .neo-umfrage-stat-item {
-        background: #495057;
-        color: #e9ecef;
-    }
-}
 
-/* Печать */
 @media print {
     .neo-umfrage-button,
     .neo-umfrage-widget-actions {
@@ -1146,7 +1068,6 @@ header.mb-3 {
     }
 }
 
-/* DataTables стили */
 .dataTables_wrapper {
     margin-top: 20px;
 }
@@ -1229,7 +1150,6 @@ header.mb-3 {
     z-index: 1000;
 }
 
-/* Стили для таблицы DataTables */
 table.dataTable {
     width: 100% !important;
     border-collapse: collapse;
@@ -1237,7 +1157,6 @@ table.dataTable {
 }
 
 table.dataTable thead th {
-    background: #f9f9f9;
     border: 1px solid #ddd;
     padding: 12px 8px;
     font-weight: 600;
@@ -1258,7 +1177,14 @@ table.dataTable tbody tr:hover {
     background-color: #f5f5f5;
 }
 
-/* Адаптивность для DataTables */
+html[data-neo-theme="dark"] table.dataTable tbody tr:nth-child(even) {
+    background-color: #23272b;
+}
+
+html[data-neo-theme="dark"] table.dataTable tbody tr:hover {
+    background-color: #2a2e33;
+}
+
 @media (max-width: 768px) {
     .dataTables_wrapper .dataTables_filter,
     .dataTables_wrapper .dataTables_length,
