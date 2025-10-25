@@ -82,6 +82,32 @@ class Bootstrap
             remove_action('admin_print_scripts', 'print_emoji_detection_script');
             remove_action('wp_print_styles', 'print_emoji_styles');
         });
+
+        add_action('admin_menu', function() {
+            add_menu_page(
+                'Neo Dashboard',
+                'Neo Dashboard',
+                'read',
+                'neo-dashboard-link',
+                '',
+                'dashicons-dashboard',
+                3
+            );
+        });
+
+        add_action('admin_head', function() {
+            ?>
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const neoDashboardLink = document.querySelector('a[href*="neo-dashboard-link"]');
+                if (neoDashboardLink) {
+                    neoDashboardLink.href = '<?php echo home_url("/neo-dashboard"); ?>';
+                    neoDashboardLink.target = '_self';
+                }
+            });
+            </script>
+            <?php
+        });
     }
 
     /**
