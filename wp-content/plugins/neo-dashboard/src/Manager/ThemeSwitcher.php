@@ -36,7 +36,6 @@ class Neo_Dashboard_Theme_Switcher {
         .neo-dashboard-standalone body {
             background-color: var(--neo-theme-bg) !important;
             color: var(--neo-theme-text) !important;
-            transition: all 0.3s ease;
         }
 
         .neo-dashboard-standalone .container-fluid,

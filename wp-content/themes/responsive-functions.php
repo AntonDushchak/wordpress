@@ -439,7 +439,6 @@ function add_neo_dashboard_theme_assets() {
     body {
         background-color: var(--theme-bg-color) !important;
         color: var(--theme-text-color) !important;
-        transition: all 0.3s ease;
     }
     
     /* Override Bootstrap and WordPress default text colors */
