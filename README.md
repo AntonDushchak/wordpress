@@ -2,15 +2,26 @@
 
 Modernes Dashboard für WordPress unter Verwendung des Neo Dashboard Core Plugins.
 
+## 🎉 Letzte Updates
+
+### Version 3.0.3 (Oktober 2025)
+- ✅ **Neo Umfrage**: Statistik-Seite mit Feld-Analyse implementiert
+- ✅ **Bug Fixes**: Survey-Daten Speicherung und DataTable-Anzeige korrigiert
+- ✅ **UI Verbesserungen**: Icon-Buttons statt Text-Labels
+- ✅ **Responsive**: Layout-Probleme bei 768-1024px behoben
+- ✅ **Dark Theme**: Vollständige Unterstützung für alle UI-Elemente
+- ✅ **Notifications**: Fixed-Position Benachrichtigungen
+- ✅ **WP-Admin**: Neo Dashboard Link im Admin-Menü
+- ✅ **Domain Changer**: Neues Plugin für Domain-Verwaltung
+
 ## 🚀 Schnellstart
 
 ### Voraussetzungen
-- **PHP:** 8.1 oder höher
-- **WordPress:** 6.0 oder höher
-- **XAMPP/WAMP/MAMP** oder ähnlicher lokaler Server
+- **Docker** & **Docker Compose**
 - **Git**
+- Freie Ports: 8080 (WordPress), 3306 (MySQL)
 
-### Installation in 5 Minuten
+### Installation mit Docker
 
 1. **Repository klonen:**
 ```bash
@@ -18,74 +29,158 @@ git clone https://github.com/your-username/neo-dashboard-wordpress.git
 cd neo-dashboard-wordpress
 ```
 
-2. **XAMPP starten:**
-   - Starten Sie Apache und MySQL
-   - Stellen Sie sicher, dass die Ports 80 und 3306 frei sind
+2. **Docker Container starten:**
+```bash
+docker-compose up -d
+```
 
-3. **Datenbank importieren:**
-   - Öffnen Sie phpMyAdmin: `http://localhost/phpmyadmin`
-   - Erstellen Sie eine neue Datenbank: `wordpress_neo`
-   - Importieren Sie die Datei `database/wordpress_neo.sql`
+3. **Installation abwarten:**
+   - WordPress wird automatisch installiert
+   - Datenbank wird konfiguriert
+   - Warten Sie ca. 1-2 Minuten
 
-4. **WordPress konfigurieren:**
-   - Kopieren Sie den Ordner `wordpress` in `htdocs`
-   - Öffnen Sie `http://localhost/wordpress`
+4. **WordPress Setup:**
+   - Öffnen Sie: `http://localhost:8080`
    - Folgen Sie den WordPress-Installationsanweisungen
-   - Verwenden Sie die Datenbankdaten: `wordpress_neo`
+   - Oder verwenden Sie die bestehende Konfiguration in `wp-config.php`
 
 5. **Plugins aktivieren:**
-   - Melden Sie sich im Admin-Panel an: `http://localhost/wordpress/wp-admin`
+   - Admin-Panel: `http://localhost:8080/wp-admin`
    - Gehen Sie zu **Plugins**
-   - Aktivieren Sie **Neo Dashboard Core**
-   - Aktivieren Sie **Neo Dashboard Examples**
+   - Aktivieren Sie:
+     - **Neo Dashboard Core** (erforderlich)
+     - **Neo Umfrage**
+     - **Neo Calendar**
+     - **Neo Domain Changer** (optional)
 
 6. **Dashboard öffnen:**
-   - Navigieren Sie zu: `http://localhost/wordpress/neo-dashboard`
+   - Klicken Sie auf **"Neo Dashboard"** im WP-Admin Menü
+   - Oder navigieren Sie zu: `http://localhost:8080/neo-dashboard`
+
+### Docker Befehle
+
+```bash
+# Container starten
+docker-compose up -d
+
+# Container stoppen
+docker-compose down
+
+# Logs ansehen
+docker-compose logs -f
+
+# In Container einsteigen
+docker exec -it wordpress-app bash
+
+# Datenbank-Backup
+docker exec wordpress-db mysqldump -uwordpress -pwordpress wordpress > backup.sql
+
+# Container neu bauen
+docker-compose up -d --build
+```
 
 ## 📁 Projektstruktur
 
 ```
-neo-dashboard-wordpress/
-├── wordpress/                          # WordPress Dateien
-│   ├── wp-content/
-│   │   ├── plugins/
-│   │   │   ├── neo-dashboard/         # Haupt-Plugin
-│   │   │   └── neo-dashboard-examples/ # Beispiele
-│   │   └── themes/
-│   ├── wp-config.php
-│   └── index.php
-├── database/                           # Datenbank
-│   └── wordpress_neo.sql
-├── docs/                              # Dokumentation
-├── scripts/                           # Installationsskripte
+wordpress/
+├── wp-content/
+│   ├── plugins/
+│   │   ├── neo-dashboard/              # Core Dashboard Framework
+│   │   │   ├── src/                    # PSR-4 Klassen
+│   │   │   │   ├── Manager/            # Asset, Section, Widget Manager
+│   │   │   │   ├── Bootstrap.php
+│   │   │   │   ├── Dashboard.php
+│   │   │   │   └── Router.php
+│   │   │   ├── templates/              # Dashboard Templates
+│   │   │   ├── assets/                 # CSS & JS
+│   │   │   └── README.md
+│   │   ├── neo-umfrage/                # Umfrage-Plugin
+│   │   │   ├── assets/
+│   │   │   │   ├── css/
+│   │   │   │   └── js/
+│   │   │   └── neo-umfrage.php
+│   │   ├── neo-calendar/               # Kalender-Plugin
+│   │   │   ├── assets/
+│   │   │   └── neo-calendar.php
+│   │   └── neo-domain-changer/         # Domain Changer
+│   │       ├── neo-domain-changer.php
+│   │       └── README.md
+│   └── themes/
+│       ├── global-responsive.css       # Globale responsive Styles
+│       └── responsive-functions.php    # Responsive Funktionen
+├── docker-compose.yml
 └── README.md
 ```
 
 ## 🔧 Konfiguration
 
 ### Ports ändern (falls erforderlich)
-Wenn Port 80 belegt ist, ändern Sie in `apache/conf/httpd.conf`:
-```apache
-Listen 8080
-ServerName localhost:8080
+In `docker-compose.yml` ändern Sie:
+```yaml
+services:
+  wordpress:
+    ports:
+      - "8081:80"  # Externer Port:Interner Port
+  
+  db:
+    ports:
+      - "3307:3306"
 ```
 
-### Datenbank-URL ändern
-In `wp-config.php` ändern Sie:
+### Domain/URL ändern
+Verwenden Sie das **Neo Domain Changer** Plugin in WP-Admin oder aktualisieren Sie `wp-config.php`:
 ```php
-define('WP_HOME','http://localhost:8080/wordpress');
-define('WP_SITEURL','http://localhost:8080/wordpress');
+define('WP_HOME','http://your-domain.com');
+define('WP_SITEURL','http://your-domain.com');
+```
+
+### Docker Environment Variables
+In `docker-compose.yml`:
+```yaml
+environment:
+  WORDPRESS_DB_HOST: db
+  WORDPRESS_DB_USER: wordpress
+  WORDPRESS_DB_PASSWORD: wordpress
+  WORDPRESS_DB_NAME: wordpress
 ```
 
 ## 🌟 Features
 
+### Core Dashboard
 - **Modernes UI** mit Bootstrap 5.3
-- **Responsives Design** für alle Geräte
+- **Responsives Design** für alle Geräte (Desktop, Tablet, Mobile)
 - **Modulare Architektur** zur Erweiterung
 - **REST API** für Integration
-- **Benachrichtigungssystem**
+- **Benachrichtigungssystem** mit Fixed-Position
 - **Widgets und Sektionen**
 - **Sidebar-Gruppierung**
+- **Dark/Light Theme** mit Theme-Switcher
+- **WP-Admin Integration** - Direkter Link zu Neo Dashboard
+
+### Neo Umfrage
+- Template-basierte Umfragen erstellen
+- Verschiedene Feldtypen: Text, Nummer, Telefon, Email, Radio, Checkbox, Select, Textarea
+- DataTables für Umfragen-Übersicht
+- Detaillierte Statistik-Seite:
+  - Text-Felder: Häufigste Antworten
+  - Zahlen-Felder: Min/Avg/Max
+  - Auswahl-Felder: Prozentuale Verteilung mit Progress Bars
+- Filterung nach Template und Benutzer
+- Icon-basierte Aktionsbuttons
+- Vollständig responsive
+
+### Neo Calendar
+- FullCalendar-Integration
+- Event-Verwaltung mit Modal-Dialogen
+- Responsive Design für alle Bildschirmgrößen
+- Mobile-optimierte Toolbar und Controls
+
+### Neo Domain Changer
+- Einfache Domain-Verwaltung über WP-Admin
+- Sichere Domain-Validierung
+- Automatische Skript-Ausführung via sudo
+- Error-Logging und Debugging
+- Benutzerfreundliche Oberfläche
 
 ## 🛠️ Entwicklung
 
@@ -116,12 +211,26 @@ add_action('neo_dashboard_init', function() {
 });
 ```
 
+## 🗄️ Datenbankstruktur
+
+### Neo Umfrage
+```sql
+wp_neo_umfrage_templates        # Umfrage-Templates
+wp_neo_umfrage_surveys          # Ausgefüllte Umfragen
+wp_neo_umfrage_survey_values    # Feld-Werte der Umfragen
+```
+
+### Neo Calendar
+```sql
+wp_neo_calendar_events          # Kalender-Events
+```
+
 ## 📚 Dokumentation
 
-- [Neo Dashboard Core](docs/neo-dashboard-core.md)
-- [API Referenz](docs/api-reference.md)
-- [Verwendungsbeispiele](docs/examples.md)
-- [Fehlerbehebung](docs/troubleshooting.md)
+- [Neo Dashboard Core](wp-content/plugins/neo-dashboard/README.md)
+- [Neo Umfrage](wp-content/plugins/neo-umfrage/)
+- [Neo Calendar](wp-content/plugins/neo-calendar/)
+- [Neo Domain Changer](wp-content/plugins/neo-domain-changer/README.md)
 
 ## 🐛 Fehlerbehebung
 
@@ -137,33 +246,17 @@ add_action('neo_dashboard_init', function() {
 
 ### Stile laden nicht
 - Überprüfen Sie, ob CSS-Dateien existieren
-- Leeren Sie den Browser-Cache
+- Leeren Sie den Browser-Cache (Ctrl+F5)
 - Überprüfen Sie die Browser-Konsole auf Fehler
 
-## 🤝 Zum Projekt beitragen
+### Umfrage-Daten werden nicht gespeichert
+- Prüfen Sie die Browser-Konsole auf Fehler
+- Kontrollieren Sie die Tabellen in der Datenbank
+- Aktivieren Sie Debug-Logging in `wp-config.php`
 
-1. Repository forken
-2. Feature Branch erstellen: `git checkout -b feature/amazing-feature`
-3. Änderungen committen: `git commit -m 'Add amazing feature'`
-4. Push zum Branch: `git push origin feature/amazing-feature`
-5. Pull Request öffnen
+### Domain Changer funktioniert nicht
+- Prüfen Sie sudo-Rechte: `sudo -l -U www-data`
+- Testen Sie das Skript manuell
+- Prüfen Sie `error_log` für Details
 
-## 📄 Lizenz
 
-Dieses Projekt wird unter der GPL-2.0-or-later Lizenz veröffentlicht.
-
-## 🆘 Support
-
-- **Issues:** [GitHub Issues](https://github.com/your-username/neo-dashboard-wordpress/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/your-username/neo-dashboard-wordpress/discussions)
-- **Wiki:** [GitHub Wiki](https://github.com/your-username/neo-dashboard-wordpress/wiki)
-
-## 🙏 Danksagungen
-
-- WordPress Community
-- Bootstrap Team
-- Alle Projektmitarbeiter
-
----
-
-**Mit ❤️ für die WordPress Community erstellt**
