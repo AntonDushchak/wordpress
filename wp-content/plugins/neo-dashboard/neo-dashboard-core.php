@@ -3,7 +3,7 @@ declare(strict_types=1);
 /**
  * Plugin Name:     Neo Dashboard Core
  * Description:     Modernes Dashboard‑Framework mit PSR‑4‑Autoloader und Manager‑Architektur.
- * Version:         3.0.2
+ * Version:         3.0.3
  * Author:          Neo
  * Text Domain:     neo-dashboard-core
  */
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Versionskonstante
  * ------------------------------------------------------------------------- */
 if ( ! defined( 'NEO_DASHBOARD_VERSION' ) ) {
-    define( 'NEO_DASHBOARD_VERSION', '3.0.2' );
+    define( 'NEO_DASHBOARD_VERSION', '3.0.3' );
 }
 
 /* ------------------------------------------------------------------------- *
