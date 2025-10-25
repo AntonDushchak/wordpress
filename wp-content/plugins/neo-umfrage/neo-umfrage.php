@@ -124,17 +124,17 @@ class Neo_Umfrage {
                 'datatables-css' => [
                     'src' => 'https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css',
                     'deps' => [],
-                    'contexts' => ['neo-umfrage', 'neo-umfrage/surveys', 'neo-umfrage/templates', 'neo-umfrage/statistics', 'dashboard']
+                    'contexts' => ['neo-umfrage', 'neo-umfrage/surveys', 'neo-umfrage/templates', 'neo-umfrage/statistics']
                 ],
                 'datatables-css-fix' => [
                     'src' => plugin_dir_url(__FILE__) . 'assets/css/datatables-theme-fix.css',
                     'deps' => ['datatables-css'],
-                    'contexts' => ['neo-umfrage', 'neo-umfrage/surveys', 'neo-umfrage/templates', 'neo-umfrage/statistics', 'dashboard']
+                    'contexts' => ['neo-umfrage', 'neo-umfrage/surveys', 'neo-umfrage/templates', 'neo-umfrage/statistics']
                 ],
                 'neo-umfrage-css' => [
                     'src' => plugin_dir_url(__FILE__) . 'assets/css/neo-umfrage.css',
                     'deps' => ['neo-dashboard-core'],
-                    'contexts' => ['neo-umfrage', 'neo-umfrage/surveys', 'neo-umfrage/templates', 'neo-umfrage/statistics', 'dashboard']
+                    'contexts' => ['neo-umfrage', 'neo-umfrage/surveys', 'neo-umfrage/templates', 'neo-umfrage/statistics', 'dashboard-home']
                 ]
             ],
             'js' => [
@@ -148,13 +148,13 @@ class Neo_Umfrage {
                     'src' => plugin_dir_url(__FILE__) . 'assets/js/neo-umfrage.js',
                     'deps' => ['jquery'],
                     'version' => '1.0.0',
-                    'contexts' => ['neo-umfrage', 'neo-umfrage/surveys', 'neo-umfrage/templates', 'neo-umfrage/statistics', 'dashboard']
+                    'contexts' => ['neo-umfrage', 'neo-umfrage/surveys', 'neo-umfrage/templates', 'neo-umfrage/statistics', 'dashboard-home']
                 ],
                 'neo-umfrage-modals-js' => [
                     'src' => plugin_dir_url(__FILE__) . 'assets/js/neo-umfrage-modals.js',
                     'deps' => ['jquery', 'neo-umfrage-js'],
                     'version' => '1.0.0',
-                    'contexts' => ['neo-umfrage', 'neo-umfrage/surveys', 'neo-umfrage/templates', 'neo-umfrage/statistics', 'dashboard']
+                    'contexts' => ['neo-umfrage', 'neo-umfrage/surveys', 'neo-umfrage/templates', 'neo-umfrage/statistics', 'dashboard-home']
                 ],
                 'neo-umfrage-surveys-js' => [
                     'src' => plugin_dir_url(__FILE__) . 'assets/js/neo-umfrage-surveys.js',
@@ -166,7 +166,7 @@ class Neo_Umfrage {
                     'src' => plugin_dir_url(__FILE__) . 'assets/js/neo-umfrage-templates.js',
                     'deps' => ['jquery', 'neo-umfrage-js'],
                     'version' => '1.0.0',
-                    'contexts' => ['neo-umfrage', 'neo-umfrage/surveys', 'neo-umfrage/templates']
+                    'contexts' => ['neo-umfrage', 'neo-umfrage/surveys', 'neo-umfrage/templates', 'dashboard-home']
                 ],
                 'neo-umfrage-statistics-js' => [
                     'src' => plugin_dir_url(__FILE__) . 'assets/js/neo-umfrage-statistics.js',

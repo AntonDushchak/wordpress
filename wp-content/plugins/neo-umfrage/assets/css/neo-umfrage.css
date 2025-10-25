@@ -510,14 +510,19 @@ html[data-neo-theme="dark"] .template-field {
 }
 
 .neo-umfrage-message {
+    position: fixed;
+    top: 80px;
+    right: 20px;
     padding: 12px 16px;
-    margin: 10px 0;
+    min-width: 300px;
+    max-width: 400px;
     border-radius: 4px;
     border-left: 4px solid;
     font-size: 14px;
     line-height: 1.4;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    animation: slideIn 0.3s ease-out;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: slideInRight 0.3s ease-out;
+    z-index: 9999;
 }
 
 .neo-umfrage-message-success {
@@ -544,14 +549,50 @@ html[data-neo-theme="dark"] .template-field {
     color: #0c5460;
 }
 
-@keyframes slideIn {
+/* Сохраняем цвета сообщений в тёмной теме */
+html[data-theme="dark"] .neo-umfrage-message-success,
+html[data-neo-theme="dark"] .neo-umfrage-message-success {
+    background-color: #d4edda !important;
+    color: #155724 !important;
+}
+
+html[data-theme="dark"] .neo-umfrage-message-error,
+html[data-neo-theme="dark"] .neo-umfrage-message-error {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+}
+
+html[data-theme="dark"] .neo-umfrage-message-warning,
+html[data-neo-theme="dark"] .neo-umfrage-message-warning {
+    background-color: #fff3cd !important;
+    color: #856404 !important;
+}
+
+html[data-theme="dark"] .neo-umfrage-message-info,
+html[data-neo-theme="dark"] .neo-umfrage-message-info {
+    background-color: #d1ecf1 !important;
+    color: #0c5460 !important;
+}
+
+@keyframes slideInRight {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateX(100%);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateX(0);
+    }
+}
+
+/* Адаптивное позиционирование сообщений */
+@media (max-width: 768px) {
+    .neo-umfrage-message {
+        top: 60px;
+        right: 10px;
+        left: 10px;
+        min-width: auto;
+        max-width: none;
     }
 }
 
