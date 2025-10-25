@@ -384,10 +384,7 @@
             `;
             
             $fieldsContainer.append(fieldHtml);
-            const $lastField = $fieldsContainer.find('.template-field').last();
-            $lastField.find('input').attr('disabled', 'disabled').attr('readonly', 'readonly');
-            $lastField.find('textarea').attr('disabled', 'disabled').attr('readonly', 'readonly');
-            $lastField.find('select').attr('disabled', 'disabled');
+            
         },
 
         refreshTemplatesTable: function() {

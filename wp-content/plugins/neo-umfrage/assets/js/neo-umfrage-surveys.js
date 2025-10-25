@@ -159,7 +159,6 @@
                         if ($filter.length) {
                             $filter.find('option:not(:first)').remove();
                             response.data.forEach(user => {
-
                                 $filter.append(`<option value="${user.ID}">${user.display_name}</option>`);
                             });
                             

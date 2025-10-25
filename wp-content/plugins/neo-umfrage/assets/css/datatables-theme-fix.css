@@ -1,6 +1,3 @@
-/* DataTables light/dark mode fix for custom themes */
-
-/* Light mode: force white background and dark text for DataTables */
 html[data-neo-theme="light"] .dataTables_wrapper,
 html[data-neo-theme="light"] table.dataTable,
 html[data-neo-theme="light"] .dataTables_length,
@@ -31,14 +28,12 @@ html[data-neo-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_b
     border-color: #444 !important;
 }
 
-/* Remove box-shadow and border for a cleaner look */
 .dataTables_wrapper,
 table.dataTable {
     box-shadow: none !important;
     border: none !important;
 }
 
-/* Optional: fix input/select fields in DataTables controls */
 html[data-neo-theme="dark"] .dataTables_wrapper input,
 html[data-neo-theme="dark"] .dataTables_wrapper select {
     background: #222 !important;

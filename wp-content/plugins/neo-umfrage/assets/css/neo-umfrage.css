@@ -246,6 +246,18 @@
     overflow-y: auto;
 }
 
+html[data-neo-theme="dark"] .neo-umfrage-modal-content {
+    background: #23272b !important;
+    color: #eee !important;
+}
+
+html[data-neo-theme="dark"] .neo-umfrage-modal-header,
+html[data-neo-theme="dark"] .neo-umfrage-modal-footer {
+    background: #23272b !important;
+    color: #eee !important;
+    border-color: #444 !important;
+}
+
 .neo-umfrage-modal-header {
     padding: 20px;
     border-bottom: 1px solid #ccd0d4;
@@ -300,6 +312,12 @@
     border: 1px solid #e1e1e1;
     border-radius: 5px;
     background-color: #f9f9f9;
+}
+
+html[data-neo-theme="dark"] .template-field {
+    background-color: #23272b !important;
+    border-color: #444 !important;
+    color: #eee !important;
 }
 
 .template-field > div {
