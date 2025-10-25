@@ -1,124 +1,70 @@
 <?php
-/**
- * Адаптивные стили для WordPress
- * Подключение CSS файлов для всех устройств
- * 
- * @package WordPress
- * @subpackage Responsive
- * @version 1.0.0
- */
 
-// Предотвращаем прямой доступ
 if (!defined('ABSPATH')) {
     exit;
 }
 
-/**
- * Подключение адаптивных стилей
- */
 function enqueue_responsive_styles() {
-    // Получаем версию для кеширования
-    $version = '1.0.0';
-    
-    // Основные адаптивные стили
-    wp_enqueue_style(
-        'global-responsive',
-        get_template_directory_uri() . '/global-responsive.css',
-        array(),
-        $version,
-        'all'
-    );
-    
-    // Стили дашборда Neo
-    if (is_plugin_active('neo-dashboard/neo-dashboard-core.php')) {
+    if (!is_plugin_active('neo-dashboard/neo-dashboard-core.php')) {
+        $version = '1.2.0';
         wp_enqueue_style(
-            'neo-dashboard-responsive',
-            WP_PLUGIN_URL . '/neo-dashboard/assets/dashboard.css',
-            array('global-responsive'),
-            $version,
-            'all'
-        );
-    }
-    
-    // Стили календаря Neo
-    if (is_plugin_active('neo-calendar/neo-calendar.php')) {
-        wp_enqueue_style(
-            'neo-calendar-responsive',
-            WP_PLUGIN_URL . '/neo-calendar/assets/css/neo-calendar.css',
-            array('global-responsive'),
-            $version,
-            'all'
-        );
-    }
-    
-    // Стили опросов Neo
-    if (is_plugin_active('neo-umfrage/neo-umfrage.php')) {
-        wp_enqueue_style(
-            'neo-umfrage-responsive',
-            WP_PLUGIN_URL . '/neo-umfrage/assets/css/neo-umfrage.css',
-            array('global-responsive'),
-            $version,
-            'all'
-        );
-    }
-    
-    // Стили работ Neo
-    if (is_plugin_active('job-board-integration/job-board-integration.php')) {
-        wp_enqueue_style(
-            'neo-job-board-responsive',
-            WP_PLUGIN_URL . '/job-board-integration/assets/css/neo-job-board.css',
-            array('global-responsive'),
-            $version,
-            'all'
-        );
-        
-        wp_enqueue_style(
-            'neo-profession-autocomplete-responsive',
-            WP_PLUGIN_URL . '/job-board-integration/assets/css/neo-profession-autocomplete.css',
-            array('neo-job-board-responsive'),
+            'global-responsive',
+            content_url('themes/global-responsive.css'),
+            array(),
             $version,
             'all'
         );
     }
 }
 
-/**
- * Добавление viewport meta тега для адаптивности
- */
 function add_responsive_viewport() {
     echo '<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">' . "\n";
 }
 
-/**
- * Добавление дополнительных meta тегов для улучшения адаптивности
- */
 function add_responsive_meta_tags() {
-    // Viewport
     echo '<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">' . "\n";
-    
-    // Поддержка темной темы
     echo '<meta name="color-scheme" content="light dark">' . "\n";
-    
-    // Отключение автоматического детектирования номеров телефонов на iOS
     echo '<meta name="format-detection" content="telephone=no">' . "\n";
-    
-    // Улучшение рендеринга на мобильных устройствах
     echo '<meta name="mobile-web-app-capable" content="yes">' . "\n";
     echo '<meta name="apple-mobile-web-app-capable" content="yes">' . "\n";
     echo '<meta name="apple-mobile-web-app-status-bar-style" content="default">' . "\n";
-    
-    // Предзагрузка критических ресурсов
-    echo '<link rel="preload" href="' . get_template_directory_uri() . '/global-responsive.css" as="style">' . "\n";
+    echo '<link rel="preload" href="' . content_url('themes/global-responsive.css') . '" as="style">' . "\n";
 }
 
-/**
- * Добавление JavaScript для мобильного меню
- */
+function needs_plugin_assets($plugin_type) {
+    global $post;
+    
+    switch ($plugin_type) {
+        case 'calendar':
+            return (is_page('calendar') || 
+                   (isset($post->post_content) && has_shortcode($post->post_content, 'neo_calendar')) ||
+                   strpos($_SERVER['REQUEST_URI'], 'calendar') !== false);
+                   
+        case 'dashboard':
+            return (is_page('dashboard') || 
+                   strpos($_SERVER['REQUEST_URI'], 'dashboard') !== false ||
+                   current_user_can('manage_options'));
+                   
+        case 'umfrage':
+            return (is_page('umfrage') || 
+                   (isset($post->post_content) && has_shortcode($post->post_content, 'neo_umfrage')) ||
+                   strpos($_SERVER['REQUEST_URI'], 'umfrage') !== false);
+                   
+        case 'jobs':
+            return (is_page(array('jobs', 'career', 'vacancies')) || 
+                   (isset($post->post_content) && has_shortcode($post->post_content, 'job_board')) ||
+                   is_post_type_archive('job') || is_singular('job') ||
+                   strpos($_SERVER['REQUEST_URI'], 'job') !== false);
+    }
+    
+    return false;
+}
+
 function add_mobile_menu_script() {
+    if (has_nav_menu('primary') || has_nav_menu('mobile')) {
     ?>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Мобильное меню
         const menuToggle = document.querySelector('.menu-toggle');
         const navMenu = document.querySelector('.nav-menu');
         
@@ -129,7 +75,6 @@ function add_mobile_menu_script() {
             });
         }
         
-        // Подменю для мобильных
         const menuItemsWithChildren = document.querySelectorAll('.menu-item-has-children > a');
         
         menuItemsWithChildren.forEach(function(menuItem) {
@@ -148,10 +93,10 @@ function add_mobile_menu_script() {
             });
         });
         
-        // Обработчик изменения размера окна
+        // Handler für Fenstergrößenänderung
         window.addEventListener('resize', function() {
             if (window.innerWidth > 767) {
-                // Сброс мобильных стилей на больших экранах
+                // Reset mobiler Stile auf größeren Bildschirmen
                 const openItems = document.querySelectorAll('.menu-item-has-children.open');
                 openItems.forEach(function(item) {
                     item.classList.remove('open');
@@ -171,7 +116,7 @@ function add_mobile_menu_script() {
             }
         });
         
-        // Обработка touch событий для улучшения UX на мобильных
+        // Behandlung von Touch-Events zur Verbesserung der UX auf Mobilen
         let touchStartY = 0;
         let touchEndY = 0;
         
@@ -188,18 +133,19 @@ function add_mobile_menu_script() {
             const swipeThreshold = 100;
             const diff = touchStartY - touchEndY;
             
-            // Можно добавить обработку свайпов для закрытия меню
+            // Kann Swipe-Behandlung zum Schließen des Menüs hinzufügen
             if (Math.abs(diff) > swipeThreshold) {
-                // Логика для свайпов
+                // Logik für Swipes
             }
         }
     });
     </script>
     <?php
+    } // Ende der Navigations-Prüfung
 }
 
 /**
- * Добавление CSS переменных для динамического изменения стилей
+ * Hinzufügung von CSS-Variablen für dynamische Stiländerungen
  */
 function add_css_custom_properties() {
     ?>
@@ -214,14 +160,14 @@ function add_css_custom_properties() {
         --border-radius: 0.375rem;
         --transition: all 0.2s ease-in-out;
         
-        /* Брейкпоинты */
+        /* Breakpoints */
         --breakpoint-xs: 480px;
         --breakpoint-sm: 576px;
         --breakpoint-md: 768px;
         --breakpoint-lg: 992px;
         --breakpoint-xl: 1200px;
         
-        /* Отступы */
+        /* Abstände */
         --spacing-xs: 0.25rem;
         --spacing-sm: 0.5rem;
         --spacing-md: 1rem;
@@ -229,7 +175,7 @@ function add_css_custom_properties() {
         --spacing-xl: 3rem;
     }
     
-    /* Темная тема */
+    /* Dunkles Design */
     @media (prefers-color-scheme: dark) {
         :root {
             --text-color: #e0e0e0;
@@ -239,12 +185,12 @@ function add_css_custom_properties() {
         }
     }
     
-    /* Адаптивные размеры шрифтов */
+    /* Responsive Schriftgrößen */
     html {
         font-size: clamp(14px, 2.5vw, 16px);
     }
     
-    /* Адаптивные отступы */
+    /* Responsive Abstände */
     .container, 
     .container-fluid {
         padding-left: clamp(8px, 2vw, 15px);
@@ -255,19 +201,19 @@ function add_css_custom_properties() {
 }
 
 /**
- * Функция для проверки мобильного устройства
+ * Funktion zur Prüfung mobiler Geräte
  */
 function is_mobile_device() {
     return wp_is_mobile();
 }
 
 /**
- * Функция для получения размера экрана через JavaScript
+ * Funktion zur Ermittlung der Bildschirmgröße über JavaScript
  */
 function add_screen_size_detection() {
     ?>
     <script>
-    // Определение размера экрана
+    // Bestimmung der Bildschirmgröße
     function getScreenSize() {
         const width = window.innerWidth;
         
@@ -278,18 +224,18 @@ function add_screen_size_detection() {
         return 'xl';
     }
     
-    // Добавление класса размера экрана к body
+    // Hinzufügung der Bildschirmgrößen-Klasse zu body
     function updateScreenSizeClass() {
         const body = document.body;
         const currentSize = getScreenSize();
         
-        // Удаляем все классы размеров экрана
+        // Alle Bildschirmgrößen-Klassen entfernen
         body.classList.remove('screen-xs', 'screen-sm', 'screen-md', 'screen-lg', 'screen-xl');
         
-        // Добавляем текущий класс
+        // Aktuelle Klasse hinzufügen
         body.classList.add('screen-' + currentSize);
         
-        // Добавляем класс для мобильных устройств
+        // Klasse für mobile Geräte hinzufügen
         if (currentSize === 'xs' || currentSize === 'sm') {
             body.classList.add('is-mobile');
         } else {
@@ -297,14 +243,14 @@ function add_screen_size_detection() {
         }
     }
     
-    // Обновляем при загрузке и изменении размера
+    // Aktualisierung beim Laden und bei Größenänderung
     document.addEventListener('DOMContentLoaded', updateScreenSizeClass);
     window.addEventListener('resize', updateScreenSizeClass);
     </script>
     <?php
 }
 
-// Хуки WordPress
+// WordPress Hooks
 add_action('wp_enqueue_scripts', 'enqueue_responsive_styles');
 add_action('wp_head', 'add_responsive_meta_tags', 1);
 add_action('wp_footer', 'add_mobile_menu_script');
@@ -312,12 +258,12 @@ add_action('wp_head', 'add_css_custom_properties');
 add_action('wp_footer', 'add_screen_size_detection');
 
 /**
- * Добавление кнопки мобильного меню в навигацию
+ * Hinzufügung des mobilen Menü-Buttons zur Navigation
  */
 function add_mobile_menu_button($items, $args) {
     if ($args->theme_location == 'primary') {
         $mobile_button = '<li class="menu-item menu-toggle d-md-none">';
-        $mobile_button .= '<a href="#" class="menu-toggle-link">☰ Меню</a>';
+        $mobile_button .= '<a href="#" class="menu-toggle-link">☰ Menü</a>';
         $mobile_button .= '</li>';
         
         $items = $mobile_button . $items;
@@ -328,10 +274,10 @@ function add_mobile_menu_button($items, $args) {
 add_filter('wp_nav_menu_items', 'add_mobile_menu_button', 10, 2);
 
 /**
- * Добавление поддержки адаптивных изображений
+ * Hinzufügung der Unterstützung für responsive Bilder
  */
 function add_responsive_image_sizes() {
-    // Добавляем размеры изображений для разных экранов
+    // Bildgrößen für verschiedene Bildschirme hinzufügen
     add_image_size('mobile-small', 480, 320, true);
     add_image_size('mobile-large', 767, 511, true);
     add_image_size('tablet', 1024, 683, true);
@@ -340,7 +286,7 @@ function add_responsive_image_sizes() {
 add_action('after_setup_theme', 'add_responsive_image_sizes');
 
 /**
- * Функция для вывода адаптивного изображения
+ * Funktion zur Ausgabe responsiver Bilder
  */
 function get_responsive_image($attachment_id, $alt = '', $class = '') {
     if (!$attachment_id) return '';
@@ -374,23 +320,314 @@ function get_responsive_image($attachment_id, $alt = '', $class = '') {
 }
 
 /**
- * Оптимизация для производительности
+ * Optimierung für Leistung (bedingt)
  */
 function optimize_for_mobile() {
     if (is_mobile_device()) {
-        // Отключаем некоторые скрипты на мобильных
-        wp_dequeue_script('jquery-ui-core');
-        wp_dequeue_script('jquery-ui-widget');
+        // jQuery UI nur deaktivieren wenn Kalender oder Dashboard nicht verwendet wird
+        if (!needs_plugin_assets('calendar') && !needs_plugin_assets('dashboard')) {
+            wp_dequeue_script('jquery-ui-core');
+            wp_dequeue_script('jquery-ui-widget');
+            wp_dequeue_script('jquery-ui-datepicker');
+        }
         
-        // Добавляем критический CSS inline
-        add_action('wp_head', function() {
-            echo '<style id="critical-css">';
-            echo 'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}';
-            echo '.container{max-width:100%;padding:0 15px}';
-            echo 'img{max-width:100%;height:auto}';
-            echo '</style>';
-        }, 1);
+        // Überflüssige Skripte auf statischen Seiten deaktivieren
+        if (is_page() && !needs_plugin_assets('jobs') && !needs_plugin_assets('umfrage')) {
+            wp_dequeue_script('wp-embed');
+            wp_dequeue_script('comment-reply');
+        }
+        
+        // Kritisches CSS inline nur auf Startseite und statischen Seiten hinzufügen
+        if (is_front_page() || is_page()) {
+            add_action('wp_head', function() {
+                echo '<style id="critical-css">';
+                echo 'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}';
+                echo '.container{max-width:100%;padding:0 15px}';
+                echo 'img{max-width:100%;height:auto}';
+                echo '</style>';
+            }, 1);
+        }
     }
 }
 add_action('wp_enqueue_scripts', 'optimize_for_mobile', 100);
+
+
+/**
+ * Theme switcher styles and script for Neo Dashboard integration
+ */
+function add_neo_dashboard_theme_assets() {
+    ?>
+    <style>
+    /* Theme variables */
+    :root {
+        --theme-bg-color: #ffffff;
+        --theme-text-color: #212529;
+        --theme-primary-color: #007cba;
+        --theme-border-color: #dee2e6;
+        --theme-secondary-bg: #f8f9fa;
+    }
+    
+    [data-theme="dark"] {
+        --theme-bg-color: #1a1a1a;
+        --theme-text-color: #e0e0e0;
+        --theme-primary-color: #4dabf7;
+        --theme-border-color: #404040;
+        --theme-secondary-bg: #2d2d2d;
+    }
+    
+    /* Theme switcher button */
+    .theme-switcher {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1060;
+    }
+    
+    #theme-toggle {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        transition: all 0.3s ease;
+        background: var(--theme-secondary-bg);
+        color: var(--theme-text-color);
+        border: 1px solid var(--theme-border-color);
+    }
+    
+    #theme-toggle:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Apply theme to body and all elements */
+    body {
+        background-color: var(--theme-bg-color) !important;
+        color: var(--theme-text-color) !important;
+    }
+    
+    /* Override Bootstrap and WordPress default text colors */
+    .navbar-brand,
+    .nav-link,
+    .text-white,
+    .text-light,
+    .navbar-nav .nav-link {
+        color: var(--theme-text-color) !important;
+    }
+    
+    .navbar,
+    .navbar.navbar-light,
+    .navbar.bg-light,
+    .bg-light {
+        background-color: var(--theme-secondary-bg) !important;
+        border-bottom: 1px solid var(--theme-border-color) !important;
+    }
+    
+    .navbar .navbar-brand,
+    .navbar .navbar-nav .nav-link,
+    .navbar.navbar-light .navbar-brand,
+    .navbar.navbar-light .navbar-nav .nav-link {
+        color: var(--theme-text-color) !important;
+    }
+    
+    .navbar .navbar-nav .nav-link:hover,
+    .navbar .navbar-nav .nav-link:focus,
+    .navbar.navbar-light .navbar-nav .nav-link:hover,
+    .navbar.navbar-light .navbar-nav .nav-link:focus {
+        color: var(--theme-primary-color) !important;
+    }
+    
+    [data-theme="dark"] .navbar.navbar-light,
+    [data-theme="dark"] .navbar.bg-light,
+    [data-theme="dark"] .bg-light {
+        background-color: var(--theme-secondary-bg) !important;
+        color: var(--theme-text-color) !important;
+    }
+    
+    [data-theme="dark"] .navbar.navbar-light .navbar-brand,
+    [data-theme="dark"] .navbar.navbar-light .navbar-nav .nav-link {
+        color: var(--theme-text-color) !important;
+    }
+    
+    /* Fix Bootstrap button colors */
+    .btn-primary {
+        background-color: var(--theme-primary-color) !important;
+        border-color: var(--theme-primary-color) !important;
+    }
+    
+    .btn-outline-secondary {
+        color: var(--theme-text-color) !important;
+        border-color: var(--theme-border-color) !important;
+    }
+    
+    .btn-outline-secondary:hover {
+        background-color: var(--theme-secondary-bg) !important;
+        color: var(--theme-text-color) !important;
+    }
+    
+    /* Ensure all text elements use theme colors */
+    h1, h2, h3, h4, h5, h6, p, span, div, section, article {
+        color: var(--theme-text-color) !important;
+    }
+    
+    /* WordPress content areas */
+    .wp-site-blocks,
+    .wp-block-group,
+    .entry-content,
+    .site-content {
+        background-color: var(--theme-bg-color) !important;
+        color: var(--theme-text-color) !important;
+    }
+    
+    /* Links */
+    a {
+        color: var(--theme-primary-color) !important;
+    }
+    
+    a:hover, a:focus {
+        color: color-mix(in srgb, var(--theme-primary-color) 80%, white 20%) !important;
+    }
+    
+    /* Forms 
+    input, textarea, select {
+        background-color: var(--theme-secondary-bg) !important;
+        color: var(--theme-text-color) !important;
+        border-color: var(--theme-border-color) !important;
+    }*/
+    
+    /* Responsive design for theme switcher */
+    @media (max-width: 768px) {
+        .theme-switcher {
+            top: 15px;
+            right: 15px;
+        }
+        
+        #theme-toggle {
+            width: 40px;
+            height: 40px;
+            font-size: 16px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .theme-switcher {
+            top: 10px;
+            right: 10px;
+        }
+        
+        #theme-toggle {
+            width: 35px;
+            height: 35px;
+            font-size: 14px;
+        }
+    }
+    </style>
+    
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        html.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+        
+        if (themeToggle) {
+            themeToggle.addEventListener('click', function() {
+                const currentTheme = html.getAttribute('data-theme') || 'light';
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateThemeIcon(newTheme);
+                
+                // Button animation
+                this.style.transform = 'scale(0.9)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+            });
+        }
+        
+        function updateThemeIcon(theme) {
+            if (themeToggle) {
+                if (theme === 'light') {
+                    themeToggle.innerHTML = '<i class="bi bi-moon-fill"></i>';
+                    themeToggle.className = 'btn btn-outline-secondary';
+                } else {
+                    themeToggle.innerHTML = '<i class="bi bi-sun-fill"></i>';
+                    themeToggle.className = 'btn btn-outline-warning';
+                }
+            }
+        }
+        
+        // System preference detection
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        if (!localStorage.getItem('theme')) {
+            const systemTheme = mediaQuery.matches ? 'dark' : 'light';
+            html.setAttribute('data-theme', systemTheme);
+            updateThemeIcon(systemTheme);
+        }
+    });
+    </script>
+    <?php
+}
+add_action('wp_head', 'add_neo_dashboard_theme_assets');
+
+/**
+ * Fix Bootstrap CSS conflicts with theme system
+ */
+function fix_bootstrap_theme_conflicts() {
+    if (is_plugin_active('neo-dashboard/neo-dashboard-core.php')) {
+        echo '<style>
+        /* Override Bootstrap CSS variables for theme compatibility */
+        :root {
+            --bs-body-bg: var(--theme-bg-color);
+            --bs-body-color: var(--theme-text-color);
+            --bs-navbar-brand-color: var(--theme-text-color);
+            --bs-nav-link-color: var(--theme-text-color);
+            --bs-link-color: var(--theme-primary-color);
+        }
+        
+        /* Ensure Bootstrap components use theme colors */
+        .navbar {
+            background-color: var(--theme-secondary-bg) !important;
+            border-bottom: 1px solid var(--theme-border-color) !important;
+        }
+        
+        .navbar-light .navbar-brand,
+        .navbar-light .navbar-nav .nav-link,
+        .navbar-light .navbar-toggler-icon {
+            color: var(--theme-text-color) !important;
+        }
+        
+        .navbar-light .navbar-nav .nav-link:hover,
+        .navbar-light .navbar-nav .nav-link:focus {
+            color: var(--theme-primary-color) !important;
+        }
+        
+        .bg-light {
+            background-color: var(--theme-secondary-bg) !important;
+        }
+        
+        .text-dark {
+            color: var(--theme-text-color) !important;
+        }
+        
+        .card {
+            background-color: var(--theme-secondary-bg) !important;
+            color: var(--theme-text-color) !important;
+        }
+        
+        .table {
+            --bs-table-bg: var(--theme-bg-color);
+            --bs-table-color: var(--theme-text-color);
+        }
+        </style>';
+    }
+}
+add_action('wp_head', 'fix_bootstrap_theme_conflicts', 5);
 ?>

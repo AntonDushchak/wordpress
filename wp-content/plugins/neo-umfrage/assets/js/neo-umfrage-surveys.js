@@ -1,38 +1,27 @@
 (function ($) {
     'use strict';
     window.NeoUmfrageSurveys = {
-
-        // Инициализация
         init: function() {
             this.initializeModals();
         },
 
-        // Инициализация модальных окон для анкет
         initializeModals: function() {
-            // Создаем модальные окна если они еще не созданы
             if (window.NeoUmfrageModals && NeoUmfrageModals.createModals) {
                 NeoUmfrageModals.createModals();
             }
         },
 
-        // Загрузка анкет
         loadSurveys: function () {
-            // Инициализируем модальные окна при первой загрузке
             this.init();
-            
-            // Инициализируем DataTables
             this.initSurveysDataTable();
         },
 
-        // Фильтрация анкет по шаблону
         filterSurveys: function () {
             const templateName = $(this).val();
             
-            // Показываем индикатор загрузки
             const $surveysContainer = $('#surveys-list');
             $surveysContainer.html('<div class="neo-umfrage-loading"></div>');
             
-            // Отправляем AJAX запрос для получения отфильтрованных анкет
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
                 type: 'POST',
@@ -54,11 +43,9 @@
             });
         },
 
-        // Инициализация DataTables для анкет
         initSurveysDataTable: function () {
             const $container = $('#surveys-list');
             
-            // Создаем HTML для DataTables
             $container.html(`
                 <div class="neo-umfrage-filters" style="margin-bottom: 20px; display: flex; gap: 20px; align-items: center;">
                     <div>
@@ -87,7 +74,6 @@
                 </table>
             `);
 
-            // Инициализируем DataTable
             const table = $('#surveys-table').DataTable({
                 ajax: {
                     url: neoUmfrageAjax.ajaxurl,
@@ -97,6 +83,12 @@
                         d.nonce = neoUmfrageAjax.nonce;
                         d.template_id = $('#filter-template').val();
                         d.user_id = $('#filter-user').val();
+                    },
+                    dataSrc: function(json) {
+                        if (json.success && json.data && Array.isArray(json.data)) {
+                            return json.data;
+                        }
+                        return [];
                     }
                 },
                 columns: [
@@ -126,12 +118,12 @@
                         render: function(data, type, row) {
                             let actions = '';
                             if (NeoUmfrage.canEdit(row.user_id)) {
-                                actions += `<button class="neo-umfrage-button neo-umfrage-button-secondary" onclick="NeoUmfrage.editSurvey(${row.response_id}, ${row.user_id})">Bearbeiten</button> `;
+                                actions += `<button class="neo-umfrage-button neo-umfrage-button-secondary neo-umfrage-button-icon" onclick="NeoUmfrage.editSurvey(${row.response_id}, ${row.user_id})" title="Bearbeiten"><i class="bi bi-pencil"></i></button> `;
                             }
                             if (NeoUmfrage.canDelete(row.user_id)) {
-                                actions += `<button class="neo-umfrage-button neo-umfrage-button-danger" onclick="NeoUmfrage.deleteSurvey(${row.response_id}, ${row.user_id})">Löschen</button> `;
+                                actions += `<button class="neo-umfrage-button neo-umfrage-button-danger neo-umfrage-button-icon" onclick="NeoUmfrage.deleteSurvey(${row.response_id}, ${row.user_id})" title="Löschen"><i class="bi bi-trash"></i></button> `;
                             }
-                            actions += `<button class="neo-umfrage-button" onclick="NeoUmfrage.viewSurvey(${row.response_id})">Anzeigen</button>`;
+                            actions += `<button class="neo-umfrage-button neo-umfrage-button-icon" onclick="NeoUmfrage.viewSurvey(${row.response_id})" title="Anzeigen"><i class="bi bi-eye"></i></button>`;
                             return actions;
                         }
                     }
@@ -143,27 +135,21 @@
                 searching: false,
             });
 
-            // Загружаем опции для фильтров сначала
             this.loadFilterOptions();
 
-            // Обновление таблицы при смене фильтра
             $('#filter-template, #filter-user').on('change', function() {
                 table.ajax.reload();
             });
         },
 
-        // Загрузка опций для фильтров
         loadFilterOptions: function() {
-            // Загружаем шаблоны для фильтра
             if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.loadTemplatesForFilter) {
                 NeoUmfrageTemplates.loadTemplatesForFilter();
             }
             
-            // Загружаем пользователей для фильтра
             this.loadUsersForFilter();
         },
 
-        // Загрузка пользователей для фильтра
         loadUsersForFilter: function() {
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
@@ -178,18 +164,16 @@
                         const $filter = $('#filter-user');
                         if ($filter.length) {
                             $filter.find('option:not(:first)').remove();
-                            response.data.forEach(user => {
-
+                            const users = response.data.users || [];
+                            users.forEach(user => {
                                 $filter.append(`<option value="${user.ID}">${user.display_name}</option>`);
                             });
                             
-                            // Устанавливаем текущего пользователя по умолчанию (только для не-администраторов)
                             const roles = neoUmfrageAjax.userRoles;
                             const isAdmin = Array.isArray(roles) ? roles.includes('administrator') : roles === 'administrator';
                             
                             if (neoUmfrageAjax.currentUserId && !isAdmin) {
                                 $filter.val(neoUmfrageAjax.currentUserId);
-                                // Перезагружаем DataTable с новым фильтром
                                 if ($.fn.DataTable && $('#surveys-table').length) {
                                     $('#surveys-table').DataTable().ajax.reload();
                                 }
@@ -201,8 +185,6 @@
         },
 
 
-
-        // Удаление анкеты
         deleteSurvey: function (surveyId) {
             if (confirm('Sind Sie sicher, dass Sie diese Umfrage löschen möchten?')) {
                 $.ajax({
@@ -217,7 +199,6 @@
                         if (response && response.success) {
                             const message = (response.data && response.data.message) ? response.data.message : 'Umfrage erfolgreich gelöscht';
                             NeoUmfrage.showMessage('success', message);
-                            // Обновляем DataTable
                             if ($.fn.DataTable && $('#surveys-table').length) {
                                 $('#surveys-table').DataTable().ajax.reload();
                             } else {
@@ -235,20 +216,16 @@
             }
         },
 
-        // Редактирование анкеты
         editSurvey: function (responseId) {
-            // Открываем модальное окно для редактирования анкеты
             if (window.NeoUmfrageModals && NeoUmfrageModals.openEditSurveyModal) {
                 NeoUmfrageModals.openEditSurveyModal();
             }
 
-            // Загружаем данные анкеты для редактирования
             if (window.NeoUmfrageSurveys && NeoUmfrageSurveys.loadSurveyForEdit) {
                 NeoUmfrageSurveys.loadSurveyForEdit(responseId);
             }
         },
 
-        // Загрузка данных анкеты для редактирования
         loadSurveyForEdit: function (responseId) {
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
@@ -273,27 +250,22 @@
             });
         },
 
-        // Заполнение формы данными анкеты
         populateSurveyForm: function (surveyData) {
             const response = surveyData.response;
-            const fields = surveyData.response_data;
-            const templateId = surveyData.template_id; // Получаем template_id из данных
-            const templateName = surveyData.template_name; // Получаем название шаблона
+            const fields = surveyData.response_data_object || surveyData.response_data;
+            const templateId = surveyData.template_id;
+            const templateName = surveyData.template_name;
 
-            // При редактировании показываем только название шаблона (селект отключен)
             if (templateName) {
                 $('#survey-template-select').html(`<option value="${templateId}" selected>${templateName}</option>`);
             }
 
-            // Загружаем поля шаблона и заполняем их данными
             if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.loadTemplateFieldsForEdit) {
                 NeoUmfrageTemplates.loadTemplateFieldsForEdit(templateId, fields);
             }
 
-            // Показываем поля шаблона
             $('#survey-template-fields').show();
 
-            // Добавляем скрытое поле с ID ответа для обновления
             if (!$('#response-id-field').length) {
                 $('#survey-form').append('<input type="hidden" id="response-id-field" name="response_id" value="' + response.id + '">');
             } else {
@@ -301,9 +273,7 @@
             }
         },
 
-        // Создание модального окна для просмотра анкеты
         createViewSurveyModal: function (surveyId) {
-            // Удаляем существующее модальное окно если есть
             $('#view-survey-modal').remove();
 
             const modalHtml = `
@@ -329,11 +299,9 @@
             $('#view-survey-modal').fadeIn(300);
             $('body').addClass('modal-open');
 
-            // Загружаем данные анкеты
             NeoUmfrageSurveys.loadSurveyData(surveyId);
         },
 
-        // Загрузка данных анкеты для просмотра
         loadSurveyData: function (surveyId) {
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
@@ -356,13 +324,11 @@
             });
         },
 
-        // Отображение данных анкеты
         displaySurveyData: function (response) {
             const responseData = response.response;
             const fields = response.response_data;
             const templateName = response.template_name;
 
-            // Получаем имя пользователя WordPress
             let wpUserName = 'Unbekannter Benutzer';
             if (responseData.first_name && responseData.last_name) {
                 wpUserName = responseData.first_name + ' ' + responseData.last_name;
@@ -384,7 +350,6 @@
             }) + '</p>';
             html += '<p><strong>Benutzer:</strong> ' + wpUserName + '</p>';
 
-            // Фильтруем только заполненные поля (исключаем пустые значения)
             const filledFields = fields ? fields.filter(function (field) {
                 return field.label && field.value && field.value !== '' && field.value !== null;
             }) : [];

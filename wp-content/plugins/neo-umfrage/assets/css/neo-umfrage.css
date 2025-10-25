@@ -1,15 +1,8 @@
-/**
- * Neo Umfrage - Основные стили
- * Версия: 1.0.0
- */
-
-/* Основной контейнер */
 .neo-umfrage-container {
     max-width: 1200px;
     margin: 20px 0;
 }
 
-/* Заголовок страницы */
 .neo-umfrage-header {
     background: #fff;
     padding: 20px;
@@ -31,9 +24,7 @@
     margin: 0;
 }
 
-/* Карточки */
 .neo-umfrage-card {
-    background: #fff;
     border: 1px solid #ccd0d4;
     border-radius: 4px;
     margin-bottom: 20px;
@@ -43,7 +34,6 @@
 .neo-umfrage-card-header {
     padding: 15px 20px;
     border-bottom: 1px solid #ccd0d4;
-    background: #f9f9f9;
 }
 
 .neo-umfrage-card-title {
@@ -57,7 +47,6 @@
     padding: 20px;
 }
 
-/* Формы */
 .neo-umfrage-form-group {
     margin-bottom: 20px;
 }
@@ -93,7 +82,6 @@
     resize: vertical;
 }
 
-/* Кнопки */
 .neo-umfrage-button {
     background: #0073aa;
     color: #fff;
@@ -137,12 +125,39 @@
     background: #218838;
 }
 
+.neo-umfrage-button-warning {
+    background: #ffc107;
+    color: #000;
+}
+
+.neo-umfrage-button-warning:hover {
+    background: #e0a800;
+    color: #000;
+}
+
+.neo-umfrage-button-icon {
+    padding: 8px 12px;
+    min-width: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.neo-umfrage-button-icon i {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.neo-umfrage-button-icon:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 .neo-umfrage-button:disabled {
     background: #ccc;
     cursor: not-allowed;
 }
 
-/* Таблицы */
 .neo-umfrage-table {
     width: 100%;
     border-collapse: collapse;
@@ -175,7 +190,6 @@
     margin-bottom: 5px;
 }
 
-/* Статистика */
 .neo-umfrage-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -184,11 +198,185 @@
 }
 
 .neo-umfrage-stat-card {
-    background: #fff;
     padding: 20px;
     border-radius: 4px;
     border: 1px solid #ccd0d4;
     text-align: center;
+}
+
+.neo-umfrage-statistics-results {
+    margin-top: 20px;
+}
+
+.neo-umfrage-statistics-results h3 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: #23282d;
+}
+
+.neo-umfrage-stat-field-card {
+    background: #fff;
+    border: 1px solid #ccd0d4;
+    border-radius: 4px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.neo-umfrage-stat-field-card h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0073aa;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #0073aa;
+}
+
+.neo-umfrage-stat-field-content {
+    margin-top: 15px;
+}
+
+.neo-umfrage-stat-text p {
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+.neo-umfrage-stat-numbers {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.neo-umfrage-stat-number-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 15px;
+    background: #f7f7f7;
+    border-radius: 4px;
+}
+
+.neo-umfrage-stat-label {
+    font-weight: 600;
+    color: #23282d;
+}
+
+.neo-umfrage-stat-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0073aa;
+}
+
+.neo-umfrage-stat-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.neo-umfrage-stat-choice-row {
+    display: grid;
+    grid-template-columns: 150px 1fr 100px;
+    gap: 15px;
+    align-items: center;
+    padding: 8px 0;
+}
+
+.neo-umfrage-stat-choice-label {
+    font-weight: 500;
+    color: #23282d;
+}
+
+.neo-umfrage-stat-choice-bar-container {
+    background: #e0e0e0;
+    height: 24px;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+.neo-umfrage-stat-choice-bar {
+    background: linear-gradient(90deg, #0073aa, #005a87);
+    height: 100%;
+    border-radius: 12px;
+    transition: width 0.3s ease;
+    min-width: 2%;
+}
+
+.neo-umfrage-stat-choice-percentage {
+    text-align: right;
+    font-weight: 600;
+    color: #0073aa;
+}
+
+.neo-umfrage-muted {
+    color: #666;
+    font-style: italic;
+    font-size: 13px;
+}
+
+.neo-umfrage-info {
+    padding: 15px;
+    background: #d1ecf1;
+    border-left: 4px solid #17a2b8;
+    border-radius: 4px;
+    color: #0c5460;
+    margin: 10px 0;
+}
+
+html[data-theme="dark"] .neo-umfrage-stat-field-card,
+html[data-neo-theme="dark"] .neo-umfrage-stat-field-card {
+    background: #2a2a2a !important;
+    border-color: #404040 !important;
+}
+
+html[data-theme="dark"] .neo-umfrage-stat-field-card h4,
+html[data-neo-theme="dark"] .neo-umfrage-stat-field-card h4 {
+    color: #0ea5e9 !important;
+    border-bottom-color: #0ea5e9 !important;
+}
+
+html[data-theme="dark"] .neo-umfrage-stat-number-row,
+html[data-neo-theme="dark"] .neo-umfrage-stat-number-row {
+    background: #1e1e1e !important;
+}
+
+html[data-theme="dark"] .neo-umfrage-stat-label,
+html[data-neo-theme="dark"] .neo-umfrage-stat-label {
+    color: #f0f0f0 !important;
+}
+
+html[data-theme="dark"] .neo-umfrage-stat-value,
+html[data-neo-theme="dark"] .neo-umfrage-stat-value {
+    color: #0ea5e9 !important;
+}
+
+html[data-theme="dark"] .neo-umfrage-stat-choice-label,
+html[data-neo-theme="dark"] .neo-umfrage-stat-choice-label {
+    color: #f0f0f0 !important;
+}
+
+html[data-theme="dark"] .neo-umfrage-stat-choice-bar-container,
+html[data-neo-theme="dark"] .neo-umfrage-stat-choice-bar-container {
+    background: #404040 !important;
+}
+
+html[data-theme="dark"] .neo-umfrage-stat-choice-bar,
+html[data-neo-theme="dark"] .neo-umfrage-stat-choice-bar {
+    background: linear-gradient(90deg, #0ea5e9, #0284c7) !important;
+}
+
+html[data-theme="dark"] .neo-umfrage-stat-choice-percentage,
+html[data-neo-theme="dark"] .neo-umfrage-stat-choice-percentage {
+    color: #0ea5e9 !important;
+}
+
+html[data-theme="dark"] .neo-umfrage-info,
+html[data-neo-theme="dark"] .neo-umfrage-info {
+    background: #d1ecf1 !important;
+    color: #0c5460 !important;
+}
+
+html[data-theme="dark"] .neo-umfrage-muted,
+html[data-neo-theme="dark"] .neo-umfrage-muted {
+    color: #999 !important;
 }
 
 .neo-umfrage-stat-number {
@@ -205,7 +393,6 @@
     letter-spacing: 0.5px;
 }
 
-/* Уведомления */
 .neo-umfrage-notice {
     padding: 12px 16px;
     border-radius: 4px;
@@ -237,7 +424,6 @@
     border-left-color: #17a2b8;
 }
 
-/* Модальные окна */
 .neo-umfrage-modal {
     position: fixed;
     top: 0;
@@ -260,6 +446,18 @@
     width: 95%;
     max-height: 95vh;
     overflow-y: auto;
+}
+
+html[data-neo-theme="dark"] .neo-umfrage-modal-content {
+    background: #23272b !important;
+    color: #eee !important;
+}
+
+html[data-neo-theme="dark"] .neo-umfrage-modal-header,
+html[data-neo-theme="dark"] .neo-umfrage-modal-footer {
+    background: #23272b !important;
+    color: #eee !important;
+    border-color: #444 !important;
 }
 
 .neo-umfrage-modal-header {
@@ -294,7 +492,6 @@
     text-align: right;
 }
 
-/* Индикатор загрузки */
 .neo-umfrage-loading {
     display: inline-block;
     width: 16px;
@@ -311,13 +508,18 @@
     100% { transform: rotate(360deg); }
 }
 
-/* Стили для полей шаблона */
 .template-field {
     margin-bottom: 15px;
     padding: 15px;
     border: 1px solid #e1e1e1;
     border-radius: 5px;
     background-color: #f9f9f9;
+}
+
+html[data-neo-theme="dark"] .template-field {
+    background-color: #23272b !important;
+    border-color: #444 !important;
+    color: #eee !important;
 }
 
 .template-field > div {
@@ -343,13 +545,11 @@
     margin-top: 10px;
 }
 
-/* Стили для полей анкеты */
 .survey-field {
     margin-bottom: 20px;
     padding: 15px;
     border: 1px solid #e1e1e1;
     border-radius: 5px;
-    background-color: #f9f9f9;
 }
 
 .survey-field label {
@@ -375,7 +575,6 @@
     margin-bottom: 0;
 }
 
-/* Стили для просмотра анкеты */
 .neo-umfrage-survey-view {
     max-height: 60vh;
     overflow-y: auto;
@@ -404,12 +603,10 @@
 }
 
 .neo-umfrage-field strong {
-    color: #23282d;
     min-width: 150px;
     display: inline-block;
 }
 
-/* Стили для ошибок и информации */
 .neo-umfrage-error {
     color: #d63638;
     background-color: #fcf0f1;
@@ -426,7 +623,6 @@
     border: 1px solid #c5d9ed;
 }
 
-/* Фильтры */
 .neo-umfrage-filters {
     margin-bottom: 20px;
     display: flex;
@@ -434,7 +630,6 @@
     align-items: center;
 }
 
-/* Адаптивность */
 @media (max-width: 768px) {
     .neo-umfrage-stats {
         grid-template-columns: 1fr;
@@ -442,6 +637,29 @@
     
     .neo-umfrage-table {
         font-size: 14px;
+    }
+    
+    .neo-umfrage-stat-choice-row {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+    
+    .neo-umfrage-stat-choice-label {
+        font-size: 13px;
+    }
+    
+    .neo-umfrage-stat-choice-percentage {
+        text-align: left;
+    }
+    
+    .neo-umfrage-stat-field-card {
+        padding: 15px;
+    }
+    
+    .neo-umfrage-stat-number-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
     }
     
     .neo-umfrage-table th,
@@ -479,27 +697,29 @@
     }
 }
 
-/* Скрытые элементы */
 .neo-umfrage-hidden {
     display: none !important;
 }
 
-/* Валидация */
 .neo-umfrage-error-field {
     border-color: #dc3545 !important;
     box-shadow: 0 0 0 1px #dc3545 !important;
 }
 
-/* Сообщения */
 .neo-umfrage-message {
+    position: fixed;
+    top: 80px;
+    right: 20px;
     padding: 12px 16px;
-    margin: 10px 0;
+    min-width: 300px;
+    max-width: 400px;
     border-radius: 4px;
     border-left: 4px solid;
     font-size: 14px;
     line-height: 1.4;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    animation: slideIn 0.3s ease-out;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    animation: slideInRight 0.3s ease-out;
+    z-index: 9999;
 }
 
 .neo-umfrage-message-success {
@@ -526,14 +746,48 @@
     color: #0c5460;
 }
 
-@keyframes slideIn {
+html[data-theme="dark"] .neo-umfrage-message-success,
+html[data-neo-theme="dark"] .neo-umfrage-message-success {
+    background-color: #d4edda !important;
+    color: #155724 !important;
+}
+
+html[data-theme="dark"] .neo-umfrage-message-error,
+html[data-neo-theme="dark"] .neo-umfrage-message-error {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+}
+
+html[data-theme="dark"] .neo-umfrage-message-warning,
+html[data-neo-theme="dark"] .neo-umfrage-message-warning {
+    background-color: #fff3cd !important;
+    color: #856404 !important;
+}
+
+html[data-theme="dark"] .neo-umfrage-message-info,
+html[data-neo-theme="dark"] .neo-umfrage-message-info {
+    background-color: #d1ecf1 !important;
+    color: #0c5460 !important;
+}
+
+@keyframes slideInRight {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateX(100%);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateX(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .neo-umfrage-message {
+        top: 60px;
+        right: 10px;
+        left: 10px;
+        min-width: auto;
+        max-width: none;
     }
 }
 
@@ -543,7 +797,6 @@
     margin-top: 5px;
 }
 
-/* Статистика */
 .neo-umfrage-stats {
     display: flex;
     gap: 20px;
@@ -577,7 +830,6 @@ header.mb-3 {
     display: none;
 }
 
-/* Статусные бейджи для шаблонов */
 .status-badge {
     display: inline-block;
     padding: 4px 8px;
@@ -586,6 +838,10 @@ header.mb-3 {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+html[data-neo-theme="dark"] .status-badge {
+    color: #000 !important;
 }
 
 .status-active {
@@ -600,7 +856,6 @@ header.mb-3 {
     border: 1px solid #f5c6cb;
 }
 
-/* Стили для кнопок */
 .neo-umfrage-button-warning {
     background-color: #ffc107;
     color: #212529;
@@ -623,7 +878,6 @@ header.mb-3 {
     border-color: #1e7e34;
 }
 
-/* Стили для отключенного селекта */
 .neo-umfrage-select.disabled {
     background-color: #f8f9fa;
     color: #6c757d;
@@ -636,7 +890,6 @@ header.mb-3 {
     box-shadow: none;
 }
 
-/* Стили для виджета */
 .neo-umfrage-widget {
     background: #fff;
     border: 1px solid #ccd0d4;
@@ -700,11 +953,6 @@ header.mb-3 {
     transform: translateY(-1px);
 }
 
-/* ===========================
-   АДАПТИВНЫЕ СТИЛИ NEO-UMFRAGE
-   =========================== */
-
-/* Планшеты (768px - 1024px) */
 @media (min-width: 768px) and (max-width: 1024px) {
     .neo-umfrage-container {
         max-width: 100%;
@@ -731,7 +979,6 @@ header.mb-3 {
         font-size: 15px;
     }
     
-    /* Таблицы становятся прокручиваемыми */
     .neo-umfrage-table-container {
         overflow-x: auto;
     }
@@ -746,14 +993,21 @@ header.mb-3 {
         font-size: 14px;
     }
     
-    /* Кнопки */
     .neo-umfrage-button {
         padding: 8px 16px;
         font-size: 14px;
     }
+    
+    .neo-umfrage-stat-choice-row {
+        grid-template-columns: 120px 1fr 80px;
+        gap: 10px;
+    }
+    
+    .neo-umfrage-stat-field-card {
+        padding: 15px;
+    }
 }
 
-/* Мобильные устройства (до 767px) */
 @media (max-width: 767px) {
     .neo-umfrage-container {
         max-width: 100%;
@@ -774,7 +1028,6 @@ header.mb-3 {
         font-size: 13px;
     }
     
-    /* Карточки */
     .neo-umfrage-card {
         margin-bottom: 15px;
         border-radius: 6px;
@@ -793,7 +1046,6 @@ header.mb-3 {
         padding: 15px;
     }
     
-    /* Формы */
     .neo-umfrage-form-group {
         margin-bottom: 15px;
     }
@@ -804,7 +1056,7 @@ header.mb-3 {
     }
     
     .neo-umfrage-form-control {
-        font-size: 16px; /* Предотвращает зум на iOS */
+        font-size: 16px;
         padding: 12px;
         border-radius: 6px;
     }
@@ -813,7 +1065,6 @@ header.mb-3 {
         min-height: 80px;
     }
     
-    /* Кнопки */
     .neo-umfrage-button {
         width: 100%;
         padding: 12px;
@@ -832,7 +1083,6 @@ header.mb-3 {
         gap: 10px;
     }
     
-    /* Таблицы - карточный вид для мобильных */
     .neo-umfrage-table-responsive {
         display: none;
     }
@@ -880,7 +1130,6 @@ header.mb-3 {
         text-align: right;
     }
     
-    /* Виджеты */
     .neo-umfrage-widget {
         padding: 10px;
     }
@@ -894,7 +1143,6 @@ header.mb-3 {
         font-size: 14px;
     }
     
-    /* Статистика */
     .neo-umfrage-stats {
         display: grid;
         grid-template-columns: 1fr;
@@ -921,7 +1169,6 @@ header.mb-3 {
         margin-top: 5px;
     }
     
-    /* Модальные окна */
     .neo-umfrage-modal {
         padding: 10px;
     }
@@ -953,7 +1200,6 @@ header.mb-3 {
     }
 }
 
-/* Маленькие мобильные устройства (до 480px) */
 @media (max-width: 480px) {
     .neo-umfrage-header {
         padding: 10px;
@@ -1019,14 +1265,12 @@ header.mb-3 {
         font-size: 11px;
     }
     
-    /* Адаптивность для виджета */
     .neo-umfrage-widget-actions .neo-umfrage-button {
         padding: 12px 16px;
         font-size: 15px;
     }
 }
 
-/* Ландшафтная ориентация на мобильных */
 @media (max-width: 767px) and (orientation: landscape) {
     .neo-umfrage-stats {
         grid-template-columns: repeat(2, 1fr);
@@ -1057,7 +1301,6 @@ header.mb-3 {
     }
 }
 
-/* Очень маленькая высота экрана */
 @media (max-height: 500px) and (orientation: landscape) {
     .neo-umfrage-modal-content {
         max-height: 90vh;
@@ -1078,7 +1321,6 @@ header.mb-3 {
     }
 }
 
-/* Настольные компьютеры с большими экранами */
 @media (min-width: 1200px) {
     .neo-umfrage-container {
         max-width: 1140px;
@@ -1097,38 +1339,7 @@ header.mb-3 {
     }
 }
 
-/* Темная тема */
-@media (prefers-color-scheme: dark) {
-    .neo-umfrage-card {
-        background: #343a40;
-        border-color: #495057;
-        color: #e9ecef;
-    }
-    
-    .neo-umfrage-card-header {
-        background: #495057;
-        border-color: #6c757d;
-    }
-    
-    .neo-umfrage-form-control {
-        background-color: #495057;
-        border-color: #6c757d;
-        color: #e9ecef;
-    }
-    
-    .neo-umfrage-mobile-card {
-        background: #343a40;
-        border-color: #495057;
-        color: #e9ecef;
-    }
-    
-    .neo-umfrage-stat-item {
-        background: #495057;
-        color: #e9ecef;
-    }
-}
 
-/* Печать */
 @media print {
     .neo-umfrage-button,
     .neo-umfrage-widget-actions {
@@ -1143,5 +1354,151 @@ header.mb-3 {
     .neo-umfrage-container {
         max-width: 100%;
         margin: 0;
+    }
+}
+
+.dataTables_wrapper {
+    margin-top: 20px;
+}
+
+.dataTables_filter {
+    float: right;
+    margin-bottom: 15px;
+}
+
+.dataTables_filter input {
+    padding: 6px 12px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    margin-left: 10px;
+}
+
+.dataTables_length {
+    float: left;
+    margin-bottom: 15px;
+}
+
+.dataTables_length select {
+    padding: 6px 12px;
+    border: 1px solid #8c8f94;
+    border-radius: 4px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.dataTables_info {
+    float: left;
+    clear: left;
+    padding-top: 10px;
+}
+
+.dataTables_paginate {
+    float: right;
+    padding-top: 10px;
+}
+
+.dataTables_paginate .paginate_button {
+    display: inline-block;
+    padding: 6px 12px;
+    margin-left: 2px;
+    text-decoration: none;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    color: #0073aa;
+    cursor: pointer;
+}
+
+.dataTables_paginate .paginate_button:hover {
+    background: #f5f5f5;
+    border-color: #0073aa;
+}
+
+.dataTables_paginate .paginate_button.current {
+    background: #0073aa;
+    border-color: #0073aa;
+    color: #fff;
+}
+
+.dataTables_paginate .paginate_button.disabled {
+    color: #999;
+    cursor: not-allowed;
+    background: #f9f9f9;
+}
+
+.dataTables_processing {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    z-index: 1000;
+}
+
+table.dataTable {
+    width: 100% !important;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+table.dataTable thead th {
+    border: 1px solid #ddd;
+    padding: 12px 8px;
+    font-weight: 600;
+    text-align: left;
+    font-size: 15px;
+}
+
+table.dataTable tbody td {
+    border: 1px solid #ddd;
+    padding: 12px 8px;
+    vertical-align: middle;
+    font-size: 15px;
+}
+
+table.dataTable tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+table.dataTable tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+html[data-neo-theme="dark"] table.dataTable tbody tr:nth-child(even) {
+    background-color: #23272b;
+}
+
+html[data-neo-theme="dark"] table.dataTable tbody tr:hover {
+    background-color: #2a2e33;
+}
+
+@media (max-width: 768px) {
+    .dataTables_wrapper .dataTables_filter,
+    .dataTables_wrapper .dataTables_length,
+    .dataTables_wrapper .dataTables_info,
+    .dataTables_wrapper .dataTables_paginate {
+        float: none;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    
+    .neo-umfrage-filters {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .neo-umfrage-filters > div {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .neo-umfrage-filters .neo-umfrage-select {
+        margin-left: 0 !important;
     }
 }

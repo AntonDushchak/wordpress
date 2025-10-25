@@ -169,3 +169,39 @@ function render_nav_user_menu(WP_User $user): string
     $login_url = wp_login_url( home_url( '/neo-dashboard/' ) );
     return '<a class="btn btn-outline-light" href="' . esc_url( $login_url ) . '">Anmelden</a>';
 }
+
+/**
+ * UI Component Helper Functions
+ */
+
+/**
+ * Рендерит UI компонент
+ * 
+ * @param string $component_path Путь к компоненту
+ * @param array $args Аргументы
+ * @return string HTML
+ */
+function ui_component(string $component_path, array $args = []): string {
+    return UIComponent::render($component_path, $args);
+}
+
+/**
+ * Выводит UI компонент
+ */
+function ui_component_output(string $component_path, array $args = []): void {
+    UIComponent::output($component_path, $args);
+}
+
+/**
+ * Рендерит модальное окно
+ */
+function ui_modal(array $args): string {
+    return UIComponent::modal($args);
+}
+
+/**
+ * Рендерит карточку
+ */
+function ui_card(array $args): string {
+    return UIComponent::card($args);
+}

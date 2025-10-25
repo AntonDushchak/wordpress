@@ -1,14 +1,11 @@
 <?php
-/**
- * Partial: Widgets Grid
- */
+
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 ?>
 <div class="row g-4">
     <?php foreach ( $widgets as $widget ) :
-        // Fallbacks, falls index fehlt
         $icon  = ! empty( $widget['icon'] )  ? esc_attr( $widget['icon'] )  : 'bi-grid';
         $label = ! empty( $widget['label'] ) ? esc_html( $widget['label'] ) : '';
         $cb    = $widget['callback'] ?? null;

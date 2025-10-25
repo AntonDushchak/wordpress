@@ -1,0 +1,48 @@
+html[data-neo-theme="light"] .dataTables_wrapper,
+html[data-neo-theme="light"] table.dataTable,
+html[data-neo-theme="light"] .dataTables_length,
+html[data-neo-theme="light"] .dataTables_filter,
+html[data-neo-theme="light"] .dataTables_info,
+html[data-neo-theme="light"] .dataTables_paginate {
+    background: #fff !important;
+    color: #222 !important;
+}
+html[data-neo-theme="light"] .dataTables_wrapper .dataTables_paginate .paginate_button {
+    background: #f8f9fa !important;
+    color: #222 !important;
+    border-color: #dee2e6 !important;
+}
+
+html[data-neo-theme="dark"] .dataTables_wrapper,
+html[data-neo-theme="dark"] table.dataTable,
+html[data-neo-theme="dark"] .dataTables_length,
+html[data-neo-theme="dark"] .dataTables_filter,
+html[data-neo-theme="dark"] .dataTables_info,
+html[data-neo-theme="dark"] .dataTables_paginate {
+    background: #222 !important;
+    color: #eee !important;
+}
+html[data-neo-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button {
+    background: #333 !important;
+    color: #eee !important;
+    border-color: #444 !important;
+}
+
+.dataTables_wrapper,
+table.dataTable {
+    box-shadow: none !important;
+    border: none !important;
+}
+
+html[data-neo-theme="dark"] .dataTables_wrapper input,
+html[data-neo-theme="dark"] .dataTables_wrapper select {
+    background: #222 !important;
+    color: #eee !important;
+    border-color: #444 !important;
+}
+html[data-neo-theme="light"] .dataTables_wrapper input,
+html[data-neo-theme="light"] .dataTables_wrapper select {
+    background: #fff !important;
+    color: #222 !important;
+    border-color: #dee2e6 !important;
+}

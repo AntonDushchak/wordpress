@@ -1,7 +1,5 @@
 <?php
-/**
- * Partial: Active Section
- */
+
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
@@ -11,7 +9,6 @@ if ( $section ) : ?>
     <section id="<?php echo esc_attr( $section['slug'] ); ?>">
         <header class="mb-3"><h2><?php echo esc_html( $section['label'] ); ?></h2></header>
         <?php
-        // Ermittle Callback, falls vorhanden
         $callback = $section['callback'] ?? null;
         if ( is_callable( $callback ) ) {
             call_user_func( $callback );

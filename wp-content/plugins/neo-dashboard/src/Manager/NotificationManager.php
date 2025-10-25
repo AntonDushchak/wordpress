@@ -66,7 +66,7 @@ class NotificationManager
 
         $id = sanitize_key((string) ($args['id'] ?? ''));
         if ($id === '') {
-            Logger::warning('NotificationManager:register – missing ID', $args);
+            Logger::warn('NotificationManager:register – missing ID', $args);
             return '';
         }
 

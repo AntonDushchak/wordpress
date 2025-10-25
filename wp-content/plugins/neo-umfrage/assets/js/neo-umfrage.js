@@ -1,23 +1,14 @@
-/**
- * Neo Umfrage - Основной JavaScript файл
- * Версия: 1.0.0
- */
-
 (function ($) {
     'use strict';
 
-    // Hauptobjekt des Plugins
     window.NeoUmfrage = {
 
-        // Initialisierung
         init: function () {
             this.bindEvents();
             this.loadInitialData();
         },
 
-        // Ereignisse binden
         bindEvents: function () {
-            // Ereignisse für Umfrage-Formulare
             $(document).on('submit', '.neo-umfrage-form', function(e) {
                 e.preventDefault();
                 if (window.NeoUmfrageModals && NeoUmfrageModals.handleFormSubmit) {
@@ -26,8 +17,6 @@
             });
 
 
-
-            // Ereignisse für Template-Hinzufügen-Buttons
             $(document).on('click', 'button[onclick*="openAddTemplateModal"]', function (e) {
                 e.preventDefault();
                 if (window.NeoUmfrageModals && NeoUmfrageModals.openAddTemplateModal) {
@@ -35,7 +24,6 @@
                 }
             });
 
-            // Ereignisse für modale Fenster
             $(document).on('click', '.neo-umfrage-modal-close', this.closeModal);
             $(document).on('click', '.neo-umfrage-modal', function (e) {
                 if (e.target === this) {
@@ -43,7 +31,6 @@
                 }
             });
 
-            // Ereignisse für Feldverwaltung in Vorlagen
             $(document).on('click', '.add-field-btn', function (e) {
                 e.preventDefault();
                 if (window.NeoUmfrageModals && NeoUmfrageModals.addField) {
@@ -58,14 +45,12 @@
                 }
             });
 
-            // События для изменения типа поля
             $(document).on('change', '.field-type-select', function (e) {
                 if (window.NeoUmfrageModals && NeoUmfrageModals.changeFieldType) {
                     NeoUmfrageModals.changeFieldType.call(this);
                 }
             });
 
-            // События для изменения шаблона в модальном окне анкеты
             $(document).on('change', '#survey-template-select', function (e) {
                 if (window.NeoUmfrageModals && NeoUmfrageModals.handleTemplateChange) {
                     NeoUmfrageModals.handleTemplateChange.call(this);
@@ -73,7 +58,6 @@
             });
         },
 
-        // Initialdaten laden
         loadInitialData: function () {
             if ($('#main-stats').length) {
                 this.loadStatistics();
@@ -88,13 +72,14 @@
                 this.loadTemplates();
             }
 
-            if ($('#statistics-stats').length) {
-                this.loadStatistics();
-                this.loadRecentSurveys();
+        if ($('#statistics-stats').length) {
+            this.loadStatistics();
+            if (window.NeoUmfrageStatistics && NeoUmfrageStatistics.init) {
+                NeoUmfrageStatistics.init();
             }
+        }
         },
 
-        // Berechtigungen prüfen
         canEdit: function (objectUserId) {
             const rolesRaw = neoUmfrageAjax.userRoles;
             const roles = Array.isArray(rolesRaw)
@@ -105,12 +90,11 @@
                         ? [rolesRaw]
                         : [];
             const currentUserId = neoUmfrageAjax.currentUserId;
-
+            
             if (roles.includes('administrator') || roles.includes('neo-editor')) {
                 return true;
             }
 
-            // Проверка владельца объекта (например, анкеты)
             if (objectUserId && currentUserId && objectUserId == currentUserId) {
                 return true;
             }
@@ -119,7 +103,6 @@
         },
 
         canDelete: function (objectUserId) {
-            // Проверка ролей
             const rolesRaw = neoUmfrageAjax.userRoles;
             const roles = Array.isArray(rolesRaw)
                 ? rolesRaw
@@ -134,7 +117,6 @@
                 return true;
             }
 
-            // Проверка владельца объекта
             if (objectUserId && currentUserId && objectUserId == currentUserId) {
                 return true;
             }
@@ -142,14 +124,12 @@
             return false;
         },
         
-        // Modales Fenster schließen
         closeModal: function () {
             if (window.NeoUmfrageModals && NeoUmfrageModals.closeModal) {
                 NeoUmfrageModals.closeModal();
             }
         },
 
-        // Nachricht anzeigen
         showMessage: function (type, message) {
             let inlineStyles = '';
             switch(type) {
@@ -180,11 +160,9 @@
             if ($container.length > 0) {
                 $container.prepend($message);
             } else {
-                // Добавляем в body как fallback
                 $('body').prepend($message);
             }
 
-            // Автоматически скрываем сообщение через 5 секунд
             setTimeout(() => {
                 $message.fadeOut(300, function () {
                     $(this).remove();
@@ -192,7 +170,6 @@
             }, 5000);
         },
 
-        // Загрузка статистики
         loadStatistics: function () {
             $.ajax({
                 url: neoUmfrageAjax.ajaxurl,
@@ -212,28 +189,24 @@
             });
         },
 
-        // Загрузка анкет
         loadSurveys: function () {
             if (window.NeoUmfrageSurveys && NeoUmfrageSurveys.loadSurveys) {
                 NeoUmfrageSurveys.loadSurveys();
             }
         },
 
-        // Загрузка шаблонов
         loadTemplates: function () {
             if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.loadTemplates) {
                 NeoUmfrageTemplates.loadTemplates();
             }
         },
 
-        // Загрузка шаблонов для фильтра
         loadTemplatesForFilter: function () {
             if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.loadTemplatesForFilter) {
                 NeoUmfrageTemplates.loadTemplatesForFilter();
             }
         },
 
-        // Отображение списка шаблонов
         renderTemplatesList: function (templates) {
             const $container = $('#templates-list');
 
@@ -253,8 +226,8 @@
                         <td>${template.description || 'Keine Beschreibung'}</td>
                         <td>${new Date(template.created_at).toLocaleDateString()}</td>
                         <td>
-                            <button class="neo-umfrage-button neo-umfrage-button-secondary" onclick="NeoUmfrage.editTemplate(${template.id})">Bearbeiten</button>
-                            <button class="neo-umfrage-button neo-umfrage-button-danger" onclick="NeoUmfrage.deleteTemplate(${template.id})">Löschen</button>
+                            <button class="neo-umfrage-button neo-umfrage-button-secondary neo-umfrage-button-icon" onclick="NeoUmfrage.viewTemplate(${template.id})" title="Ansehen"><i class="bi bi-eye"></i></button>
+                            <button class="neo-umfrage-button neo-umfrage-button-danger neo-umfrage-button-icon" onclick="NeoUmfrage.deleteTemplate(${template.id})" title="Löschen"><i class="bi bi-trash"></i></button>
                         </td>
                     </tr>
                 `;
@@ -264,7 +237,6 @@
             $container.html(html);
         },
 
-        // Отображение последних анкет
         renderStatistics: function (stats) {
             const $container = $('#recent-surveys');
 
@@ -277,23 +249,18 @@
             $container.html(html);
         },
 
-        // Редактирование анкеты
         editSurvey: function (surveyId, userId) {
-            // Проверяем права на редактирование
             if (!this.canEdit(userId)) {
                 this.showMessage('error', 'Sie haben keine Berechtigung, diese Umfrage zu bearbeiten');
                 return;
             }
 
-            // Открываем модальное окно для редактирования анкеты
             if (window.NeoUmfrageSurveys && NeoUmfrageSurveys.editSurvey) {
                 NeoUmfrageSurveys.editSurvey(surveyId);
             }
         },
 
-        // Удаление анкеты
         deleteSurvey: function (surveyId, userId) {
-            // Проверяем права на удаление
             if (!this.canDelete(userId)) {
                 this.showMessage('error', 'Sie haben keine Berechtigung, diese Umfrage zu löschen');
                 return;
@@ -311,7 +278,6 @@
                     success: function (response) {
                         if (response.success) {
                             NeoUmfrage.showMessage('success', response.data.message);
-                            // Обновляем DataTable если он существует
                             if ($.fn.DataTable && $('#surveys-table').length) {
                                 $('#surveys-table').DataTable().ajax.reload();
                             } else if (window.NeoUmfrageSurveys && NeoUmfrageSurveys.loadSurveys) {
@@ -326,17 +292,13 @@
         },
 
 
-
-        // Просмотр анкеты
         viewSurvey: function (surveyId) {
-            // Открываем модальное окно для просмотра анкеты
             if (window.NeoUmfrageSurveys && NeoUmfrageSurveys.createViewSurveyModal) {
                 NeoUmfrageSurveys.createViewSurveyModal(surveyId);
             }
         }
     };
 
-    // Глобальные функции для вызова из HTML
     window.openAddSurveyModal = function () {
         if (window.NeoUmfrageModals && NeoUmfrageModals.openAddSurveyModal) {
             NeoUmfrageModals.openAddSurveyModal();
@@ -349,34 +311,24 @@
         }
     };
 
-    // Глобальные функции для редактирования и удаления шаблонов
-    window.editTemplate = function (templateId, userId) {
-        // Проверяем права на редактирование
-        if (!NeoUmfrage.canEdit(userId)) {
-            NeoUmfrage.showMessage('error', 'Sie haben keine Berechtigung, diese Vorlage zu bearbeiten');
-            return;
-        }
 
-        // Делегируем в модуль шаблонов
-        if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.editTemplate) {
-            NeoUmfrageTemplates.editTemplate(templateId);
+    window.viewTemplate = function (templateId) {
+        if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.viewTemplate) {
+            NeoUmfrageTemplates.viewTemplate(templateId);
         }
     };
 
     window.deleteTemplate = function (templateId, userId) {
-        // Проверяем права на удаление
         if (!NeoUmfrage.canDelete(userId)) {
             NeoUmfrage.showMessage('error', 'Sie haben keine Berechtigung, diese Vorlage zu löschen');
             return;
         }
 
-        // Делегируем в модуль шаблонов
         if (window.NeoUmfrageTemplates && NeoUmfrageTemplates.deleteTemplate) {
             NeoUmfrageTemplates.deleteTemplate(templateId);
         }
     };
 
-    // Инициализация при загрузке документа
     $(document).ready(function () {
         NeoUmfrage.init();
     });

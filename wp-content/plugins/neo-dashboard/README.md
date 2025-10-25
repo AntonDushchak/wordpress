@@ -1,12 +1,21 @@
 # Neo Dashboard Core
 
-**Version:** 3.0.2  
+**Version:** 3.0.3  
 **Requires PHP:** 8.1+  
 **License:** GPL-2.0-or-later
 
 ---
 
 Ein zentrales Dashboard-Framework, das WordPress-Plugins nahtlos in eine einheitliche Benutzeroberfläche integriert. Entwickler können eigene Sidebar-Gruppen, Sections, Widgets und Notifications per Hook-API registrieren.
+
+## ✨ Neue Features (3.0.3)
+
+- 🔗 **WP-Admin Integration**: Link zu Neo Dashboard im WordPress Admin-Menü
+- 📊 **Neo Umfrage**: Vollständige Statistik-Seite mit Feld-Analyse
+- 🎨 **Icon Buttons**: Moderne Icon-basierte Aktionsbuttons
+- 📱 **Responsive Design**: Optimiert für alle Bildschirmgrößen
+- 🌓 **Dark Theme Support**: Vollständige Unterstützung für dunkle Themes
+- 🔧 **Domain Changer**: Neues Plugin für einfache Domain-Verwaltung
 
 ## 📦 Installation
 
@@ -174,9 +183,71 @@ add_action('neo_dashboard_init', function() {
 
 ---
 
-## 📖 Weitere Ressourcen
+## 🔌 Integrierte Plugins
 
-- **Changelog**: Siehe `CHANGELOG.md` im Repository.  
-- **Support & Issues**: [GitHub-Repo](https://github.com/your-repo/neo-dashboard-core).  
-- **WordPress Plugin-API**: https://developer.wordpress.org/plugins/
+### Neo Umfrage
+Plugin für Erstellung und Verwaltung von Umfragen.
+
+**Features:**
+- Template-basierte Umfragen
+- Verschiedene Feldtypen (Text, Nummer, Radio, Checkbox, Select)
+- Detaillierte Statistik-Seite mit Feld-Analyse
+- DataTables-Integration für Übersichten
+- Vollständig responsive
+
+### Neo Calendar
+Kalender-Plugin mit FullCalendar-Integration.
+
+**Features:**
+- Event-Verwaltung
+- Responsive Design für alle Geräte
+- Mobile-optimierte Bedienung
+
+### Neo Domain Changer
+Einfache Domain-Verwaltung direkt aus WordPress.
+
+**Features:**
+- Sichere Domain-Validierung
+- Automatische Skript-Ausführung
+- Logging für Debugging
+- WP-Admin Integration
+
+---
+
+## 🎨 UI Components
+
+### Buttons
+- Icon-basierte Aktionsbuttons mit Bootstrap Icons
+- Farbvarianten: Primary, Secondary, Danger, Warning, Success
+- Hover-Effekte und Tooltips
+
+### Tables
+- DataTables-Integration
+- Responsive Design
+- Filterung und Sortierung
+- Dark Theme Support
+
+### Forms
+- Moderne Form-Gestaltung
+- Validierung
+- Responsive Layouts
+
+### Notifications
+- Fixed-Position Benachrichtigungen
+- Automatisches Ausblenden nach 5 Sekunden
+- Slide-In Animation
+- Farben bleiben in Dark Theme erhalten
+
+---
+
+## 📱 Responsive Breakpoints
+
+- **Desktop**: ≥ 1200px (4 Spalten Grid)
+- **Tablet**: 768px - 1024px (25% Sidebar, 75% Content)
+- **Mobile**: < 768px (100% Width, Offcanvas Sidebar)
+- **Small Mobile**: < 480px (Kompakte UI-Elemente)
+
+---
+
+
 

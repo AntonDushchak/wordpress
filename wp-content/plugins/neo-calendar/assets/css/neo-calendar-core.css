@@ -1,0 +1,383 @@
+#neo-calendar h2{
+    margin-bottom: 20px;
+}
+
+.calendar-form {
+    display: block;
+    width: 100%;
+}
+
+.calendar-form .row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.calendar-form .form-control {
+    margin-bottom: 10px;
+    min-width: 120px;
+    width: 100%;
+}
+
+.calendar-form input[type="date"] {
+    min-width: 140px !important;
+}
+
+.calendar-form .col-md-2,
+.calendar-form .col-md-3,
+.calendar-form .col-md-4,
+.calendar-form .col-md-6 {
+    flex: 0 0 auto;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.calendar-form .btn {
+    min-width: 120px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn-toggle-form {
+    min-width: 140px !important;
+    white-space: nowrap;
+}
+
+.modal-open {
+    padding-right: 0 !important;
+}
+
+.modal {
+    padding-right: 0 !important;
+}
+
+.modal.fade .modal-dialog {
+    transition: transform 0.2s ease-out;
+    transform: translate(0, -25px);
+}
+
+.modal.show .modal-dialog {
+    transform: translate(0, 0);
+}
+
+body.modal-open {
+    padding-right: 0 !important;
+    overflow-y: auto !important;
+}
+
+#editEventModal .modal-dialog {
+    margin: 1.75rem auto;
+}
+
+#editEventModal .modal-content {
+    border-radius: 8px;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+#editEventModal .modal-header {
+    border-bottom: 1px solid #dee2e6;
+    padding: 1rem 1.5rem;
+}
+
+#editEventModal .modal-body {
+    padding: 1.5rem;
+}
+
+#editEventModal .modal-footer {
+    border-top: 1px solid #dee2e6;
+    padding: 1rem 1.5rem;
+}
+
+#calendar {
+    margin-top: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 15px;
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+#calendar .fc {
+    width: 100%;
+}
+
+#calendar .fc-view-harness {
+    height: auto;
+}
+
+#calendar .fc-event-title {
+    font-size: 0.85rem;
+}
+
+#calendar .fc-daygrid-event {
+    font-size: 0.8rem;
+}
+
+#calendar .fc-col-header-cell {
+    font-size: 0.9rem;
+}
+
+#calendar .fc-daygrid-day-number {
+    font-size: 0.85rem;
+}
+
+#calendar .fc-toolbar {
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+#calendar .fc-toolbar-chunk {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+@media (max-width: 768px) {
+    .calendar-form {
+        display: block;
+        width: 100%;
+    }
+    
+    .calendar-form .row {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+    
+    .calendar-form .col-md-2,
+    .calendar-form .col-md-3,
+    .calendar-form .col-md-4,
+    .calendar-form .col-md-6 {
+        flex: 1 1 100%;
+        width: 100%;
+        max-width: 100%;
+        margin-right: 0;
+        margin-bottom: 15px;
+    }
+    
+    .calendar-form .form-control {
+        width: 100%;
+        min-width: 100%;
+    }
+    
+    .calendar-form input[type="date"] {
+        min-width: 100% !important;
+        width: 100%;
+    }
+    
+    .calendar-form .btn {
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .btn-toggle-form {
+        width: 100% !important;
+        margin-right: 0 !important;
+    }
+    
+    #calendar {
+        padding: 8px;
+        margin-top: 15px;
+        font-size: 0.8rem;
+    }
+    
+    #calendar .fc-toolbar {
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+    }
+    
+    #calendar .fc-toolbar-chunk {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    #calendar .fc-toolbar-title {
+        font-size: 1.1rem !important;
+    }
+    
+    #calendar .fc-button {
+        padding: 5px 8px !important;
+        font-size: 0.8rem !important;
+    }
+    
+    #calendar .fc-event-title {
+        font-size: 0.7rem;
+    }
+    
+    #calendar .fc-daygrid-event {
+        font-size: 0.65rem;
+        padding: 1px 2px;
+    }
+    
+    #calendar .fc-col-header-cell {
+        font-size: 0.75rem;
+        padding: 4px 2px;
+    }
+    
+    #calendar .fc-daygrid-day-number {
+        font-size: 0.7rem;
+    }
+    
+    #calendar .fc-daygrid-day-frame {
+        min-height: 30px;
+    }
+    
+    #editEventModal .modal-dialog {
+        margin: 10px;
+        max-width: calc(100% - 20px);
+    }
+    
+    #editEventModal .modal-header,
+    #editEventModal .modal-body,
+    #editEventModal .modal-footer {
+        padding: 1rem;
+    }
+    
+    #editEventModal .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .calendar-form {
+        width: 100%;
+    }
+    
+    .calendar-form .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .calendar-form .col-md-2,
+    .calendar-form .col-md-3,
+    .calendar-form .col-md-4 {
+        flex: 0 0 calc(50% - 10px);
+        max-width: calc(50% - 10px);
+    }
+    
+    .calendar-form .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    
+    .calendar-form .form-control {
+        width: 100%;
+    }
+    
+    .calendar-form input[type="date"] {
+        min-width: 100% !important;
+        width: 100%;
+    }
+    
+    .calendar-form .btn {
+        min-width: 100px;
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+    
+    #calendar {
+        padding: 12px;
+        font-size: 0.85rem;
+    }
+    
+    #calendar .fc-toolbar {
+        gap: 8px;
+    }
+    
+    #calendar .fc-toolbar-title {
+        font-size: 1.2rem !important;
+    }
+    
+    #calendar .fc-button {
+        padding: 6px 10px !important;
+        font-size: 0.85rem !important;
+    }
+    
+    #calendar .fc-event-title {
+        font-size: 0.75rem;
+    }
+    
+    #calendar .fc-daygrid-event {
+        font-size: 0.7rem;
+    }
+    
+    #calendar .fc-col-header-cell {
+        font-size: 0.8rem;
+    }
+    
+    #calendar .fc-daygrid-day-number {
+        font-size: 0.75rem;
+    }
+    
+    #editEventModal .modal-dialog {
+        max-width: 90%;
+        margin: 1.5rem auto;
+    }
+}
+
+@media (max-width: 480px) {
+    #calendar {
+        padding: 6px;
+        font-size: 0.75rem;
+    }
+    
+    #calendar .fc-toolbar {
+        gap: 6px;
+    }
+    
+    #calendar .fc-toolbar-title {
+        font-size: 0.95rem !important;
+    }
+    
+    #calendar .fc-button {
+        padding: 4px 6px !important;
+        font-size: 0.7rem !important;
+    }
+    
+    #calendar .fc-col-header-cell {
+        font-size: 0.65rem;
+        padding: 3px 1px;
+    }
+    
+    #calendar .fc-daygrid-day-number {
+        font-size: 0.65rem;
+        padding: 1px;
+    }
+    
+    #calendar .fc-event {
+        font-size: 0.6rem;
+    }
+    
+    #calendar .fc-event-title {
+        font-size: 0.6rem;
+    }
+    
+    #calendar .fc-daygrid-event {
+        font-size: 0.6rem;
+        padding: 1px;
+    }
+    
+    #calendar .fc-daygrid-day-frame {
+        min-height: 25px;
+    }
+    
+    #neo-calendar h2 {
+        font-size: 1.2rem;
+        margin-bottom: 12px;
+    }
+    
+    .calendar-form .form-control {
+        width: 100%;
+        min-width: 100%;
+        font-size: 13px;
+        padding: 8px;
+    }
+}
+

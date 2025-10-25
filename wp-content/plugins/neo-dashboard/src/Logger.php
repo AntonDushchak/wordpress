@@ -60,6 +60,14 @@ class Logger
     }
 
     /**
+     * Compatibility alias for warning() used elsewhere as warning().
+     */
+    public static function warning(string $message, array $data = []): void
+    {
+        self::warn($message, $data);
+    }
+
+    /**
      * Convenience-Methode für Fehler.
      */
     public static function error(string $message, array $data = []): void
@@ -73,6 +81,14 @@ class Logger
     public static function info(string $message, array $data = []): void
     {
         self::log($message, $data, 'INFO');
+    }
+
+    /**
+     * Debug level logging. Mapped to INFO by default to keep logs available.
+     */
+    public static function debug(string $message, array $data = []): void
+    {
+        self::log($message, $data, 'DEBUG');
     }
 
     /**

@@ -1,27 +1,17 @@
-/**
- * Neo Dashboard - Адаптивные стили
- * Поддержка: Компьютеры, планшеты, телефоны
- * Версия: 1.0.0
- */
-
-/* ===========================
-   БАЗОВЫЕ СТИЛИ
-   =========================== */
+header {
+    display: none;
+}
 
 .neo-dashboard {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     line-height: 1.5;
 }
 
-/* Контейнеры и сетки */
+
 .container-fluid {
     padding-left: 15px;
     padding-right: 15px;
 }
-
-/* ===========================
-   NAVBAR (Навигационная панель)
-   =========================== */
 
 .navbar {
     padding: 0.75rem 1rem;
@@ -43,11 +33,6 @@
     box-shadow: none;
 }
 
-/* ===========================
-   САЙДБАР
-   =========================== */
-
-/* Десктоп сайдбар */
 .desktop-sidebar {
     background-color: #f8f9fa;
     min-height: calc(100vh - 76px);
@@ -80,7 +65,6 @@
     color: #fff;
 }
 
-/* Offcanvas сайдбар */
 .offcanvas {
     --bs-offcanvas-width: 280px;
 }
@@ -94,15 +78,10 @@
     padding: 1rem 1.5rem;
 }
 
-/* ===========================
-   ОСНОВНОЙ КОНТЕНТ
-   =========================== */
-
 main {
     min-height: calc(100vh - 76px);
 }
 
-/* Уведомления */
 .notification {
     margin-bottom: 1rem;
     border-radius: 0.375rem;
@@ -134,13 +113,8 @@ main {
     color: #055160;
 }
 
-/* ===========================
-   ВИДЖЕТЫ И КАРТОЧКИ
-   =========================== */
-
 .widget-card {
     background: #fff;
-    border: 1px solid #dee2e6;
     border-radius: 0.375rem;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     margin-bottom: 1.5rem;
@@ -148,7 +122,6 @@ main {
 
 .widget-card-header {
     padding: 1rem 1.25rem;
-    border-bottom: 1px solid #dee2e6;
     background-color: #f8f9fa;
     border-radius: 0.375rem 0.375rem 0 0;
 }
@@ -164,9 +137,13 @@ main {
     padding: 1.25rem;
 }
 
-/* ===========================
-   ФОРМЫ И ЭЛЕМЕНТЫ УПРАВЛЕНИЯ
-   =========================== */
+.widget-card hr {
+    border: 0;
+}
+
+.card-body .card {
+    border: none;
+}
 
 .form-control {
     display: block;
@@ -186,6 +163,15 @@ main {
     border-color: #86b7fe;
     outline: 0;
     box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.form-control::placeholder {
+    color: #6c757d;
+    opacity: 1;
+}
+
+.form-control:focus::placeholder {
+    color: #adb5bd;
 }
 
 .form-label {
@@ -221,10 +207,6 @@ main {
     border-color: #0a58ca;
 }
 
-/* ===========================
-   ТАБЛИЦЫ
-   =========================== */
-
 .table {
     width: 100%;
     margin-bottom: 1rem;
@@ -250,14 +232,9 @@ main {
     overflow-x: auto;
 }
 
-/* ===========================
-   АДАПТИВНЫЕ МЕДИА-ЗАПРОСЫ
-   =========================== */
-
-/* Большие экраны (Десктопы 1200px и выше) */
-@media (min-width: 1200px) {
+@media (min-width: 1400px) {
     .container-fluid {
-        max-width: 1140px;
+        max-width: 1400px;
         margin: 0 auto;
     }
     
@@ -270,7 +247,6 @@ main {
     }
 }
 
-/* Средние экраны (Планшеты 768px - 1199px) */
 @media (min-width: 768px) and (max-width: 1199px) {
     .desktop-sidebar {
         padding: 0.75rem;
@@ -299,14 +275,11 @@ main {
     }
 }
 
-/* Маленькие экраны (Мобильные устройства до 767px) */
 @media (max-width: 767px) {
-    /* Скрываем десктоп сайдбар */
     .desktop-sidebar {
         display: none !important;
     }
     
-    /* Главный контент занимает всю ширину */
     main {
         flex: 0 0 100%;
         max-width: 100%;
@@ -315,7 +288,6 @@ main {
         padding-top: 1rem !important;
     }
     
-    /* Navbar */
     .navbar {
         padding: 0.5rem 0.75rem;
     }
@@ -324,7 +296,6 @@ main {
         font-size: 1.125rem;
     }
     
-    /* Карточки виджетов */
     .widget-card {
         margin-bottom: 1rem;
         border-radius: 0.25rem;
@@ -342,9 +313,8 @@ main {
         padding: 0.75rem 1rem;
     }
     
-    /* Формы */
     .form-control {
-        font-size: 16px; /* Предотвращает зум на iOS */
+        font-size: 16px;
     }
     
     .btn {
@@ -356,7 +326,6 @@ main {
         margin-left: 0;
     }
     
-    /* Таблицы - горизонтальная прокрутка */
     .table-responsive {
         border: 1px solid #dee2e6;
         border-radius: 0.375rem;
@@ -373,25 +342,21 @@ main {
         white-space: nowrap;
     }
     
-    /* Уведомления */
     .notification {
         padding: 0.75rem;
         font-size: 0.875rem;
     }
     
-    /* Отступы контейнера */
     .container-fluid {
         padding-left: 0.5rem;
         padding-right: 0.5rem;
     }
     
-    /* Offcanvas для мобильных */
     .offcanvas {
         --bs-offcanvas-width: 280px;
     }
 }
 
-/* Очень маленькие экраны (до 480px) */
 @media (max-width: 480px) {
     .navbar-brand {
         font-size: 1rem;
@@ -435,11 +400,6 @@ main {
     }
 }
 
-/* ===========================
-   ЛАНДШАФТНАЯ ОРИЕНТАЦИЯ
-   =========================== */
-
-/* Планшеты в ландшафтной ориентации */
 @media (max-width: 1024px) and (orientation: landscape) {
     .desktop-sidebar {
         width: 200px;
@@ -457,7 +417,6 @@ main {
     }
 }
 
-/* Мобильные устройства в ландшафтной ориентации */
 @media (max-height: 500px) and (orientation: landscape) {
     .navbar {
         padding: 0.25rem 0.5rem;
@@ -476,11 +435,6 @@ main {
     }
 }
 
-/* ===========================
-   УТИЛИТЫ ДЛЯ АДАПТИВНОСТИ
-   =========================== */
-
-/* Скрытие элементов на разных экранах */
 .d-mobile-none {
     display: block;
 }
@@ -501,7 +455,6 @@ main {
     }
 }
 
-/* Размеры текста для разных экранов */
 .text-mobile-sm {
     font-size: 1rem;
 }
@@ -511,10 +464,6 @@ main {
         font-size: 0.875rem;
     }
 }
-
-/* ===========================
-   ПЕЧАТЬ
-   =========================== */
 
 @media print {
     .navbar,
@@ -539,10 +488,6 @@ main {
         border: 1px solid #000;
     }
 }
-
-/* ===========================
-   ТЕМНАЯ ТЕМА (опционально)
-   =========================== */
 
 @media (prefers-color-scheme: dark) {
     .neo-dashboard {
@@ -571,6 +516,15 @@ main {
         border-color: #86b7fe;
     }
     
+    .form-control::placeholder {
+        color: #adb5bd;
+        opacity: 1;
+    }
+    
+    .form-control:focus::placeholder {
+        color: #6c757d;
+    }
+    
     .desktop-sidebar {
         background-color: #343a40;
         border-color: #495057;
@@ -590,10 +544,6 @@ main {
     }
 }
 
-/* ===========================
-   ВЫСОКАЯ КОНТРАСТНОСТЬ
-   =========================== */
-
 @media (prefers-contrast: high) {
     .widget-card {
         border-width: 2px;
@@ -612,9 +562,31 @@ main {
     }
 }
 
-/* ===========================
-   УМЕНЬШЕННАЯ АНИМАЦИЯ
-   =========================== */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .tablet-sidebar-narrow {
+        flex: 0 0 25% !important;
+        max-width: 25% !important;
+    }
+    
+    .main-content-tablet {
+        flex: 0 0 75% !important;
+        max-width: 75% !important;
+    }
+}
+
+@media (min-width: 1025px) and (max-width: 1199px) {
+    .tablet-sidebar-narrow,
+    .desktop-sidebar {
+        flex: 0 0 25%;
+        max-width: 25%;
+    }
+    
+    .main-content-tablet,
+    main {
+        flex: 0 0 75%;
+        max-width: 75%;
+    }
+}
 
 @media (prefers-reduced-motion: reduce) {
     * {

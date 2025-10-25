@@ -3,8 +3,8 @@ declare(strict_types=1);
 /**
  * Plugin Name:     Neo Dashboard Core
  * Description:     Modernes Dashboard‑Framework mit PSR‑4‑Autoloader und Manager‑Architektur.
- * Version:         3.0.2
- * Author:          Code Copilot
+ * Version:         3.0.3
+ * Author:          Neo
  * Text Domain:     neo-dashboard-core
  */
 
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Versionskonstante
  * ------------------------------------------------------------------------- */
 if ( ! defined( 'NEO_DASHBOARD_VERSION' ) ) {
-    define( 'NEO_DASHBOARD_VERSION', '3.0.2' );
+    define( 'NEO_DASHBOARD_VERSION', '3.0.3' );
 }
 
 /* ------------------------------------------------------------------------- *
@@ -62,10 +62,25 @@ add_action('plugins_loaded', function() {
 }, 1);
 
 /* ------------------------------------------------------------------------- *
+ * Logger System
+ * ------------------------------------------------------------------------- */
+require_once __DIR__ . '/src/Logger.php';
+require_once __DIR__ . '/src/LifecycleLogger.php';
+
+/* ------------------------------------------------------------------------- *
  * Helper Funktionen
  * ------------------------------------------------------------------------- */
 require_once __DIR__ . '/src/functions.php';
 
+/* ------------------------------------------------------------------------- *
+ * UI Component System
+ * ------------------------------------------------------------------------- */
+require_once __DIR__ . '/src/UIComponent.php';
+
+/* ------------------------------------------------------------------------- *
+ * Theme Switcher
+ * ------------------------------------------------------------------------- */
+require_once __DIR__ . '/src/Manager/ThemeSwitcher.php';
 
 /* ------------------------------------------------------------------------- *
  * Bootstrap: Hook registration and initialization
