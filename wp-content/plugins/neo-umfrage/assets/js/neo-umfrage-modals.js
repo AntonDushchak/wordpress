@@ -484,6 +484,22 @@
             }
         },
 
+        openEditSurveyModal: function () {
+            const $modal = $('#add-survey-modal');
+            
+            if ($modal.length === 0) {
+                this.createModals();
+            }
+            
+            $('#add-survey-modal .neo-umfrage-modal-title').text('Umfrage bearbeiten');
+            
+            $('#survey-template-select').prop('disabled', true);
+            $('#survey-template-select').addClass('disabled');
+            
+            $('#add-survey-modal').fadeIn(300);
+            $('body').addClass('modal-open');
+        },
+
         openViewTemplateModal: function () {
             $('#view-template-modal').fadeIn(300);
             $('body').addClass('modal-open');

@@ -83,6 +83,13 @@
                         d.nonce = neoUmfrageAjax.nonce;
                         d.template_id = $('#filter-template').val();
                         d.user_id = $('#filter-user').val();
+                    },
+                    dataSrc: function(json) {
+                        // DataTable ожидает массив в json.data
+                        if (json.success && json.data && Array.isArray(json.data)) {
+                            return json.data;
+                        }
+                        return [];
                     }
                 },
                 columns: [
@@ -158,7 +165,8 @@
                         const $filter = $('#filter-user');
                         if ($filter.length) {
                             $filter.find('option:not(:first)').remove();
-                            response.data.forEach(user => {
+                            const users = response.data.users || [];
+                            users.forEach(user => {
                                 $filter.append(`<option value="${user.ID}">${user.display_name}</option>`);
                             });
                             
@@ -245,7 +253,7 @@
 
         populateSurveyForm: function (surveyData) {
             const response = surveyData.response;
-            const fields = surveyData.response_data;
+            const fields = surveyData.response_data_object || surveyData.response_data;
             const templateId = surveyData.template_id;
             const templateName = surveyData.template_name;
 

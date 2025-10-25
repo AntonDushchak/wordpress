@@ -88,10 +88,7 @@
                         ? [rolesRaw]
                         : [];
             const currentUserId = neoUmfrageAjax.currentUserId;
-            console.log("currentUserId:", currentUserId);
-            console.log("objectUserId:", objectUserId);
-            console.log("rolesRaw:", rolesRaw);
-            console.log("roles:", roles);
+            
             if (roles.includes('administrator') || roles.includes('neo-editor')) {
                 return true;
             }

@@ -106,9 +106,15 @@
             templateFields.forEach(function (field, index) {
                 let fieldValue = '';
                 if (existingFields) {
-                    const existingField = existingFields.find(f => f.label === field.label);
-                    if (existingField) {
-                        fieldValue = existingField.value;
+                    // Проверяем, является ли existingFields массивом или объектом
+                    if (Array.isArray(existingFields)) {
+                        const existingField = existingFields.find(f => f.label === field.label);
+                        if (existingField) {
+                            fieldValue = existingField.value;
+                        }
+                    } else if (typeof existingFields === 'object' && existingFields !== null) {
+                        // Если это объект, ищем по ключу label
+                        fieldValue = existingFields[field.label] || '';
                     }
                 }
 

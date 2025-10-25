@@ -552,25 +552,43 @@ class Neo_Umfrage {
         
         $survey_id = $wpdb->insert_id;
         
-        if (isset($_POST['fields']) && is_array($_POST['fields'])) {
-            foreach ($_POST['fields'] as $field_name => $field_value) {
-                $sanitized_name = sanitize_text_field($field_name);
-                $sanitized_value = sanitize_textarea_field($field_value);
-                
-                $value_result = $wpdb->insert(
-                    $values_table,
-                    [
-                        'survey_id' => $survey_id,
-                        'field_name' => $sanitized_name,
-                        'field_value' => $sanitized_value
-                    ],
-                    ['%d', '%s', '%s']
-                );
-                
-                if (!$value_result) {
-                    $wpdb->query('ROLLBACK');
-                    wp_send_json_error(['message' => 'Fehler beim Speichern der Felddaten']);
-                    return;
+        if (isset($_POST['survey_fields'])) {
+            $survey_fields = [];
+            
+            if (is_string($_POST['survey_fields'])) {
+                $survey_fields = json_decode(stripslashes($_POST['survey_fields']), true);
+            } elseif (is_array($_POST['survey_fields'])) {
+                $survey_fields = $_POST['survey_fields'];
+            }
+            
+            if (is_array($survey_fields) && !empty($survey_fields)) {
+                foreach ($survey_fields as $field) {
+                    $field_name = isset($field['label']) ? sanitize_text_field($field['label']) : '';
+                    $field_value = isset($field['value']) ? $field['value'] : '';
+                    
+                    if (is_array($field_value)) {
+                        $field_value = implode(', ', array_map('sanitize_text_field', $field_value));
+                    } else {
+                        $field_value = sanitize_textarea_field($field_value);
+                    }
+                    
+                    if (!empty($field_name)) {
+                        $value_result = $wpdb->insert(
+                            $values_table,
+                            [
+                                'survey_id' => $survey_id,
+                                'field_name' => $field_name,
+                                'field_value' => $field_value
+                            ],
+                            ['%d', '%s', '%s']
+                        );
+                        
+                        if (!$value_result) {
+                            $wpdb->query('ROLLBACK');
+                            wp_send_json_error(['message' => 'Fehler beim Speichern der Felddaten']);
+                            return;
+                        }
+                    }
                 }
             }
         }
@@ -641,17 +659,48 @@ class Neo_Umfrage {
         $surveys_table = $wpdb->prefix . 'neo_umfrage_surveys';
         $templates_table = $wpdb->prefix . 'neo_umfrage_templates';
         
+        $where_clauses = [];
+        $where_values = [];
+        
+        if (isset($_POST['template_id']) && !empty($_POST['template_id'])) {
+            $where_clauses[] = "s.template_id = %d";
+            $where_values[] = intval($_POST['template_id']);
+        }
+        
+        if (isset($_POST['user_id']) && !empty($_POST['user_id'])) {
+            $where_clauses[] = "s.user_id = %d";
+            $where_values[] = intval($_POST['user_id']);
+        }
+        
+        $where_sql = '';
+        if (!empty($where_clauses)) {
+            $where_sql = 'WHERE ' . implode(' AND ', $where_clauses);
+        }
+        
         $query = "
-            SELECT s.*, t.name as template_name, u.display_name as user_name
+            SELECT s.id, 
+                   s.template_id, 
+                   s.user_id, 
+                   s.created_at, 
+                   s.created_at as submitted_at,
+                   t.name as template_name, 
+                   u.display_name as user_name,
+                   u.display_name as wp_user_name,
+                   s.id as response_id
             FROM $surveys_table s
             LEFT JOIN $templates_table t ON s.template_id = t.id
             LEFT JOIN {$wpdb->users} u ON s.user_id = u.ID
+            $where_sql
             ORDER BY s.created_at DESC
         ";
         
-        $surveys = $wpdb->get_results($query);
+        if (!empty($where_values)) {
+            $query = $wpdb->prepare($query, $where_values);
+        }
         
-        wp_send_json_success(['surveys' => $surveys]);
+        $surveys = $wpdb->get_results($query, ARRAY_A);
+        
+        wp_send_json_success($surveys);
     }
 
     public function ajax_get_templates() {
@@ -861,13 +910,34 @@ class Neo_Umfrage {
         ", $survey_id));
         
         $survey->template_fields = json_decode($survey->template_fields, true);
-        $survey->values = [];
+        
+        $response_data_object = [];
+        $response_data_array = [];
         
         foreach ($values as $value) {
-            $survey->values[$value->field_name] = $value->field_value;
+            $response_data_object[$value->field_name] = $value->field_value;
+            $response_data_array[] = [
+                'label' => $value->field_name,
+                'value' => $value->field_value
+            ];
         }
         
-        wp_send_json_success(['survey' => $survey]);
+        wp_send_json_success([
+            'response' => [
+                'id' => $survey->id,
+                'template_id' => $survey->template_id,
+                'user_id' => $survey->user_id,
+                'created_at' => $survey->created_at,
+                'submitted_at' => $survey->created_at,
+                'user_display_name' => $survey->user_name
+            ],
+            'response_data' => $response_data_array,
+            'response_data_object' => $response_data_object,
+            'template_id' => $survey->template_id,
+            'template_name' => $survey->template_name,
+            'template_fields' => $survey->template_fields,
+            'user_name' => $survey->user_name
+        ]);
     }
 
     public function ajax_get_users() {
