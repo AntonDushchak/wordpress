@@ -712,7 +712,21 @@ class Neo_Umfrage {
         global $wpdb;
         $templates_table = $wpdb->prefix . 'neo_umfrage_templates';
         
-        $templates = $wpdb->get_results("SELECT * FROM $templates_table ORDER BY created_at DESC");
+        $where_sql = '';
+        $where_values = [];
+        
+        if (isset($_POST['show_only_active']) && $_POST['show_only_active'] !== 'all' && $_POST['show_only_active'] !== '') {
+            $where_sql = 'WHERE is_active = %d';
+            $where_values[] = intval($_POST['show_only_active']);
+        }
+        
+        $query = "SELECT * FROM $templates_table $where_sql ORDER BY created_at DESC";
+        
+        if (!empty($where_values)) {
+            $query = $wpdb->prepare($query, $where_values);
+        }
+        
+        $templates = $wpdb->get_results($query);
         
         foreach ($templates as &$template) {
             $template->fields = json_decode($template->fields, true);
