@@ -85,7 +85,6 @@
                         d.user_id = $('#filter-user').val();
                     },
                     dataSrc: function(json) {
-                        // DataTable ожидает массив в json.data
                         if (json.success && json.data && Array.isArray(json.data)) {
                             return json.data;
                         }

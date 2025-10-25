@@ -1089,7 +1089,6 @@ class Neo_Umfrage {
         $surveys_table = $wpdb->prefix . 'neo_umfrage_surveys';
         $values_table = $wpdb->prefix . 'neo_umfrage_survey_values';
         
-        // Получаем шаблон
         $template = $wpdb->get_row($wpdb->prepare("SELECT * FROM $templates_table WHERE id = %d", $template_id));
         
         if (!$template) {

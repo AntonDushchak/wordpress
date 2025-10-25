@@ -1,14 +1,5 @@
 <?php
-/**
- * Responsive Stile für WordPress
- * Einbindung von CSS-Dateien für alle Geräte
- * 
- * @package WordPress
- * @subpackage Responsive
- * @version 1.0.0
- */
 
-// Direkten Zugriff verhindern
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -18,7 +9,7 @@ function enqueue_responsive_styles() {
         $version = '1.2.0';
         wp_enqueue_style(
             'global-responsive',
-            get_template_directory_uri() . '/global-responsive.css',
+            content_url('themes/global-responsive.css'),
             array(),
             $version,
             'all'
@@ -26,38 +17,20 @@ function enqueue_responsive_styles() {
     }
 }
 
-/**
- * Hinzufügung von viewport meta tag für Responsivität
- */
 function add_responsive_viewport() {
     echo '<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">' . "\n";
 }
 
-/**
- * Hinzufügung zusätzlicher meta tags zur Verbesserung der Responsivität
- */
 function add_responsive_meta_tags() {
-    // Viewport
     echo '<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">' . "\n";
-    
-    // Unterstützung für dunkles Design
     echo '<meta name="color-scheme" content="light dark">' . "\n";
-    
-    // Deaktivierung der automatischen Erkennung von Telefonnummern auf iOS
     echo '<meta name="format-detection" content="telephone=no">' . "\n";
-    
-    // Verbesserung des Renderings auf mobilen Geräten
     echo '<meta name="mobile-web-app-capable" content="yes">' . "\n";
     echo '<meta name="apple-mobile-web-app-capable" content="yes">' . "\n";
     echo '<meta name="apple-mobile-web-app-status-bar-style" content="default">' . "\n";
-    
-    // Vorladung kritischer Ressourcen
-    echo '<link rel="preload" href="' . get_template_directory_uri() . '/global-responsive.css" as="style">' . "\n";
+    echo '<link rel="preload" href="' . content_url('themes/global-responsive.css') . '" as="style">' . "\n";
 }
 
-/**
- * Prüfung ob spezifische Stile/Skripte benötigt werden
- */
 function needs_plugin_assets($plugin_type) {
     global $post;
     
@@ -87,16 +60,11 @@ function needs_plugin_assets($plugin_type) {
     return false;
 }
 
-/**
- * Hinzufügung von JavaScript für mobiles Menü (bedingt)
- */
 function add_mobile_menu_script() {
-    // Basis-Menü-Skript überall einbinden wo Navigation vorhanden ist
     if (has_nav_menu('primary') || has_nav_menu('mobile')) {
     ?>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Mobiles Menü
         const menuToggle = document.querySelector('.menu-toggle');
         const navMenu = document.querySelector('.nav-menu');
         
@@ -107,7 +75,6 @@ function add_mobile_menu_script() {
             });
         }
         
-        // Untermenü für Mobile
         const menuItemsWithChildren = document.querySelectorAll('.menu-item-has-children > a');
         
         menuItemsWithChildren.forEach(function(menuItem) {

@@ -321,7 +321,6 @@
     margin: 10px 0;
 }
 
-/* Тёмная тема для статистики */
 html[data-theme="dark"] .neo-umfrage-stat-field-card,
 html[data-neo-theme="dark"] .neo-umfrage-stat-field-card {
     background: #2a2a2a !important;
@@ -747,7 +746,6 @@ html[data-neo-theme="dark"] .template-field {
     color: #0c5460;
 }
 
-/* Сохраняем цвета сообщений в тёмной теме */
 html[data-theme="dark"] .neo-umfrage-message-success,
 html[data-neo-theme="dark"] .neo-umfrage-message-success {
     background-color: #d4edda !important;
@@ -783,7 +781,6 @@ html[data-neo-theme="dark"] .neo-umfrage-message-info {
     }
 }
 
-/* Адаптивное позиционирование сообщений */
 @media (max-width: 768px) {
     .neo-umfrage-message {
         top: 60px;
