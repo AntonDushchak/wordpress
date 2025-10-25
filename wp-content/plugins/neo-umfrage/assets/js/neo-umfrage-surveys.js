@@ -119,12 +119,12 @@
                         render: function(data, type, row) {
                             let actions = '';
                             if (NeoUmfrage.canEdit(row.user_id)) {
-                                actions += `<button class="neo-umfrage-button neo-umfrage-button-secondary" onclick="NeoUmfrage.editSurvey(${row.response_id}, ${row.user_id})">Bearbeiten</button> `;
+                                actions += `<button class="neo-umfrage-button neo-umfrage-button-secondary neo-umfrage-button-icon" onclick="NeoUmfrage.editSurvey(${row.response_id}, ${row.user_id})" title="Bearbeiten"><i class="bi bi-pencil"></i></button> `;
                             }
                             if (NeoUmfrage.canDelete(row.user_id)) {
-                                actions += `<button class="neo-umfrage-button neo-umfrage-button-danger" onclick="NeoUmfrage.deleteSurvey(${row.response_id}, ${row.user_id})">Löschen</button> `;
+                                actions += `<button class="neo-umfrage-button neo-umfrage-button-danger neo-umfrage-button-icon" onclick="NeoUmfrage.deleteSurvey(${row.response_id}, ${row.user_id})" title="Löschen"><i class="bi bi-trash"></i></button> `;
                             }
-                            actions += `<button class="neo-umfrage-button" onclick="NeoUmfrage.viewSurvey(${row.response_id})">Anzeigen</button>`;
+                            actions += `<button class="neo-umfrage-button neo-umfrage-button-icon" onclick="NeoUmfrage.viewSurvey(${row.response_id})" title="Anzeigen"><i class="bi bi-eye"></i></button>`;
                             return actions;
                         }
                     }

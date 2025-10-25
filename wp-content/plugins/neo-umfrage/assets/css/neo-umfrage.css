@@ -125,6 +125,34 @@
     background: #218838;
 }
 
+.neo-umfrage-button-warning {
+    background: #ffc107;
+    color: #000;
+}
+
+.neo-umfrage-button-warning:hover {
+    background: #e0a800;
+    color: #000;
+}
+
+.neo-umfrage-button-icon {
+    padding: 8px 12px;
+    min-width: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.neo-umfrage-button-icon i {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.neo-umfrage-button-icon:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 .neo-umfrage-button:disabled {
     background: #ccc;
     cursor: not-allowed;

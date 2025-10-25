@@ -98,7 +98,7 @@
                 html += '<span class="neo-umfrage-recent-survey-date">' + submittedDate + '</span>';
                 html += '</div>';
                 html += '<div class="neo-umfrage-recent-survey-actions">';
-                html += '<button class="neo-umfrage-button" onclick="NeoUmfrage.viewSurvey(' + survey.response_id + ')">Anzeigen</button>';
+                html += '<button class="neo-umfrage-button neo-umfrage-button-icon" onclick="NeoUmfrage.viewSurvey(' + survey.response_id + ')" title="Anzeigen"><i class="bi bi-eye"></i></button>';
                 html += '</div>';
                 html += '</div>';
             });

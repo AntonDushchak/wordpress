@@ -205,13 +205,13 @@
                         searchable: false,
                         render: function(data, type, row) {
                             let actions = '';
-                            actions += `<button class="neo-umfrage-button neo-umfrage-button-secondary" onclick="viewTemplate(${row.id})">Ansehen</button> `;
+                            actions += `<button class="neo-umfrage-button neo-umfrage-button-secondary neo-umfrage-button-icon" onclick="viewTemplate(${row.id})" title="Ansehen"><i class="bi bi-eye"></i></button> `;
                             if (row.is_active == 1) {
-                                actions += `<button class="neo-umfrage-button neo-umfrage-button-warning" onclick="deactivateTemplate(${row.id})">Deaktivieren</button> `;
+                                actions += `<button class="neo-umfrage-button neo-umfrage-button-warning neo-umfrage-button-icon" onclick="deactivateTemplate(${row.id})" title="Deaktivieren"><i class="bi bi-toggle-on"></i></button> `;
                             } else {
-                                actions += `<button class="neo-umfrage-button neo-umfrage-button-success" onclick="activateTemplate(${row.id})">Aktivieren</button> `;
+                                actions += `<button class="neo-umfrage-button neo-umfrage-button-success neo-umfrage-button-icon" onclick="activateTemplate(${row.id})" title="Aktivieren"><i class="bi bi-toggle-off"></i></button> `;
                             }
-                            actions += `<button class="neo-umfrage-button neo-umfrage-button-danger" onclick="deleteTemplateWithSurveys(${row.id})">Löschen</button>`;
+                            actions += `<button class="neo-umfrage-button neo-umfrage-button-danger neo-umfrage-button-icon" onclick="deleteTemplateWithSurveys(${row.id})" title="Löschen"><i class="bi bi-trash"></i></button>`;
                             return actions;
                         }
                     }

@@ -224,8 +224,8 @@
                         <td>${template.description || 'Keine Beschreibung'}</td>
                         <td>${new Date(template.created_at).toLocaleDateString()}</td>
                         <td>
-                            <button class="neo-umfrage-button neo-umfrage-button-secondary" onclick="NeoUmfrage.viewTemplate(${template.id})">Ansehen</button>
-                            <button class="neo-umfrage-button neo-umfrage-button-danger" onclick="NeoUmfrage.deleteTemplate(${template.id})">Löschen</button>
+                            <button class="neo-umfrage-button neo-umfrage-button-secondary neo-umfrage-button-icon" onclick="NeoUmfrage.viewTemplate(${template.id})" title="Ansehen"><i class="bi bi-eye"></i></button>
+                            <button class="neo-umfrage-button neo-umfrage-button-danger neo-umfrage-button-icon" onclick="NeoUmfrage.deleteTemplate(${template.id})" title="Löschen"><i class="bi bi-trash"></i></button>
                         </td>
                     </tr>
                 `;
