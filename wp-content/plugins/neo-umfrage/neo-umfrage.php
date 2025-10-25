@@ -35,6 +35,7 @@ class Neo_Umfrage {
         add_action('wp_ajax_neo_umfrage_toggle_template_status', [$this, 'ajax_toggle_template_status']);
         add_action('wp_ajax_neo_umfrage_deactivate_template', [$this, 'ajax_deactivate_template']);
         add_action('wp_ajax_neo_umfrage_delete_template_with_surveys', [$this, 'ajax_delete_template_with_surveys']);
+        add_action('wp_ajax_neo_umfrage_get_template_statistics', [$this, 'ajax_get_template_statistics']);
         
         add_action('init', [$this, 'init']);
         
@@ -359,12 +360,21 @@ class Neo_Umfrage {
                     <div class="neo-umfrage-stat-label">Antworten</div>
                 </div>
             </div>
+            
             <div class="neo-umfrage-card">
                 <div class="neo-umfrage-card-header">
-                    <h2 class="neo-umfrage-card-title">Letzte Umfragen</h2>
+                    <h2 class="neo-umfrage-card-title">Vorlagen-Statistik</h2>
                 </div>
                 <div class="neo-umfrage-card-body">
-                    <div id="recent-surveys">Laden...</div>
+                    <div class="neo-umfrage-form-group">
+                        <label class="neo-umfrage-label">Vorlage auswählen:</label>
+                        <select id="statistics-template-select" class="neo-umfrage-select" style="max-width: 400px;">
+                            <option value="">Bitte wählen Sie eine Vorlage</option>
+                        </select>
+                    </div>
+                    <div id="template-statistics-container">
+                        <p class="neo-umfrage-info">Bitte wählen Sie eine Vorlage aus, um die Statistik anzuzeigen.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1064,6 +1074,144 @@ class Neo_Umfrage {
             $wpdb->query('ROLLBACK');
             wp_send_json_error(['message' => 'Fehler beim Löschen der Vorlage']);
         }
+    }
+
+    public function ajax_get_template_statistics() {
+        if (!wp_verify_nonce($_POST['nonce'], 'neo_umfrage_nonce')) {
+            wp_send_json_error(['message' => 'Security check failed']);
+            return;
+        }
+
+        global $wpdb;
+        $template_id = intval($_POST['template_id']);
+        
+        $templates_table = $wpdb->prefix . 'neo_umfrage_templates';
+        $surveys_table = $wpdb->prefix . 'neo_umfrage_surveys';
+        $values_table = $wpdb->prefix . 'neo_umfrage_survey_values';
+        
+        // Получаем шаблон
+        $template = $wpdb->get_row($wpdb->prepare("SELECT * FROM $templates_table WHERE id = %d", $template_id));
+        
+        if (!$template) {
+            wp_send_json_error(['message' => 'Vorlage nicht gefunden']);
+            return;
+        }
+        
+        $template_fields = json_decode($template->fields, true);
+        
+        $total_responses = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM $surveys_table WHERE template_id = %d",
+            $template_id
+        ));
+        
+        $fields_statistics = [];
+        
+        foreach ($template_fields as $field) {
+            $field_label = $field['label'];
+            $field_type = $field['type'];
+            
+            $field_stat = [
+                'label' => $field_label,
+                'type' => $field_type,
+                'statistics' => []
+            ];
+            
+            if ($field_type === 'text') {
+                $results = $wpdb->get_results($wpdb->prepare("
+                    SELECT sv.field_value as value, COUNT(*) as count
+                    FROM $values_table sv
+                    INNER JOIN $surveys_table s ON sv.survey_id = s.id
+                    WHERE s.template_id = %d AND sv.field_name = %s AND sv.field_value != ''
+                    GROUP BY sv.field_value
+                    ORDER BY count DESC
+                    LIMIT 5
+                ", $template_id, $field_label));
+                
+                foreach ($results as $result) {
+                    $field_stat['statistics'][] = [
+                        'value' => $result->value,
+                        'count' => (int)$result->count,
+                        'percentage' => $total_responses > 0 ? round(($result->count / $total_responses) * 100, 1) : 0
+                    ];
+                }
+                
+            } elseif ($field_type === 'number') {
+                $stats = $wpdb->get_row($wpdb->prepare("
+                    SELECT 
+                        MIN(CAST(sv.field_value AS DECIMAL(10,2))) as min_val,
+                        MAX(CAST(sv.field_value AS DECIMAL(10,2))) as max_val,
+                        AVG(CAST(sv.field_value AS DECIMAL(10,2))) as avg_val
+                    FROM $values_table sv
+                    INNER JOIN $surveys_table s ON sv.survey_id = s.id
+                    WHERE s.template_id = %d AND sv.field_name = %s 
+                          AND sv.field_value != '' 
+                          AND CAST(sv.field_value AS DECIMAL(10,2)) > 0
+                ", $template_id, $field_label));
+                
+                if ($stats) {
+                    $field_stat['statistics'] = [
+                        'min' => $stats->min_val ? round($stats->min_val, 2) : null,
+                        'avg' => $stats->avg_val ? round($stats->avg_val, 2) : null,
+                        'max' => $stats->max_val ? round($stats->max_val, 2) : null
+                    ];
+                }
+                
+            } elseif (in_array($field_type, ['radio', 'checkbox', 'select'])) {
+                $results = $wpdb->get_results($wpdb->prepare("
+                    SELECT sv.field_value as value, COUNT(*) as count
+                    FROM $values_table sv
+                    INNER JOIN $surveys_table s ON sv.survey_id = s.id
+                    WHERE s.template_id = %d AND sv.field_name = %s AND sv.field_value != ''
+                    GROUP BY sv.field_value
+                    ORDER BY count DESC
+                ", $template_id, $field_label));
+                
+                foreach ($results as $result) {
+                    if ($field_type === 'checkbox' && strpos($result->value, ',') !== false) {
+                        $values = array_map('trim', explode(',', $result->value));
+                        foreach ($values as $value) {
+                            $found = false;
+                            foreach ($field_stat['statistics'] as &$existing) {
+                                if ($existing['value'] === $value) {
+                                    $existing['count'] += 1;
+                                    $found = true;
+                                    break;
+                                }
+                            }
+                            if (!$found) {
+                                $field_stat['statistics'][] = [
+                                    'value' => $value,
+                                    'count' => 1,
+                                    'percentage' => 0
+                                ];
+                            }
+                        }
+                    } else {
+                        $field_stat['statistics'][] = [
+                            'value' => $result->value,
+                            'count' => (int)$result->count,
+                            'percentage' => 0
+                        ];
+                    }
+                }
+                
+                foreach ($field_stat['statistics'] as &$stat) {
+                    $stat['percentage'] = $total_responses > 0 ? round(($stat['count'] / $total_responses) * 100, 1) : 0;
+                }
+                
+                usort($field_stat['statistics'], function($a, $b) {
+                    return $b['count'] - $a['count'];
+                });
+            }
+            
+            $fields_statistics[] = $field_stat;
+        }
+        
+        wp_send_json_success([
+            'template_name' => $template->name,
+            'total_responses' => (int)$total_responses,
+            'fields' => $fields_statistics
+        ]);
     }
 }
 

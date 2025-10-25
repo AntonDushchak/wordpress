@@ -72,10 +72,12 @@
                 this.loadTemplates();
             }
 
-            if ($('#statistics-stats').length) {
-                this.loadStatistics();
-                this.loadRecentSurveys();
+        if ($('#statistics-stats').length) {
+            this.loadStatistics();
+            if (window.NeoUmfrageStatistics && NeoUmfrageStatistics.init) {
+                NeoUmfrageStatistics.init();
             }
+        }
         },
 
         canEdit: function (objectUserId) {
