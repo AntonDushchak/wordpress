@@ -1205,12 +1205,14 @@ table.dataTable thead th {
     padding: 12px 8px;
     font-weight: 600;
     text-align: left;
+    font-size: 15px;
 }
 
 table.dataTable tbody td {
     border: 1px solid #ddd;
     padding: 12px 8px;
     vertical-align: middle;
+    font-size: 15px;
 }
 
 table.dataTable tbody tr:nth-child(even) {
