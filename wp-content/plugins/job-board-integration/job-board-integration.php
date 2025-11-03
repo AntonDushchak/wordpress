@@ -3,7 +3,7 @@
  * Plugin Name: Job Board Integration
  * Description: Integration mit bewerberboerse für Vorlagen und Bewerbungen
  * Version: 1.0.0
- * Author: Your Name
+ * Author: Neo
  * Text Domain: job-board-integration
  */
 
@@ -18,6 +18,9 @@ if (!defined('NEO_JOB_BOARD_VERSION')) {
 }
 
 require_once plugin_dir_path(__FILE__) . 'includes/DataSanitizer.php';
+require_once plugin_dir_path(__FILE__) . 'includes/Core/Database.php';
+require_once plugin_dir_path(__FILE__) . 'includes/Core/Sync.php';
+require_once plugin_dir_path(__FILE__) . 'includes/API/Client.php';
 
 class Job_Board_Integration {
 
@@ -48,7 +51,7 @@ class Job_Board_Integration {
         
         add_action('init', [$this, 'init']);
         
-        add_action('jbi_sync_contact_requests', [$this, 'sync_contact_requests']);
+        add_action('jbi_sync_contact_requests', [\NeoJobBoard\Core\Sync::class, 'sync_contact_requests']);
         
         register_activation_hook(__FILE__, [$this, 'activate_plugin']);
         register_deactivation_hook(__FILE__, [$this, 'deactivate_plugin']);
@@ -240,10 +243,10 @@ class Job_Board_Integration {
         global $wpdb;
         $table_name = $wpdb->prefix . 'neo_job_board_templates';
         if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") !== $table_name) {
-            $this->create_database_tables();
+            \NeoJobBoard\Core\Database::create_tables();
         } else {
-            $this->migrate_remove_columns();
-            $this->migrate_add_is_called_column();
+            \NeoJobBoard\Core\Database::migrate_remove_columns();
+            \NeoJobBoard\Core\Database::migrate_add_is_called_column();
         }
         
         if (!wp_next_scheduled('jbi_sync_contact_requests')) {
@@ -252,7 +255,7 @@ class Job_Board_Integration {
     }
 
     public function activate_plugin() {
-        $this->create_database_tables();
+        \NeoJobBoard\Core\Database::create_tables();
         
         add_filter('cron_schedules', [$this, 'add_ten_minutes_schedule']);
         add_filter('cron_schedules', [$this, 'add_custom_sync_schedule']);
@@ -302,366 +305,6 @@ class Job_Board_Integration {
         }
     }
 
-    public function sync_contact_requests() {
-        $api_url = get_option('jbi_api_url');
-        
-        if (empty($api_url)) {
-            error_log('JBI Sync: API URL не настроен');
-            return;
-        }
-
-        $base_url = rtrim($api_url, '/');
-        if (strpos($base_url, '/wp-json/bewerberboerse/v1') !== false) {
-            $api_base = substr($base_url, 0, strpos($base_url, '/wp-json/bewerberboerse/v1'));
-        } else {
-            $api_base = $base_url;
-        }
-        
-        $check_endpoint = $api_base . '/wp-json/bewerberboerse/v1/contact-requests/check';
-
-        $check_response = wp_remote_get($check_endpoint, [
-            'timeout' => 30,
-            'sslverify' => false
-        ]);
-
-        if (is_wp_error($check_response)) {
-            error_log('JBI Sync: Ошибка проверки наличия данных - ' . $check_response->get_error_message());
-            return;
-        }
-
-        $check_code = wp_remote_retrieve_response_code($check_response);
-        if ($check_code !== 200) {
-            error_log('JBI Sync: Неверный код ответа при проверке - ' . $check_code);
-            return;
-        }
-
-        $check_body = wp_remote_retrieve_body($check_response);
-        $check_data = json_decode($check_body, true);
-
-        if (!isset($check_data['has_data']) || !$check_data['has_data']) {
-            return;
-        }
-
-        $limit = $check_data['count'] ?? 100;
-        $fetch_endpoint = $api_base . '/wp-json/bewerberboerse/v1/contact-requests?limit=' . $limit;
-
-        $fetch_response = wp_remote_get($fetch_endpoint, [
-            'timeout' => 30,
-            'sslverify' => false
-        ]);
-
-        if (is_wp_error($fetch_response)) {
-            error_log('JBI Sync: Ошибка получения данных - ' . $fetch_response->get_error_message());
-            return;
-        }
-
-        $fetch_code = wp_remote_retrieve_response_code($fetch_response);
-        if ($fetch_code !== 200) {
-            error_log('JBI Sync: Неверный код ответа при получении данных - ' . $fetch_code);
-            return;
-        }
-
-        $fetch_body = wp_remote_retrieve_body($fetch_response);
-        $contact_requests = json_decode($fetch_body, true);
-
-        if (!is_array($contact_requests) || empty($contact_requests)) {
-            return;
-        }
-
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'neo_job_board_contact_requests';
-        $applications_table = $wpdb->prefix . 'neo_job_board_applications';
-        
-        $saved_count = 0;
-
-        foreach ($contact_requests as $request) {
-            $application_hash = sanitize_text_field($request['application_hash'] ?? '');
-            $name = sanitize_text_field($request['name'] ?? '');
-            $email = sanitize_email($request['email'] ?? '');
-            $phone = isset($request['phone']) ? sanitize_text_field($request['phone']) : null;
-            $message = isset($request['message']) ? sanitize_textarea_field($request['message']) : null;
-            $created_at = isset($request['created_at']) ? sanitize_text_field($request['created_at']) : current_time('mysql');
-
-            if (empty($application_hash) || empty($name) || empty($email)) {
-                continue;
-            }
-
-            $application_id = null;
-            if (!empty($application_hash)) {
-                $application = $wpdb->get_row($wpdb->prepare(
-                    "SELECT id FROM $applications_table WHERE hash_id LIKE %s LIMIT 1",
-                    $application_hash . '%'
-                ));
-                
-                if ($application) {
-                    $application_id = $application->id;
-                    $wpdb->update(
-                        $applications_table,
-                        ['is_called' => 1],
-                        ['id' => $application_id],
-                        ['%d'],
-                        ['%d']
-                    );
-                }
-            }
-
-            $existing = $wpdb->get_var($wpdb->prepare(
-                "SELECT id FROM $table_name WHERE application_hash = %s AND email = %s AND created_at = %s",
-                $application_hash,
-                $email,
-                $created_at
-            ));
-
-            if ($existing) {
-                continue;
-            }
-
-            $result = $wpdb->insert(
-                $table_name,
-                [
-                    'application_hash' => $application_hash,
-                    'application_id' => $application_id,
-                    'name' => $name,
-                    'email' => $email,
-                    'phone' => $phone,
-                    'message' => $message,
-                    'created_at' => $created_at
-                ],
-                ['%s', '%d', '%s', '%s', '%s', '%s', '%s']
-            );
-
-            if ($result !== false) {
-                $saved_count++;
-            }
-        }
-
-        if ($saved_count > 0) {
-            $delete_endpoint = $api_base . '/wp-json/bewerberboerse/v1/contact-requests/delete-all';
-
-            $delete_response = wp_remote_request($delete_endpoint, [
-                'method' => 'DELETE',
-                'timeout' => 30,
-                'sslverify' => false
-            ]);
-
-            if (!is_wp_error($delete_response)) {
-                $delete_code = wp_remote_retrieve_response_code($delete_response);
-                if ($delete_code === 200) {
-                    error_log("JBI Sync: Успешно синхронизировано $saved_count контактных запросов и удалено на удаленном сайте");
-                } else {
-                    error_log("JBI Sync: Сохранено $saved_count запросов, но не удалось удалить на удаленном сайте (код: $delete_code)");
-                }
-            } else {
-                error_log("JBI Sync: Сохранено $saved_count запросов, но ошибка при удалении: " . $delete_response->get_error_message());
-            }
-        }
-    }
-
-    private function migrate_add_is_called_column() {
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'neo_job_board_applications';
-        
-        $column_exists = $wpdb->get_results($wpdb->prepare(
-            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
-             WHERE TABLE_SCHEMA = %s 
-             AND TABLE_NAME = %s 
-             AND COLUMN_NAME = 'is_called'",
-            DB_NAME,
-            $table_name
-        ));
-        
-        if (empty($column_exists)) {
-            $wpdb->query("ALTER TABLE $table_name ADD COLUMN is_called tinyint(1) DEFAULT 0");
-            $wpdb->query("ALTER TABLE $table_name ADD INDEX idx_is_called (is_called)");
-        }
-    }
-    
-    private function migrate_remove_columns() {
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'neo_job_board_applications';
-        
-        $columns_to_drop = ['first_name', 'last_name', 'email', 'phone', 'status'];
-        
-        foreach ($columns_to_drop as $column) {
-            $column_exists = $wpdb->get_results($wpdb->prepare(
-                "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
-                 WHERE TABLE_SCHEMA = %s 
-                 AND TABLE_NAME = %s 
-                 AND COLUMN_NAME = %s",
-                DB_NAME,
-                $table_name,
-                $column
-            ));
-            
-            if (!empty($column_exists)) {
-                $wpdb->query("ALTER TABLE $table_name DROP COLUMN $column");
-            }
-        }
-        
-        $index_exists = $wpdb->get_results($wpdb->prepare(
-            "SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS 
-             WHERE TABLE_SCHEMA = %s 
-             AND TABLE_NAME = %s 
-             AND INDEX_NAME = 'idx_status'",
-            DB_NAME,
-            $table_name
-        ));
-        
-        if (!empty($index_exists)) {
-            $wpdb->query("ALTER TABLE $table_name DROP INDEX idx_status");
-        }
-        
-        $column_exists = $wpdb->get_results($wpdb->prepare(
-            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
-             WHERE TABLE_SCHEMA = %s 
-             AND TABLE_NAME = %s 
-             AND COLUMN_NAME = 'responsible_employee'
-             AND DATA_TYPE = 'varchar'",
-            DB_NAME,
-            $table_name
-        ));
-        
-        if (!empty($column_exists)) {
-            $wpdb->query("ALTER TABLE $table_name MODIFY COLUMN responsible_employee int(11) DEFAULT NULL");
-            $index_check = $wpdb->get_results($wpdb->prepare(
-                "SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS 
-                 WHERE TABLE_SCHEMA = %s 
-                 AND TABLE_NAME = %s 
-                 AND INDEX_NAME = 'idx_responsible_employee'",
-                DB_NAME,
-                $table_name
-            ));
-            
-            if (empty($index_check)) {
-                $wpdb->query("ALTER TABLE $table_name ADD INDEX idx_responsible_employee (responsible_employee)");
-            }
-        }
-    }
-
-    public function create_database_tables() {
-        global $wpdb;
-        $charset_collate = $wpdb->get_charset_collate();
-
-        $table_templates = $wpdb->prefix . 'neo_job_board_templates';
-        $sql_templates = "CREATE TABLE $table_templates (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            name varchar(255) NOT NULL,
-            description text,
-            fields longtext NOT NULL,
-            is_active tinyint(1) DEFAULT 1,
-            created_by int(11) DEFAULT NULL,
-            created_at datetime DEFAULT CURRENT_TIMESTAMP,
-            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            KEY idx_created_by (created_by)
-        ) $charset_collate;";
-
-        $table_applications = $wpdb->prefix . 'neo_job_board_applications';
-        $sql_applications = "CREATE TABLE $table_applications (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            hash_id varchar(32) NOT NULL UNIQUE,
-            template_id int(11) NOT NULL,
-            position varchar(255),
-            responsible_employee int(11) DEFAULT NULL,
-            is_active tinyint(1) DEFAULT 1,
-            is_called tinyint(1) DEFAULT 0,
-            application_data longtext DEFAULT NULL,
-            created_at datetime DEFAULT CURRENT_TIMESTAMP,
-            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            KEY idx_hash_id (hash_id),
-            KEY idx_template_id (template_id),
-            KEY idx_responsible_employee (responsible_employee),
-            KEY idx_created_at (created_at),
-            KEY idx_is_called (is_called)
-        ) $charset_collate;";
-
-        $table_application_data = $wpdb->prefix . 'neo_job_board_application_data';
-        $sql_application_data = "CREATE TABLE $table_application_data (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            application_id int(11) NOT NULL,
-            field_name varchar(100) NOT NULL,
-            field_value longtext,
-            field_type varchar(50) DEFAULT 'text',
-            is_personal tinyint(1) DEFAULT 0,
-            created_at datetime DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            KEY idx_application_id (application_id),
-            KEY idx_field_name (field_name)
-        ) $charset_collate;";
-
-        $table_application_details = $wpdb->prefix . 'neo_job_board_application_details';
-        $sql_application_details = "CREATE TABLE $table_application_details (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            application_id int(11) NOT NULL,
-            field_name varchar(100) NOT NULL,
-            field_value longtext,
-            created_at datetime DEFAULT CURRENT_TIMESTAMP,
-            updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            KEY idx_application_id (application_id),
-            KEY idx_field_name (field_name)
-        ) $charset_collate;";
-
-        $table_files = $wpdb->prefix . 'neo_job_board_files';
-        $sql_files = "CREATE TABLE $table_files (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            application_id int(11) NOT NULL,
-            field_name varchar(100) NOT NULL,
-            original_name varchar(255) NOT NULL,
-            file_path varchar(500) NOT NULL,
-            file_size int(11) DEFAULT 0,
-            file_type varchar(100),
-            created_at datetime DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            KEY idx_application_id (application_id)
-        ) $charset_collate;";
-
-        $table_api_logs = $wpdb->prefix . 'neo_job_board_api_logs';
-        $sql_api_logs = "CREATE TABLE $table_api_logs (
-            id int(11) NOT NULL AUTO_INCREMENT,
-            template_id int(11),
-            action varchar(50) NOT NULL,
-            endpoint varchar(255) NOT NULL,
-            method varchar(10) NOT NULL,
-            request_data longtext,
-            response_data longtext,
-            status_code int(11),
-            success tinyint(1) DEFAULT 0,
-            error_message text,
-            created_at datetime DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            KEY idx_template_id (template_id),
-            KEY idx_action (action),
-            KEY idx_success (success),
-            KEY idx_created_at (created_at)
-        ) $charset_collate;";
-
-        $table_contact_requests = $wpdb->prefix . 'neo_job_board_contact_requests';
-        $sql_contact_requests = "CREATE TABLE $table_contact_requests (
-            id bigint(20) NOT NULL AUTO_INCREMENT,
-            application_hash varchar(8) NOT NULL,
-            application_id int(11) DEFAULT NULL,
-            name varchar(255) NOT NULL,
-            email varchar(255) NOT NULL,
-            phone varchar(50) DEFAULT NULL,
-            message longtext DEFAULT NULL,
-            created_at datetime DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (id),
-            KEY idx_application_hash (application_hash),
-            KEY idx_application_id (application_id),
-            KEY idx_created_at (created_at)
-        ) $charset_collate;";
-
-        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-        dbDelta($sql_templates);
-        dbDelta($sql_applications);
-        dbDelta($sql_application_data);
-        dbDelta($sql_application_details);
-        dbDelta($sql_files);
-        dbDelta($sql_api_logs);
-        dbDelta($sql_contact_requests);
-    }
 
     public function render_templates_page() {
         $user = wp_get_current_user();
@@ -917,94 +560,12 @@ class Job_Board_Integration {
         $api_url = get_option('jbi_api_url');
         $api_key = get_option('jbi_api_key');
 
-        if (empty($api_url)) {
-            wp_send_json_error(['message' => 'Bitte geben Sie die API URL ein']);
-            return;
-        }
-
-        if (empty($api_key)) {
-            wp_send_json_error(['message' => 'Bitte geben Sie den API Key ein']);
-            return;
-        }
-
-        if (!filter_var($api_url, FILTER_VALIDATE_URL)) {
-            wp_send_json_error(['message' => 'Ungültige URL. Format: https://site.com/wp-json/bewerberboerse/v1']);
-            return;
-        }
-
-        $parsed_url = parse_url($api_url);
-        if (isset($parsed_url['host']) && ($parsed_url['host'] === 'localhost' || $parsed_url['host'] === '127.0.0.1')) {
-            $server_host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-            $clean_host = explode(':', $server_host)[0];
-            
-            $new_host = $clean_host;
-            if (isset($parsed_url['port'])) {
-                $new_host .= ':' . $parsed_url['port'];
-            }
-            
-            $api_url = ($parsed_url['scheme'] ?? 'http') . '://' . $new_host . ($parsed_url['path'] ?? '');
-        }
-
-        $test_url = rtrim($api_url, '/') . '/templates';
+        $result = \NeoJobBoard\API\Client::test_connection($api_url, $api_key);
         
-        $args = [
-            'headers' => [
-                'X-API-Key' => $api_key,
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json'
-            ],
-            'timeout' => 30,
-            'sslverify' => false,
-            'httpversion' => '1.1',
-            'blocking' => true
-        ];
-
-        $response = wp_remote_get($test_url, $args);
-
-        if (is_wp_error($response)) {
-            $error_message = $response->get_error_message();
-            $debug_info = [
-                'url' => $test_url,
-                'error' => $error_message,
-                'has_curl' => function_exists('curl_version') ? 'yes' : 'no'
-            ];
-            
-            wp_send_json_error([
-                'message' => 'Verbindung fehlgeschlagen: ' . $error_message,
-                'debug' => $debug_info
-            ]);
-            return;
-        }
-
-        $code = wp_remote_retrieve_response_code($response);
-        $body = wp_remote_retrieve_body($response);
-        
-        if ($code === 200) {
-            wp_send_json_success([
-                'message' => 'Verbindung erfolgreich! API antwortet (200)',
-                'url' => $test_url
-            ]);
-        } elseif ($code === 401) {
-            wp_send_json_error([
-                'message' => 'API Key ungültig (401). Prüfen Sie Ihren API Key.',
-                'url' => $test_url
-            ]);
-        } elseif ($code === 404) {
-            wp_send_json_error([
-                'message' => 'Endpoint nicht gefunden (404). URL: ' . $test_url,
-                'url' => $test_url
-            ]);
-        } elseif (empty($code)) {
-            wp_send_json_error([
-                'message' => 'Keine Antwort vom Server. Prüfen Sie die URL.',
-                'url' => $test_url
-            ]);
+        if ($result['success']) {
+            wp_send_json_success($result);
         } else {
-            wp_send_json_error([
-                'message' => 'API Fehler: HTTP ' . $code,
-                'url' => $test_url,
-                'body' => substr($body, 0, 200)
-            ]);
+            wp_send_json_error($result);
         }
     }
 
@@ -1213,7 +774,7 @@ class Job_Board_Integration {
                 return;
             }
 
-            $hash_id = $this->generate_unique_hash();
+            $hash_id = \NeoJobBoard\Core\Database::generate_unique_hash();
             
             $position = sanitize_text_field($fields_data['wunschposition'] ?? $fields_data['position'] ?? '');
             $responsible_employee = get_current_user_id();
@@ -1299,7 +860,7 @@ class Job_Board_Integration {
             $send_result = null;
             $auto_send = get_option('jbi_auto_send', 1);
             if ($auto_send) {
-                $send_result = $this->send_application($application_id, 'create');
+                $send_result = \NeoJobBoard\API\Client::send_application($application_id, 'create');
                 if (!$send_result['success']) {
                     $wpdb->update(
                         $wpdb->prefix . 'neo_job_board_applications',
@@ -1331,23 +892,6 @@ class Job_Board_Integration {
             error_log('JBI Error trace: ' . $e->getTraceAsString());
             wp_send_json_error(['message' => 'Fehler beim Erstellen der Bewerbung: ' . $e->getMessage()]);
         }
-    }
-
-    private function generate_unique_hash() {
-        global $wpdb;
-        $attempts = 0;
-        $max_attempts = 10;
-
-        do {
-            $hash = substr(md5(uniqid((string)rand(), true)), 0, 32);
-            $exists = $wpdb->get_var($wpdb->prepare(
-                "SELECT COUNT(*) FROM {$wpdb->prefix}neo_job_board_applications WHERE hash_id = %s",
-                $hash
-            ));
-            $attempts++;
-        } while ($exists > 0 && $attempts < $max_attempts);
-
-        return $hash;
     }
 
     public function ajax_get_applications() {
@@ -1540,9 +1084,7 @@ class Job_Board_Integration {
             return;
         }
 
-        // Сначала отправляем на API (с временными данными)
-        // Для этого нужно получить текущие данные приложения и подготовить payload с новыми данными
-        $send_result = $this->send_application_update_preview($application_id, $fields_data);
+        $send_result = \NeoJobBoard\API\Client::send_application_update_preview($application_id, $fields_data);
         
         if (!$send_result['success']) {
             wp_send_json_error(['message' => 'Fehler beim Senden an API: ' . $send_result['message']]);
@@ -1648,15 +1190,13 @@ class Job_Board_Integration {
             return;
         }
 
-        // Сначала отправляем на API с новым статусом
-        $send_result = $this->send_application_status_change($application_id, $is_active);
+        $send_result = \NeoJobBoard\API\Client::send_application_status_change($application_id, $is_active);
         
         if (!$send_result['success']) {
             wp_send_json_error(['message' => 'Fehler beim Senden an API: ' . $send_result['message']]);
             return;
         }
 
-        // Только после успешного ответа от API - обновляем локально
         $result = $wpdb->update(
             $wpdb->prefix . 'neo_job_board_applications',
             ['is_active' => $is_active, 'updated_at' => current_time('mysql')],
@@ -1706,7 +1246,7 @@ class Job_Board_Integration {
         $hash_id = $application->hash_id;
         
         // Сначала отправляем запрос на удаление в API
-        $send_result = $this->send_application_delete($application_id, $hash_id);
+        $send_result = \NeoJobBoard\API\Client::send_application_delete($application_id, $hash_id);
         
         if (!$send_result['success']) {
             wp_send_json_error(['message' => 'Fehler beim Senden an API: ' . $send_result['message']]);
@@ -1838,7 +1378,7 @@ class Job_Board_Integration {
             return;
         }
 
-        $send_result = $this->send_application($application_id, 'create');
+        $send_result = \NeoJobBoard\API\Client::send_application($application_id, 'create');
 
         if ($send_result['success']) {
             $wpdb->update(
@@ -1863,7 +1403,7 @@ class Job_Board_Integration {
         global $wpdb;
         $template_id = intval($_POST['template_id'] ?? 0);
         
-        $result = $this->send_template($template_id);
+        $result = \NeoJobBoard\API\Client::send_template($template_id);
         
         if ($result['success']) {
             $wpdb->update(
@@ -1887,7 +1427,7 @@ class Job_Board_Integration {
     public function auto_send_application($application_id) {
         $auto_send = get_option('jbi_auto_send', 1);
         if ($auto_send) {
-            $send_result = $this->send_application($application_id);
+            $send_result = \NeoJobBoard\API\Client::send_application($application_id);
             if (!$send_result['success']) {
                 global $wpdb;
                 $wpdb->update(
@@ -1901,460 +1441,6 @@ class Job_Board_Integration {
         }
     }
 
-    private function send_template($template_id) {
-        global $wpdb;
-        $template = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}neo_job_board_templates WHERE id = %d", $template_id));
-
-        if (!$template) {
-            $this->log('template', $template_id, 'error', 'Template nicht gefunden');
-            return ['success' => false, 'message' => 'Template nicht gefunden'];
-        }
-
-        $api_url = get_option('jbi_api_url');
-        $api_key = get_option('jbi_api_key');
-
-        if (empty($api_url) || empty($api_key)) {
-            $this->log('template', $template_id, 'error', 'API nicht konfiguriert');
-            return ['success' => false, 'message' => 'API nicht konfiguriert'];
-        }
-
-        $fields = json_decode($template->fields, true);
-        
-        if (empty($fields) || !is_array($fields)) {
-            $this->log('template', $template_id, 'error', 'Keine Felder im Template');
-            return ['success' => false, 'message' => 'Template hat keine Felder'];
-        }
-        
-        $formatted_data = $this->format_template_for_api($fields);
-        
-        $payload = [
-            'template_id' => $template_id,
-            'template_name' => $template->name,
-            'fields' => $formatted_data['fields'],
-            'filterable_fields' => $formatted_data['filterable_fields']
-        ];
-
-        error_log('JBI Template payload: ' . json_encode($payload, JSON_UNESCAPED_UNICODE));
-        
-        $endpoint = rtrim($api_url, '/') . '/templates/receive';
-        
-        $response = wp_remote_post($endpoint, [
-            'headers' => [
-                'X-API-Key' => $api_key,
-                'Content-Type' => 'application/json; charset=utf-8'
-            ],
-            'body' => json_encode($payload, JSON_UNESCAPED_UNICODE),
-            'timeout' => 30,
-            'sslverify' => false
-        ]);
-
-        if (is_wp_error($response)) {
-            $this->log('template', $template_id, 'error', $response->get_error_message());
-            return ['success' => false, 'message' => $response->get_error_message()];
-        }
-
-        $code = wp_remote_retrieve_response_code($response);
-        $body = wp_remote_retrieve_body($response);
-        
-        if ($code === 200 || $code === 201) {
-            $this->log('template', $template_id, 'success', 'Erfolgreich gesendet', $body);
-            return ['success' => true, 'message' => 'Template erfolgreich gesendet an ' . $endpoint];
-        } else {
-            $this->log('template', $template_id, 'error', 'Fehler ' . $code, $body);
-            return ['success' => false, 'message' => 'Fehler: ' . $code . ' - URL: ' . $endpoint . ' - Response: ' . substr($body, 0, 100)];
-        }
-    }
-
-    private function send_application_update_preview($application_id, $new_fields_data) {
-        try {
-            global $wpdb;
-            $application = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}neo_job_board_applications WHERE id = %d", $application_id));
-
-            if (!$application) {
-                $this->log('application', $application_id, 'error', 'Bewerbung nicht gefunden');
-                return ['success' => false, 'message' => 'Bewerbung nicht gefunden'];
-            }
-
-            $api_url = get_option('jbi_api_url');
-            $api_key = get_option('jbi_api_key');
-
-            if (empty($api_url) || empty($api_key)) {
-                $this->log('application', $application_id, 'error', 'API nicht konfiguriert');
-                return ['success' => false, 'message' => 'API nicht konfiguriert'];
-            }
-
-            $template = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}neo_job_board_templates WHERE id = %d", $application->template_id));
-            if (!$template) {
-                $this->log('application', $application_id, 'error', 'Template nicht gefunden');
-                return ['success' => false, 'message' => 'Template nicht gefunden'];
-            }
-
-            $template_fields = json_decode($template->fields, true);
-            if (!is_array($template_fields)) {
-                $template_fields = [];
-            }
-            
-            $hash = substr($application->hash_id, 0, 8);
-            
-            $private_field_map = [];
-            foreach ($template_fields as $tf) {
-                $field_name_in_template = strtolower(trim($tf['name'] ?? $tf['field_name'] ?? ''));
-                $field_label = strtolower(trim($tf['label'] ?? ''));
-                $is_private = !empty($tf['personal_data']);
-                
-                if ($field_name_in_template) {
-                    $private_field_map[$field_name_in_template] = $is_private;
-                }
-                if ($field_label) {
-                    $private_field_map[$field_label] = $is_private;
-                }
-            }
-            
-            $filled_data = [];
-            foreach ($new_fields_data as $field_name => $field_value) {
-                $field_name_lower = strtolower(trim($field_name));
-                
-                $is_personal = false;
-                if (isset($private_field_map[$field_name_lower])) {
-                    $is_personal = $private_field_map[$field_name_lower];
-                }
-                
-                if (!$is_personal) {
-                    $filled_data[$field_name] = is_array($field_value) ? $field_value : $field_value;
-                }
-            }
-
-            $payload = [
-                'template_id' => $application->template_id,
-                'hash' => $hash,
-                'filled_data' => $filled_data,
-                'action' => 'update',
-                'is_active' => $application->is_active ?? 1
-            ];
-
-            error_log('JBI Application update preview payload: ' . json_encode($payload, JSON_UNESCAPED_UNICODE));
-
-            $endpoint = rtrim($api_url, '/') . '/applications/receive';
-            
-            $response = wp_remote_post($endpoint, [
-                'headers' => [
-                    'X-API-Key' => $api_key,
-                    'Content-Type' => 'application/json; charset=utf-8'
-                ],
-                'body' => json_encode($payload, JSON_UNESCAPED_UNICODE),
-                'timeout' => 30,
-                'sslverify' => false
-            ]);
-
-            if (is_wp_error($response)) {
-                $this->log('application', $application_id, 'error', $response->get_error_message());
-                return ['success' => false, 'message' => $response->get_error_message()];
-            }
-
-            $code = wp_remote_retrieve_response_code($response);
-            $body = wp_remote_retrieve_body($response);
-            
-            if ($code === 200 || $code === 201) {
-                $this->log('application', $application_id, 'success', 'Update erfolgreich gesendet', $body);
-                return ['success' => true, 'message' => 'Bewerbung erfolgreich aktualisiert'];
-            } else {
-                $this->log('application', $application_id, 'error', 'Fehler ' . $code, $body);
-                return ['success' => false, 'message' => 'Fehler: ' . $code . ' - ' . substr($body, 0, 100)];
-            }
-        } catch (Exception $e) {
-            error_log('JBI Error in send_application_update_preview: ' . $e->getMessage());
-            error_log('JBI Error trace: ' . $e->getTraceAsString());
-            $this->log('application', $application_id, 'error', $e->getMessage());
-            return ['success' => false, 'message' => $e->getMessage()];
-        }
-    }
-
-    private function send_application_status_change($application_id, $new_is_active) {
-        try {
-            global $wpdb;
-            $application = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}neo_job_board_applications WHERE id = %d", $application_id));
-
-            if (!$application) {
-                $this->log('application', $application_id, 'error', 'Bewerbung nicht gefunden');
-                return ['success' => false, 'message' => 'Bewerbung nicht gefunden'];
-            }
-
-            $api_url = get_option('jbi_api_url');
-            $api_key = get_option('jbi_api_key');
-
-            if (empty($api_url) || empty($api_key)) {
-                $this->log('application', $application_id, 'error', 'API nicht konfiguriert');
-                return ['success' => false, 'message' => 'API nicht konfiguriert'];
-            }
-
-            $template = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}neo_job_board_templates WHERE id = %d", $application->template_id));
-            if (!$template) {
-                $this->log('application', $application_id, 'error', 'Template nicht gefunden');
-                return ['success' => false, 'message' => 'Template nicht gefunden'];
-            }
-
-            $template_fields = json_decode($template->fields, true);
-            if (!is_array($template_fields)) {
-                $template_fields = [];
-            }
-            
-            $hash = substr($application->hash_id, 0, 8);
-            $filled_data = $this->prepare_application_data($application_id, $template_fields);
-
-            $payload = [
-                'template_id' => $application->template_id,
-                'hash' => $hash,
-                'filled_data' => $filled_data,
-                'action' => 'update_status',
-                'is_active' => $new_is_active
-            ];
-
-            error_log('JBI Application status change payload: ' . json_encode($payload, JSON_UNESCAPED_UNICODE));
-
-            $endpoint = rtrim($api_url, '/') . '/applications/receive';
-            
-            $response = wp_remote_post($endpoint, [
-                'headers' => [
-                    'X-API-Key' => $api_key,
-                    'Content-Type' => 'application/json; charset=utf-8'
-                ],
-                'body' => json_encode($payload, JSON_UNESCAPED_UNICODE),
-                'timeout' => 30,
-                'sslverify' => false
-            ]);
-
-            if (is_wp_error($response)) {
-                $this->log('application', $application_id, 'error', $response->get_error_message());
-                return ['success' => false, 'message' => $response->get_error_message()];
-            }
-
-            $code = wp_remote_retrieve_response_code($response);
-            $body = wp_remote_retrieve_body($response);
-            
-            if ($code === 200 || $code === 201) {
-                $this->log('application', $application_id, 'success', 'Statusänderung erfolgreich gesendet', $body);
-                return ['success' => true, 'message' => 'Status erfolgreich geändert'];
-            } else {
-                $this->log('application', $application_id, 'error', 'Fehler ' . $code, $body);
-                return ['success' => false, 'message' => 'Fehler: ' . $code . ' - ' . substr($body, 0, 100)];
-            }
-        } catch (Exception $e) {
-            error_log('JBI Error in send_application_status_change: ' . $e->getMessage());
-            error_log('JBI Error trace: ' . $e->getTraceAsString());
-            $this->log('application', $application_id, 'error', $e->getMessage());
-            return ['success' => false, 'message' => $e->getMessage()];
-        }
-    }
-
-    private function send_application($application_id, $action = 'create') {
-        try {
-            global $wpdb;
-            $application = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}neo_job_board_applications WHERE id = %d", $application_id));
-
-            if (!$application) {
-                $this->log('application', $application_id, 'error', 'Bewerbung nicht gefunden');
-                return ['success' => false, 'message' => 'Bewerbung nicht gefunden'];
-            }
-
-            $api_url = get_option('jbi_api_url');
-            $api_key = get_option('jbi_api_key');
-
-            if (empty($api_url) || empty($api_key)) {
-                $this->log('application', $application_id, 'error', 'API nicht konfiguriert');
-                return ['success' => false, 'message' => 'API nicht konfiguriert'];
-            }
-
-            $template = $wpdb->get_row($wpdb->prepare("SELECT * FROM {$wpdb->prefix}neo_job_board_templates WHERE id = %d", $application->template_id));
-            if (!$template) {
-                $this->log('application', $application_id, 'error', 'Template nicht gefunden');
-                return ['success' => false, 'message' => 'Template nicht gefunden'];
-            }
-
-            $template_fields = json_decode($template->fields, true);
-            if (!is_array($template_fields)) {
-                $template_fields = [];
-            }
-            
-            $hash = substr($application->hash_id, 0, 8);
-            $filled_data = $this->prepare_application_data($application_id, $template_fields);
-
-            $payload = [
-                'template_id' => $application->template_id,
-                'hash' => $hash,
-                'filled_data' => $filled_data,
-                'action' => $action,
-                'is_active' => $application->is_active ?? 1
-            ];
-
-            if ($action === 'update_status') {
-                $payload['is_active'] = $application->is_active;
-            }
-
-            error_log('JBI Application payload: ' . json_encode($payload, JSON_UNESCAPED_UNICODE));
-
-            $endpoint = rtrim($api_url, '/') . '/applications/receive';
-            
-            $response = wp_remote_post($endpoint, [
-                'headers' => [
-                    'X-API-Key' => $api_key,
-                    'Content-Type' => 'application/json; charset=utf-8'
-                ],
-                'body' => json_encode($payload, JSON_UNESCAPED_UNICODE),
-                'timeout' => 30,
-                'sslverify' => false
-            ]);
-
-            if (is_wp_error($response)) {
-                $this->log('application', $application_id, 'error', $response->get_error_message());
-                return ['success' => false, 'message' => $response->get_error_message()];
-            }
-
-            $code = wp_remote_retrieve_response_code($response);
-            $body = wp_remote_retrieve_body($response);
-            
-            if ($code === 200 || $code === 201) {
-                $this->log('application', $application_id, 'success', 'Erfolgreich gesendet', $body);
-                return ['success' => true, 'message' => 'Bewerbung erfolgreich gesendet'];
-            } else {
-                $this->log('application', $application_id, 'error', 'Fehler ' . $code, $body);
-                return ['success' => false, 'message' => 'Fehler: ' . $code . ' - ' . substr($body, 0, 100)];
-            }
-        } catch (Exception $e) {
-            error_log('JBI Error in send_application: ' . $e->getMessage());
-            error_log('JBI Error trace: ' . $e->getTraceAsString());
-            $this->log('application', $application_id, 'error', $e->getMessage());
-            return ['success' => false, 'message' => $e->getMessage()];
-        }
-    }
-
-    private function send_application_delete($application_id, $hash_id) {
-        try {
-            $api_url = get_option('jbi_api_url');
-            $api_key = get_option('jbi_api_key');
-
-            if (empty($api_url) || empty($api_key)) {
-                $this->log('application', $application_id, 'error', 'API nicht konfiguriert');
-                return ['success' => false, 'message' => 'API nicht konfiguriert'];
-            }
-
-            $hash = substr($hash_id, 0, 8);
-            $payload = [
-                'hash' => $hash,
-                'action' => 'delete'
-            ];
-
-            error_log('JBI Application delete payload: ' . json_encode($payload, JSON_UNESCAPED_UNICODE));
-
-            $endpoint = rtrim($api_url, '/') . '/applications/receive';
-            
-            $response = wp_remote_post($endpoint, [
-                'headers' => [
-                    'X-API-Key' => $api_key,
-                    'Content-Type' => 'application/json; charset=utf-8'
-                ],
-                'body' => json_encode($payload, JSON_UNESCAPED_UNICODE),
-                'timeout' => 30,
-                'sslverify' => false
-            ]);
-
-            if (is_wp_error($response)) {
-                $this->log('application', $application_id, 'error', $response->get_error_message());
-                return ['success' => false, 'message' => $response->get_error_message()];
-            }
-
-            $code = wp_remote_retrieve_response_code($response);
-            $body = wp_remote_retrieve_body($response);
-            
-            if ($code === 200 || $code === 201 || $code === 204) {
-                $this->log('application', $application_id, 'success', 'Erfolgreich gelöscht', $body);
-                return ['success' => true, 'message' => 'Bewerbung erfolgreich gelöscht'];
-            } else {
-                $this->log('application', $application_id, 'error', 'Fehler ' . $code, $body);
-                return ['success' => false, 'message' => 'Fehler: ' . $code . ' - ' . substr($body, 0, 100)];
-            }
-        } catch (Exception $e) {
-            error_log('JBI Error in send_application_delete: ' . $e->getMessage());
-            $this->log('application', $application_id, 'error', $e->getMessage());
-            return ['success' => false, 'message' => $e->getMessage()];
-        }
-    }
-
-    private function format_template_for_api($fields) {
-        $formatted_fields = [];
-        $filterable_fields = [];
-        
-        foreach ($fields as $index => $field) {
-            $field_name = $field['label'] ?? '';
-            $field_type = $field['type'] ?? 'text';
-            
-            $formatted_fields[] = [
-                'field_id' => 'field_' . ($index + 1),
-                'name' => $field_name,
-                'type' => $field_type,
-                'label' => $field_name,
-                'required' => $field['required'] ?? false,
-                'is_personal_data' => $field['personal_data'] ?? false,
-                'is_system_field' => false
-            ];
-            
-            if (!empty($field['filterable'])) {
-                $filterable_fields[] = $field_name;
-            }
-        }
-        
-        return [
-            'fields' => $formatted_fields,
-            'filterable_fields' => $filterable_fields
-        ];
-    }
-
-    private function prepare_application_data($application_id, $template_fields) {
-        global $wpdb;
-        
-        $application_data = $wpdb->get_results(
-            $wpdb->prepare("SELECT * FROM {$wpdb->prefix}neo_job_board_application_data WHERE application_id = %d", $application_id),
-            ARRAY_A
-        );
-
-        $data = [];
-        foreach ($application_data as $row) {
-            $field_name = $row['field_name'] ?? '';
-            $field_value = $row['field_value'] ?? '';
-            $is_personal = intval($row['is_personal'] ?? 0);
-            
-            if ($is_personal === 1) {
-                continue;
-            }
-            
-            $decoded = json_decode($field_value, true);
-            if ($decoded !== null && is_array($decoded)) {
-                $data[$field_name] = $decoded;
-            } else {
-                $data[$field_name] = $field_value;
-            }
-        }
-
-        return $data;
-    }
-
-    private function log($type, $entity_id, $status, $message, $response_data = null) {
-        global $wpdb;
-        $wpdb->insert(
-            $wpdb->prefix . 'neo_job_board_api_logs',
-            [
-                'template_id' => $entity_id,
-                'action' => $type,
-                'endpoint' => get_option('jbi_api_url'),
-                'method' => 'POST',
-                'request_data' => $message,
-                'response_data' => $response_data,
-                'status_code' => 0,
-                'success' => $status === 'success' ? 1 : 0,
-                'error_message' => $status === 'error' ? $message : null
-            ],
-            ['%d', '%s', '%s', '%s', '%s', '%s', '%d', '%d', '%s']
-        );
-    }
 }
 
 new Job_Board_Integration();
