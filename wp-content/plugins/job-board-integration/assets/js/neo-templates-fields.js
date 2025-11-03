@@ -220,11 +220,29 @@ window.NeoTemplatesFields = (function($) {
             const $field = $(`#${fieldId}`);
             
             if ($field.hasClass('border-primary') || $field.hasClass('border-success') || $field.data('field-name')) {
-                alert('System- und Spezialfelder können nicht entfernt werden!');
+                if (window.NeoDash && window.NeoDash.toastError) {
+                    NeoDash.toastError('System- und Spezialfelder können nicht entfernt werden!');
+                } else {
+                    alert('System- und Spezialfelder können nicht entfernt werden!');
+                }
                 return;
             }
             
-            if (confirm('Sind Sie sicher, dass Sie dieses Feld entfernen möchten?')) {
+            const self = this;
+            if (window.NeoDash && window.NeoDash.confirm) {
+                NeoDash.confirm('Sind Sie sicher, dass Sie dieses Feld entfernen möchten?', {
+                    type: 'warning',
+                    title: 'Bestätigung des Löschens',
+                    confirmText: 'Löschen',
+                    cancelText: 'Abbrechen'
+                }).then((confirmed) => {
+                    if (confirmed) {
+                        $field.fadeOut(300, function() {
+                            $(this).remove();
+                        });
+                    }
+                });
+            } else if (confirm('Sind Sie sicher, dass Sie dieses Feld entfernen möchten?')) {
                 $field.fadeOut(300, function() {
                     $(this).remove();
                 });

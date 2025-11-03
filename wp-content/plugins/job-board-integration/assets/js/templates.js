@@ -279,17 +279,36 @@
         },
 
         removeField: function(fieldId) {
-            // Проверяем, не является ли это полем Name
             const $field = $(`#${fieldId}`);
             if ($field.hasClass('border-primary')) {
-                alert('Das Name-Feld kann nicht gelöscht werden');
+                if (window.NeoDash && window.NeoDash.toastError) {
+                    NeoDash.toastError('Das Name-Feld kann nicht gelöscht werden');
+                } else {
+                    alert('Das Name-Feld kann nicht gelöscht werden');
+                }
                 return;
             }
             
-            if (confirm(jbiAjax.strings.confirm_delete)) {
-                $(`#${fieldId}`).fadeOut(300, function() {
-                    $(this).remove();
+            const self = this;
+            if (window.NeoDash && window.NeoDash.confirm) {
+                NeoDash.confirm(jbiAjax.strings.confirm_delete, {
+                    type: 'warning',
+                    title: 'Bestätigung des Löschens',
+                    confirmText: 'Löschen',
+                    cancelText: 'Abbrechen'
+                }).then((confirmed) => {
+                    if (confirmed) {
+                        $(`#${fieldId}`).fadeOut(300, function() {
+                            $(this).remove();
+                        });
+                    }
                 });
+            } else {
+                if (confirm(jbiAjax.strings.confirm_delete)) {
+                    $(`#${fieldId}`).fadeOut(300, function() {
+                        $(this).remove();
+                    });
+                }
             }
         },
 
@@ -311,12 +330,20 @@
 
             $.post(jbiAjax.ajaxurl, data, (response) => {
                 if (response.success) {
-                    alert(response.data.message);
+                    if (window.NeoDash && window.NeoDash.toastSuccess) {
+                        NeoDash.toastSuccess(response.data.message);
+                    } else {
+                        alert(response.data.message);
+                    }
                     $('#templateModal').modal('hide');
                     $('#templates-table').DataTable().ajax.reload();
                     this.resetForm();
                 } else {
-                    alert(response.data.message || jbiAjax.strings.error);
+                    if (window.NeoDash && window.NeoDash.toastError) {
+                        NeoDash.toastError(response.data.message || jbiAjax.strings.error);
+                    } else {
+                        alert(response.data.message || jbiAjax.strings.error);
+                    }
                 }
             });
         },
@@ -376,41 +403,107 @@
         },
 
         sendTemplate: function(templateId) {
-            if (!confirm('Möchten Sie diese Vorlage an die externe API senden?')) {
-                return;
-            }
+            const self = this;
+            if (window.NeoDash && window.NeoDash.confirm) {
+                NeoDash.confirm('Möchten Sie diese Vorlage an die externe API senden?', {
+                    type: 'info',
+                    title: 'Senden des Templates',
+                    confirmText: 'Senden',
+                    cancelText: 'Abbrechen'
+                }).then((confirmed) => {
+                    if (!confirmed) return;
 
-            $.post(jbiAjax.ajaxurl, {
-                action: 'jbi_send_template',
-                nonce: jbiAjax.nonce,
-                template_id: templateId
-            }, (response) => {
-                if (response.success) {
-                    alert(response.data.message);
-                    $('#templates-table').DataTable().ajax.reload();
-                } else {
-                    alert(response.data.message || jbiAjax.strings.error);
+                    $.post(jbiAjax.ajaxurl, {
+                        action: 'jbi_send_template',
+                        nonce: jbiAjax.nonce,
+                        template_id: templateId
+                    }, (response) => {
+                        if (response.success) {
+                            if (window.NeoDash && window.NeoDash.toastSuccess) {
+                                NeoDash.toastSuccess(response.data.message);
+                            } else {
+                                alert(response.data.message);
+                            }
+                            $('#templates-table').DataTable().ajax.reload();
+                        } else {
+                            if (window.NeoDash && window.NeoDash.toastError) {
+                                NeoDash.toastError(response.data.message || jbiAjax.strings.error);
+                            } else {
+                                alert(response.data.message || jbiAjax.strings.error);
+                            }
+                        }
+                    });
+                });
+            } else {
+                if (!confirm('Möchten Sie diese Vorlage an die externe API senden?')) {
+                    return;
                 }
-            });
+
+                $.post(jbiAjax.ajaxurl, {
+                    action: 'jbi_send_template',
+                    nonce: jbiAjax.nonce,
+                    template_id: templateId
+                }, (response) => {
+                    if (response.success) {
+                        alert(response.data.message);
+                        $('#templates-table').DataTable().ajax.reload();
+                    } else {
+                        alert(response.data.message || jbiAjax.strings.error);
+                    }
+                });
+            }
         },
 
         deleteTemplate: function(templateId) {
-            if (!confirm(jbiAjax.strings.confirm_delete)) {
-                return;
-            }
+            const self = this;
+            if (window.NeoDash && window.NeoDash.confirm) {
+                NeoDash.confirm(jbiAjax.strings.confirm_delete, {
+                    type: 'danger',
+                    title: 'Bestätigung des Löschens',
+                    confirmText: 'Löschen',
+                    cancelText: 'Abbrechen'
+                }).then((confirmed) => {
+                    if (!confirmed) return;
 
-            $.post(jbiAjax.ajaxurl, {
-                action: 'jbi_delete_template',
-                nonce: jbiAjax.nonce,
-                template_id: templateId
-            }, (response) => {
-                if (response.success) {
-                    alert(response.data.message);
-                    $('#templates-table').DataTable().ajax.reload();
-                } else {
-                    alert(response.data.message || jbiAjax.strings.error);
+                    $.post(jbiAjax.ajaxurl, {
+                        action: 'jbi_delete_template',
+                        nonce: jbiAjax.nonce,
+                        template_id: templateId
+                    }, (response) => {
+                        if (response.success) {
+                            if (window.NeoDash && window.NeoDash.toastSuccess) {
+                                NeoDash.toastSuccess(response.data.message);
+                            } else {
+                                alert(response.data.message);
+                            }
+                            $('#templates-table').DataTable().ajax.reload();
+                        } else {
+                            if (window.NeoDash && window.NeoDash.toastError) {
+                                NeoDash.toastError(response.data.message || jbiAjax.strings.error);
+                            } else {
+                                alert(response.data.message || jbiAjax.strings.error);
+                            }
+                        }
+                    });
+                });
+            } else {
+                if (!confirm(jbiAjax.strings.confirm_delete)) {
+                    return;
                 }
-            });
+
+                $.post(jbiAjax.ajaxurl, {
+                    action: 'jbi_delete_template',
+                    nonce: jbiAjax.nonce,
+                    template_id: templateId
+                }, (response) => {
+                    if (response.success) {
+                        alert(response.data.message);
+                        $('#templates-table').DataTable().ajax.reload();
+                    } else {
+                        alert(response.data.message || jbiAjax.strings.error);
+                    }
+                });
+            }
         }
     };
 

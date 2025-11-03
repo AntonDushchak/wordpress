@@ -66,7 +66,7 @@ class Neo_Domain_Changer {
                 <div style="padding: 20px;">
                     <p><strong>Aktuelle Domain:</strong> <?php echo esc_html($current_domain); ?></p>
                     
-                    <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
+                    <form method="post" action="<?php echo admin_url('admin-post.php'); ?>" id="neo-domain-changer-form">
                         <input type="hidden" name="action" value="change_domain">
                         <?php wp_nonce_field('change_domain_nonce'); ?>
                         
@@ -90,11 +90,42 @@ class Neo_Domain_Changer {
                         </table>
                         
                         <p class="submit">
-                            <button type="submit" class="button button-primary" onclick="return confirm('Sind Sie sicher, dass Sie die Domain ändern möchten?');">
+                            <button type="submit" class="button button-primary" id="neo-domain-changer-submit">
                                 Domain ändern
                             </button>
                         </p>
                     </form>
+                    <script>
+                    (function() {
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const form = document.getElementById('neo-domain-changer-form');
+                            const submitBtn = document.getElementById('neo-domain-changer-submit');
+                            
+                            if (!form || !submitBtn) return;
+                            
+                            form.addEventListener('submit', function(e) {
+                                e.preventDefault();
+                                
+                                if (window.NeoDash && window.NeoDash.confirm) {
+                                    NeoDash.confirm('Sind Sie sicher, dass Sie die Domain ändern möchten?', {
+                                        type: 'warning',
+                                        title: 'Bestätigung der Änderung der Domain',
+                                        confirmText: 'Ändern',
+                                        cancelText: 'Abbrechen'
+                                    }).then((confirmed) => {
+                                        if (confirmed) {
+                                            form.submit();
+                                        }
+                                    });
+                                } else {
+                                    if (confirm('Sind Sie sicher, dass Sie die Domain ändern möchten?')) {
+                                        form.submit();
+                                    }
+                                }
+                            });
+                        });
+                    })();
+                    </script>
                 </div>
             </div>
         </div>

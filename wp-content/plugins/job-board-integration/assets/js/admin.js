@@ -25,9 +25,17 @@
 
             $.post(jbiAjax.ajaxurl, formData, function(response) {
                 if (response.success) {
-                    alert(jbiAjax.strings.success + ': ' + response.data.message);
+                    if (window.NeoDash && window.NeoDash.toastSuccess) {
+                        NeoDash.toastSuccess(jbiAjax.strings.success + ': ' + response.data.message);
+                    } else {
+                        alert(jbiAjax.strings.success + ': ' + response.data.message);
+                    }
                 } else {
-                    alert(jbiAjax.strings.error + ': ' + response.data.message);
+                    if (window.NeoDash && window.NeoDash.toastError) {
+                        NeoDash.toastError(jbiAjax.strings.error + ': ' + response.data.message);
+                    } else {
+                        alert(jbiAjax.strings.error + ': ' + response.data.message);
+                    }
                 }
             });
         },

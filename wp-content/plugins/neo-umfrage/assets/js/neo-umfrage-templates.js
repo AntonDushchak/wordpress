@@ -232,7 +232,15 @@
         },
 
         deactivateTemplate: function (templateId) {
-            if (confirm('Sind Sie sicher, dass Sie diese Vorlage deaktivieren möchten? Die Vorlage wird nicht in Listen angezeigt, aber bestehende Umfragen bleiben erhalten.')) {
+            const self = this;
+            if (window.NeoDash && window.NeoDash.confirm) {
+                NeoDash.confirm('Sind Sie sicher, dass Sie diese Vorlage deaktivieren möchten? Die Vorlage wird nicht in Listen angezeigt, aber bestehende Umfragen bleiben erhalten.', {
+                    type: 'warning',
+                    title: 'Bestätigung der Deaktivierung',
+                    confirmText: 'Deaktivieren',
+                    cancelText: 'Abbrechen'
+                }).then((confirmed) => {
+                    if (!confirmed) return;
                 $.ajax({
                     url: neoUmfrageAjax.ajaxurl,
                     type: 'POST',
@@ -254,6 +262,31 @@
                         }
                     }
                 });
+                });
+            } else {
+                if (confirm('Sind Sie sicher, dass Sie diese Vorlage deaktivieren möchten? Die Vorlage wird nicht in Listen angezeigt, aber bestehende Umfragen bleiben erhalten.')) {
+                    $.ajax({
+                        url: neoUmfrageAjax.ajaxurl,
+                        type: 'POST',
+                        data: {
+                            action: 'neo_umfrage_deactivate_template',
+                            nonce: neoUmfrageAjax.nonce,
+                            template_id: templateId
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                NeoUmfrage.showMessage('success', response.data.message);
+                                if ($.fn.DataTable && $('#templates-table').length) {
+                                    $('#templates-table').DataTable().ajax.reload();
+                                } else {
+                                    NeoUmfrageTemplates.loadTemplates();
+                                }
+                            } else {
+                                NeoUmfrage.showMessage('error', response.data.message || neoUmfrageAjax.strings.error);
+                            }
+                        }
+                    });
+                }
             }
         },
 

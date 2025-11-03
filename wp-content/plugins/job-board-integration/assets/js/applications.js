@@ -262,7 +262,11 @@
                         }, 200);
                     } else {
                         $('#application-fields-container').hide();
-                        alert('Kein aktives Template gefunden. Bitte erstellen und aktivieren Sie zuerst ein Template.');
+                        if (window.NeoDash && window.NeoDash.toastWarning) {
+                            NeoDash.toastWarning('Kein aktives Template gefunden. Bitte erstellen und aktivieren Sie zuerst ein Template.');
+                        } else {
+                            alert('Kein aktives Template gefunden. Bitte erstellen und aktivieren Sie zuerst ein Template.');
+                        }
                     }
                 }
             });
@@ -845,12 +849,20 @@
 
             $.post(jbiAjax.ajaxurl, postData, (response) => {
                 if (response.success) {
-                    alert(response.data.message || 'Erfolgreich gespeichert');
+                    if (window.NeoDash && window.NeoDash.toastSuccess) {
+                        NeoDash.toastSuccess(response.data.message || 'Erfolgreich gespeichert');
+                    } else {
+                        alert(response.data.message || 'Erfolgreich gespeichert');
+                    }
                     $('#applicationModal').modal('hide');
                     $('#applications-table').DataTable().ajax.reload();
                     this.resetForm();
                 } else {
-                    alert(response.data.message || jbiAjax.strings.error);
+                    if (window.NeoDash && window.NeoDash.toastError) {
+                        NeoDash.toastError(response.data.message || jbiAjax.strings.error);
+                    } else {
+                        alert(response.data.message || jbiAjax.strings.error);
+                    }
                 }
             });
         },
@@ -897,7 +909,11 @@
                         $('#applications-table').DataTable().ajax.reload();
                     }
                 } else {
-                    alert('Fehler beim Laden der Bewerbung');
+                    if (window.NeoDash && window.NeoDash.toastError) {
+                        NeoDash.toastError('Fehler beim Laden der Bewerbung');
+                    } else {
+                        alert('Fehler beim Laden der Bewerbung');
+                    }
                 }
             });
         },
@@ -1047,31 +1063,76 @@
                 if (response.success) {
                     $('#applications-table').DataTable().ajax.reload();
                 } else {
-                    alert(response.data?.message || 'Fehler beim Ändern des Status');
+                    if (window.NeoDash && window.NeoDash.toastError) {
+                        NeoDash.toastError(response.data?.message || 'Fehler beim Ändern des Status');
+                    } else {
+                        alert(response.data?.message || 'Fehler beim Ändern des Status');
+                    }
                 }
             });
         },
 
         deleteApplication: function(applicationId) {
-            if (!confirm('Möchten Sie diese Bewerbung wirklich löschen?')) {
-                return;
-            }
+            const self = this;
+            if (window.NeoDash && window.NeoDash.confirm) {
+                NeoDash.confirm('Möchten Sie diese Bewerbung wirklich löschen?', {
+                    type: 'danger',
+                    title: 'Bestätigung des Löschens',
+                    confirmText: 'Löschen',
+                    cancelText: 'Abbrechen'
+                }).then((confirmed) => {
+                    if (!confirmed) return;
 
-            const jobFound = confirm('Hat der Kandidat eine Stelle gefunden?');
-            
-            $.post(jbiAjax.ajaxurl, {
-                action: 'jbi_delete_application',
-                nonce: jbiAjax.nonce,
-                application_id: applicationId,
-                job_found: jobFound ? 1 : 0
-            }, (response) => {
-                if (response.success) {
-                    alert(response.data?.message || 'Bewerbung erfolgreich gelöscht');
-                    $('#applications-table').DataTable().ajax.reload();
-                } else {
-                    alert(response.data?.message || 'Fehler beim Löschen');
+                    NeoDash.confirm('Hat der Kandidat eine Stelle gefunden?', {
+                        type: 'info',
+                        title: 'Informationen über den Kandidaten',
+                        confirmText: 'Ja',
+                        cancelText: 'Nein'
+                    }).then((jobFound) => {
+                        $.post(jbiAjax.ajaxurl, {
+                            action: 'jbi_delete_application',
+                            nonce: jbiAjax.nonce,
+                            application_id: applicationId,
+                            job_found: jobFound ? 1 : 0
+                        }, (response) => {
+                            if (response.success) {
+                                if (window.NeoDash && window.NeoDash.toastSuccess) {
+                                    NeoDash.toastSuccess(response.data?.message || 'Bewerbung erfolgreich gelöscht');
+                                } else {
+                                    alert(response.data?.message || 'Bewerbung erfolgreich gelöscht');
+                                }
+                                $('#applications-table').DataTable().ajax.reload();
+                            } else {
+                                if (window.NeoDash && window.NeoDash.toastError) {
+                                    NeoDash.toastError(response.data?.message || 'Fehler beim Löschen');
+                                } else {
+                                    alert(response.data?.message || 'Fehler beim Löschen');
+                                }
+                            }
+                        });
+                    });
+                });
+            } else {
+                if (!confirm('Möchten Sie diese Bewerbung wirklich löschen?')) {
+                    return;
                 }
-            });
+
+                const jobFound = confirm('Hat der Kandidat eine Stelle gefunden?');
+                
+                $.post(jbiAjax.ajaxurl, {
+                    action: 'jbi_delete_application',
+                    nonce: jbiAjax.nonce,
+                    application_id: applicationId,
+                    job_found: jobFound ? 1 : 0
+                }, (response) => {
+                    if (response.success) {
+                        alert(response.data?.message || 'Bewerbung erfolgreich gelöscht');
+                        $('#applications-table').DataTable().ajax.reload();
+                    } else {
+                        alert(response.data?.message || 'Fehler beim Löschen');
+                    }
+                });
+            }
         },
 
         viewApplication: function(applicationId) {
@@ -1085,10 +1146,18 @@
                 application_id: applicationId
             }, (response) => {
                 if (response.success) {
-                    alert(response.data?.message || 'Bewerbung erfolgreich synchronisiert');
+                    if (window.NeoDash && window.NeoDash.toastSuccess) {
+                        NeoDash.toastSuccess(response.data?.message || 'Bewerbung erfolgreich synchronisiert');
+                    } else {
+                        alert(response.data?.message || 'Bewerbung erfolgreich synchronisiert');
+                    }
                     $('#applications-table').DataTable().ajax.reload();
                 } else {
-                    alert(response.data?.message || 'Fehler beim Synchronisieren');
+                    if (window.NeoDash && window.NeoDash.toastError) {
+                        NeoDash.toastError(response.data?.message || 'Fehler beim Synchronisieren');
+                    } else {
+                        alert(response.data?.message || 'Fehler beim Synchronisieren');
+                    }
                 }
             });
         }

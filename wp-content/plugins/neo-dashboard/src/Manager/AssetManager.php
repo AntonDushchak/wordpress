@@ -65,6 +65,8 @@ final class AssetManager
         $this->enqueueLocalAsset('assets/dashboard.css', 'style', 'neo-dashboard-core', ['neo-dashboard-bootstrap']);
         $this->enqueueLocalAsset('assets/js/dashboard.js', 'script', 'neo-dashboard-core', ['neo-dashboard-bootstrap']);
         $this->enqueueLocalAsset('assets/js/notifications.js', 'script', 'neo-dashboard-notifications', ['neo-dashboard-core']);
+        $this->enqueueLocalAsset('assets/js/confirm.js', 'script', 'neo-dashboard-confirm', ['neo-dashboard-bootstrap']);
+        $this->enqueueLocalAsset('assets/js/toast.js', 'script', 'neo-dashboard-toast', ['neo-dashboard-bootstrap']);
     }
 
     private function enqueueCDNAssets(): void

@@ -152,7 +152,11 @@ window.NeoJobForm = (function($) {
                 button.closest('.experience-item').remove();
                 this.updateExperienceNumbers();
             } else {
-                alert('Es muss mindestens eine Berufserfahrung angegeben werden');
+                if (window.NeoDash && window.NeoDash.toastWarning) {
+                    NeoDash.toastWarning('Es muss mindestens eine Berufserfahrung angegeben werden');
+                } else {
+                    alert('Es muss mindestens eine Berufserfahrung angegeben werden');
+                }
             }
         },
         
@@ -213,7 +217,11 @@ window.NeoJobForm = (function($) {
                 button.closest('.education-item').remove();
                 this.updateEducationNumbers();
             } else {
-                alert('Es muss mindestens eine Bildung angegeben werden');
+                if (window.NeoDash && window.NeoDash.toastWarning) {
+                    NeoDash.toastWarning('Es muss mindestens eine Bildung angegeben werden');
+                } else {
+                    alert('Es muss mindestens eine Bildung angegeben werden');
+                }
             }
         },
         

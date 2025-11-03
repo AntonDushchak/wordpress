@@ -193,7 +193,11 @@ window.NeoTemplatesModal = (function($) {
             const name = $('#template-name').val().trim();
             if (!name) {
                 $('#template-name').addClass('is-invalid');
-                alert('Bitte geben Sie einen Vorlagennamen ein.');
+                if (window.NeoDash && window.NeoDash.toastWarning) {
+                    NeoDash.toastWarning('Bitte geben Sie einen Vorlagennamen ein.');
+                } else {
+                    alert('Bitte geben Sie einen Vorlagennamen ein.');
+                }
                 return;
             }
             
@@ -242,13 +246,21 @@ window.NeoTemplatesModal = (function($) {
                         try {
                             parsedResponse = JSON.parse(response);
                         } catch (e) {
-                            alert('Сервер вернул неверный формат ответа: ' + response.substring(0, 200));
+                            if (window.NeoDash && window.NeoDash.toastError) {
+                                NeoDash.toastError('Der Server hat einen ungültigen Antwortformat zurückgegeben: ' + response.substring(0, 200));
+                            } else {
+                                alert('Der Server hat einen ungültigen Antwortformat zurückgegeben: ' + response.substring(0, 200));
+                            }
                             return;
                         }
                     }
                     
                     if (parsedResponse.success) {
-                        alert('Vorlage erfolgreich gespeichert!');
+                        if (window.NeoDash && window.NeoDash.toastSuccess) {
+                            NeoDash.toastSuccess('Vorlage erfolgreich gespeichert!');
+                        } else {
+                            alert('Vorlage erfolgreich gespeichert!');
+                        }
                         this.closeModal();
                         
                         setTimeout(function() {
@@ -279,11 +291,19 @@ window.NeoTemplatesModal = (function($) {
                             }
                         }, 500);
                     } else {
-                        alert('Fehler beim Speichern: ' + (parsedResponse.data || 'Unbekannter Fehler'));
+                        if (window.NeoDash && window.NeoDash.toastError) {
+                            NeoDash.toastError('Fehler beim Speichern: ' + (parsedResponse.data || 'Unbekannter Fehler'));
+                        } else {
+                            alert('Fehler beim Speichern: ' + (parsedResponse.data || 'Unbekannter Fehler'));
+                        }
                     }
                 },
                 error: (xhr, status, error) => {
-                    alert('AJAX Fehler beim Speichern der Vorlage: ' + error);
+                    if (window.NeoDash && window.NeoDash.toastError) {
+                        NeoDash.toastError('AJAX Fehler beim Speichern der Vorlage: ' + error);
+                    } else {
+                        alert('AJAX Fehler beim Speichern der Vorlage: ' + error);
+                    }
                 },
                 complete: () => {
                     this.setSaveButtonLoading(false);

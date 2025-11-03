@@ -3,7 +3,11 @@
 
     function saveEventToDB(type, title, start, end, description) {
         if (typeof neoCalendarAjax === 'undefined') { 
-            alert('AJAX-Konfigurationsfehler - neoCalendarAjax ist nicht definiert'); 
+            if (window.NeoDash && window.NeoDash.toastError) {
+                NeoDash.toastError('AJAX-Konfigurationsfehler - neoCalendarAjax ist nicht definiert');
+            } else {
+                alert('AJAX-Konfigurationsfehler - neoCalendarAjax ist nicht definiert');
+            }
             return; 
         }
         const formData = new FormData();
@@ -22,12 +26,26 @@
                     if (window.neoCalendar) {
                         window.neoCalendar.refetchEvents();
                     }
-                    alert('Ereignis hinzugefügt!');
+                    if (window.NeoDash && window.NeoDash.toastSuccess) {
+                        NeoDash.toastSuccess('Ereignis hinzugefügt!');
+                    } else {
+                        alert('Ereignis hinzugefügt!');
+                    }
                 } else {
-                    alert('Fehler beim Speichern: ' + data.data);
+                    if (window.NeoDash && window.NeoDash.toastError) {
+                        NeoDash.toastError('Fehler beim Speichern: ' + data.data);
+                    } else {
+                        alert('Fehler beim Speichern: ' + data.data);
+                    }
                 }
             })
-            .catch(err => alert('Fehler beim Speichern: ' + err.message));
+            .catch(err => {
+                if (window.NeoDash && window.NeoDash.toastError) {
+                    NeoDash.toastError('Fehler beim Speichern: ' + err.message);
+                } else {
+                    alert('Fehler beim Speichern: ' + err.message);
+                }
+            });
     }
 
     function addWorkTime(dateEl, fromEl, toEl) {
@@ -36,12 +54,20 @@
         const timeTo = toEl.value;
 
         if (!dateFormatted || !timeFrom || !timeTo) {
-            alert('Bitte füllen Sie alle Felder aus!');
+            if (window.NeoDash && window.NeoDash.toastWarning) {
+                NeoDash.toastWarning('Bitte füllen Sie alle Felder aus!');
+            } else {
+                alert('Bitte füllen Sie alle Felder aus!');
+            }
             return;
         }
 
         if (timeFrom >= timeTo) {
-            alert('Die Zeit "von" muss kleiner als die Zeit "bis" sein!');
+            if (window.NeoDash && window.NeoDash.toastWarning) {
+                NeoDash.toastWarning('Die Zeit "von" muss kleiner als die Zeit "bis" sein!');
+            } else {
+                alert('Die Zeit "von" muss kleiner als die Zeit "bis" sein!');
+            }
             return;
         }
 
@@ -62,13 +88,21 @@
         const dateRange = dateRangeEl.value;
 
         if (!dateRange) {
-            alert('Bitte wählen Sie einen Datumsbereich aus!');
+            if (window.NeoDash && window.NeoDash.toastWarning) {
+                NeoDash.toastWarning('Bitte wählen Sie einen Datumsbereich aus!');
+            } else {
+                alert('Bitte wählen Sie einen Datumsbereich aus!');
+            }
             return;
         }
 
         const dates = dateRange.split(' до ');
         if (dates.length !== 2) {
-            alert('Bitte wählen Sie einen gültigen Datumsbereich aus!');
+            if (window.NeoDash && window.NeoDash.toastWarning) {
+                NeoDash.toastWarning('Bitte wählen Sie einen gültigen Datumsbereich aus!');
+            } else {
+                alert('Bitte wählen Sie einen gültigen Datumsbereich aus!');
+            }
             return;
         }
 
@@ -85,7 +119,11 @@
         const dateTo = convertDateFormat(dateToFormatted);
 
         if (dateFrom > dateTo) {
-            alert('Das Datum "von" muss kleiner oder gleich dem Datum "bis" sein!');
+            if (window.NeoDash && window.NeoDash.toastWarning) {
+                NeoDash.toastWarning('Das Datum "von" muss kleiner oder gleich dem Datum "bis" sein!');
+            } else {
+                alert('Das Datum "von" muss kleiner oder gleich dem Datum "bis" sein!');
+            }
             return;
         }
 
@@ -102,7 +140,11 @@
         const title = titleEl.value;
 
         if (!dateRange || !time || !title) {
-            alert('Bitte füllen Sie alle Felder aus!');
+            if (window.NeoDash && window.NeoDash.toastWarning) {
+                NeoDash.toastWarning('Bitte füllen Sie alle Felder aus!');
+            } else {
+                alert('Bitte füllen Sie alle Felder aus!');
+            }
             return;
         }
 
@@ -115,7 +157,11 @@
         if (dateRange.includes(' bis ')) {
             const dates = dateRange.split(' bis ');
             if (dates.length !== 2) {
-                alert('Bitte wählen Sie einen gültigen Datumsbereich aus!');
+                if (window.NeoDash && window.NeoDash.toastWarning) {
+                    NeoDash.toastWarning('Bitte wählen Sie einen gültigen Datumsbereich aus!');
+                } else {
+                    alert('Bitte wählen Sie einen gültigen Datumsbereich aus!');
+                }
                 return;
             }
 
@@ -125,7 +171,11 @@
             const dateTo = convertDateFormat(dateToFormatted);
 
             if (dateFrom > dateTo) {
-                alert('Das Datum "von" muss kleiner oder gleich dem Datum "bis" sein!');
+                if (window.NeoDash && window.NeoDash.toastWarning) {
+                    NeoDash.toastWarning('Das Datum "von" muss kleiner oder gleich dem Datum "bis" sein!');
+                } else {
+                    alert('Das Datum "von" muss kleiner oder gleich dem Datum "bis" sein!');
+                }
                 return;
             }
 
