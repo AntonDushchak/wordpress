@@ -131,8 +131,9 @@
                         data: null,
                         orderable: false,
                         render: function(data, type, row) {
-                            let html = `<button class="btn btn-sm btn-primary" onclick="JBITemplates.sendTemplate(${row.id})">Senden</button> `;
-                            html += `<button class="btn btn-sm btn-danger" onclick="JBITemplates.deleteTemplate(${row.id})">Löschen</button>`;
+                            let html = `<button class="btn btn-sm btn-info me-1" onclick="JBITemplates.viewTemplate(${row.id})" title="Ansehen"><i class="bi bi-eye"></i></button> `;
+                            html += `<button class="btn btn-sm btn-primary me-1" onclick="JBITemplates.sendTemplate(${row.id})" title="Senden"><i class="bi bi-send"></i></button> `;
+                            html += `<button class="btn btn-sm btn-danger" onclick="JBITemplates.deleteTemplate(${row.id})" title="Löschen"><i class="bi bi-trash"></i></button>`;
                             return html;
                         }
                     }
@@ -452,6 +453,135 @@
                     }
                 });
             }
+        },
+
+        viewTemplate: function(templateId) {
+            $.post(jbiAjax.ajaxurl, {
+                action: 'jbi_get_template',
+                nonce: jbiAjax.nonce,
+                template_id: templateId
+            }, (response) => {
+                if (response.success && response.data && response.data.template) {
+                    const template = response.data.template;
+                    const fields = template.fields || [];
+                    
+                    let fieldsHtml = '';
+                    if (fields.length === 0) {
+                        fieldsHtml = '<p class="text-muted">Keine Felder definiert</p>';
+                    } else {
+                        fields.forEach((field, index) => {
+                            const fieldType = this.fieldTypes[field.type] || field.type;
+                            const fieldName = field.name || field.field_name || '-';
+                            
+                            fieldsHtml += `
+                                <div class="card mb-2">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <strong>Feld #${index + 1}</strong>
+                                            </div>
+                                            <div class="col-md-9">
+                                                <div class="mb-2">
+                                                    <strong>Label:</strong> ${field.label || '-'}
+                                                </div>
+                                                <div class="mb-2">
+                                                    <strong>Typ:</strong> ${fieldType}
+                                                </div>
+                                                <div class="mb-2">
+                                                    <strong>Feldname:</strong> <code>${fieldName}</code>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <strong>Eigenschaften:</strong>
+                                                    <ul class="list-unstyled mb-0">
+                                                        <li><i class="bi ${field.required ? 'bi-check-circle text-success' : 'bi-x-circle text-secondary'}"></i> Pflichtfeld</li>
+                                                        <li><i class="bi ${field.personal_data ? 'bi-check-circle text-warning' : 'bi-x-circle text-secondary'}"></i> Privat</li>
+                                                        <li><i class="bi ${field.filterable ? 'bi-check-circle text-info' : 'bi-x-circle text-secondary'}"></i> Filterbar</li>
+                                                    </ul>
+                                                </div>
+                                                ${field.options ? `
+                                                <div class="mb-2">
+                                                    <strong>Optionen:</strong>
+                                                    <ul class="list-unstyled mb-0">
+                                                        ${field.options.split('\n').filter(opt => opt.trim()).map(opt => `<li>${opt.trim()}</li>`).join('')}
+                                                    </ul>
+                                                </div>
+                                                ` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                    
+                    const modalHtml = `
+                        <div class="modal fade" id="viewTemplateModal" tabindex="-1" aria-labelledby="viewTemplateModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-info text-white">
+                                        <h5 class="modal-title" id="viewTemplateModalLabel">
+                                            <i class="bi bi-eye me-2"></i>Vorlage: ${template.name || 'Unbekannt'}
+                                        </h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                                        <div class="mb-3">
+                                            <strong>Name:</strong>
+                                            <p>${template.name || '-'}</p>
+                                        </div>
+                                        ${template.description ? `
+                                        <div class="mb-3">
+                                            <strong>Beschreibung:</strong>
+                                            <p>${template.description}</p>
+                                        </div>
+                                        ` : ''}
+                                        <div class="mb-3">
+                                            <strong>Status:</strong>
+                                            <p>
+                                                ${template.is_active == 1 ? '<span class="badge bg-success">Aktiv</span>' : '<span class="badge bg-secondary">Inaktiv</span>'}
+                                            </p>
+                                        </div>
+                                        <div class="mb-3">
+                                            <strong>Erstellt am:</strong>
+                                            <p>${template.created_at ? new Date(template.created_at).toLocaleString('de-DE') : '-'}</p>
+                                        </div>
+                                        <div class="mb-3">
+                                            <strong>Felder (${fields.length}):</strong>
+                                            <div class="mt-2">
+                                                ${fieldsHtml}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    const existingModal = document.getElementById('viewTemplateModal');
+                    if (existingModal) {
+                        existingModal.remove();
+                    }
+                    
+                    document.body.insertAdjacentHTML('beforeend', modalHtml);
+                    const modalElement = document.getElementById('viewTemplateModal');
+                    const bsModal = new bootstrap.Modal(modalElement);
+                    
+                    modalElement.addEventListener('hidden.bs.modal', () => {
+                        modalElement.remove();
+                    }, { once: true });
+                    
+                    bsModal.show();
+                } else {
+                    if (window.NeoDash && window.NeoDash.toastError) {
+                        NeoDash.toastError(response.data?.message || 'Fehler beim Laden der Vorlage');
+                    } else {
+                        alert(response.data?.message || 'Fehler beim Laden der Vorlage');
+                    }
+                }
+            });
         },
 
         deleteTemplate: function(templateId) {
