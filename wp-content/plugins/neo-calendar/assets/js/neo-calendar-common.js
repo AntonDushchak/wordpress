@@ -263,7 +263,24 @@
             return;
         }
         
-        if (el._flatpickr) return;
+        if (!el.parentNode) {
+            return;
+        }
+
+        if (el.type === 'time' || el.type === 'date') {
+            el.type = 'text';
+        }
+
+        const existingFlatpickr = el._flatpickr;
+
+        if (existingFlatpickr) {
+            try {
+                existingFlatpickr.destroy();
+            } catch (e) {
+            }
+            el._flatpickr = null;
+            el.removeAttribute('data-flatpickr-initialized');
+        }
 
         const isDarkTheme = isDarkThemeActive();
 
@@ -273,18 +290,21 @@
             removeFlatpickrDarkTheme();
         }
 
-        flatpickr(el, {
-            enableTime: true,
-            noCalendar: true,
-            dateFormat: "H:i",
-            time_24hr: true,
-            minuteIncrement: 15,
-            allowInput: false,
-            theme: isDarkTheme ? "dark" : "light",
-            locale: "de"
-        });
-        
-        el.setAttribute('data-flatpickr-initialized', 'true');
+        try {
+            flatpickr(el, {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: "H:i",
+                time_24hr: true,
+                minuteIncrement: 15,
+                allowInput: false,
+                theme: isDarkTheme ? "dark" : "light",
+                locale: "de"
+            });
+            el.setAttribute('data-flatpickr-initialized', 'true');
+        } catch (e) {
+            console.warn('Ошибка инициализации time picker:', e);
+        }
     }
 
     function loadFlatpickrDarkTheme() {
@@ -353,7 +373,24 @@
             return;
         }
         
-        if (el._flatpickr) return;
+        if (!el.parentNode) {
+            return;
+        }
+
+        if (el.type === 'date' || el.type === 'time') {
+            el.type = 'text';
+        }
+
+        const existingFlatpickr = el._flatpickr;
+
+        if (existingFlatpickr) {
+            try {
+                existingFlatpickr.destroy();
+            } catch (e) {
+            }
+            el._flatpickr = null;
+            el.removeAttribute('data-flatpickr-initialized');
+        }
 
         const isDarkTheme = isDarkThemeActive();
 
@@ -363,14 +400,17 @@
             removeFlatpickrDarkTheme();
         }
 
-        flatpickr(el, {
-            dateFormat: "d-m-Y",
-            allowInput: false,
-            theme: isDarkTheme ? "dark" : "light",
-            locale: "de"
-        });
-        
-        el.setAttribute('data-flatpickr-initialized', 'true');
+        try {
+            flatpickr(el, {
+                dateFormat: "d-m-Y",
+                allowInput: false,
+                theme: isDarkTheme ? "dark" : "light",
+                locale: "de"
+            });
+            el.setAttribute('data-flatpickr-initialized', 'true');
+        } catch (e) {
+            console.warn('Ошибка инициализации date picker:', e);
+        }
     }
 
     function initDateRangePicker(elementId) {
@@ -385,7 +425,24 @@
             return;
         }
         
-        if (el._flatpickr) return;
+        if (!el.parentNode) {
+            return;
+        }
+
+        if (el.type === 'date' || el.type === 'time') {
+            el.type = 'text';
+        }
+
+        const existingFlatpickr = el._flatpickr;
+
+        if (existingFlatpickr) {
+            try {
+                existingFlatpickr.destroy();
+            } catch (e) {
+            }
+            el._flatpickr = null;
+            el.removeAttribute('data-flatpickr-initialized');
+        }
 
         const isDarkTheme = isDarkThemeActive();
 
@@ -395,15 +452,18 @@
             removeFlatpickrDarkTheme();
         }
 
-        flatpickr(el, {
-            mode: "range",
-            dateFormat: "d-m-Y",
-            allowInput: false,
-            theme: isDarkTheme ? "dark" : "light",
-            locale: "de"
-        });
-        
-        el.setAttribute('data-flatpickr-initialized', 'true');
+        try {
+            flatpickr(el, {
+                mode: "range",
+                dateFormat: "d-m-Y",
+                allowInput: false,
+                theme: isDarkTheme ? "dark" : "light",
+                locale: "de"
+            });
+            el.setAttribute('data-flatpickr-initialized', 'true');
+        } catch (e) {
+            console.warn('Ошибка инициализации date range picker:', e);
+        }
     }
 
     function watchThemeChanges() {
@@ -472,6 +532,55 @@
         updateFlatpickrTheme();
     }
 
+    function reinitAllPickers() {
+        const allPickers = document.querySelectorAll('[data-flatpickr-initialized], .date-picker, .date-range-picker, input[id*="time"], input[id*="date"]');
+        
+        allPickers.forEach(el => {
+            if (!el.id && !el.hasAttribute('data-flatpickr-initialized') && !el.classList.contains('date-picker') && !el.classList.contains('date-range-picker')) {
+                return;
+            }
+
+            const elementId = el.id;
+            if (!elementId) return;
+
+            if (el.type === 'date' || el.type === 'time') {
+                el.type = 'text';
+            }
+
+            const existingFlatpickr = el._flatpickr;
+            if (existingFlatpickr) {
+                try {
+                    existingFlatpickr.destroy();
+                } catch (e) {
+                }
+                el._flatpickr = null;
+                el.removeAttribute('data-flatpickr-initialized');
+            }
+
+            if (el.classList.contains('date-range-picker') || el.hasAttribute('data-range-picker') || elementId.includes('range')) {
+                if (window.NeoCalendar && window.NeoCalendar.initDateRangePicker) {
+                    window.NeoCalendar.initDateRangePicker(elementId);
+                }
+            } else if (el.classList.contains('time-picker') || elementId.includes('time')) {
+                if (window.NeoCalendar && window.NeoCalendar.initTimePicker) {
+                    window.NeoCalendar.initTimePicker(elementId);
+                }
+            } else if (el.classList.contains('date-picker') || elementId.includes('date')) {
+                if (window.NeoCalendar && window.NeoCalendar.initDatePicker) {
+                    window.NeoCalendar.initDatePicker(elementId);
+                }
+            }
+        });
+    }
+
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            reinitAllPickers();
+        }, 250);
+    });
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', watchThemeChanges);
     } else {
@@ -490,6 +599,7 @@
         initTimePicker,
         initDatePicker,
         initDateRangePicker,
-        updateFlatpickrTheme
+        updateFlatpickrTheme,
+        reinitAllPickers
     };
 })(jQuery);

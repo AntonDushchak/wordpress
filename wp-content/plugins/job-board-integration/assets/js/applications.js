@@ -27,7 +27,19 @@
             });
             
             $(document).on('shown.bs.modal', '#applicationModal', () => {
-                this.initFlatpickr();
+                setTimeout(() => {
+                    this.initFlatpickr();
+                }, 100);
+            });
+            
+            let resizeTimeout;
+            $(window).on('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    if ($('#applicationModal').hasClass('show') || $('#applicationModal').is(':visible')) {
+                        this.initFlatpickr();
+                    }
+                }, 250);
             });
         },
         
@@ -40,14 +52,39 @@
             
             $('#applicationModal .date-picker').each(function() {
                 const $input = $(this);
-                if (!$input.data('flatpickr') && !$input.data('fp-init')) {
-                    $input.data('fp-init', true);
-                    flatpickr(this, {
+                const element = this;
+                
+                if (!$input.length || !element.parentNode) {
+                    return;
+                }
+                
+                if (element.type === 'date' || element.type === 'time') {
+                    element.type = 'text';
+                }
+                
+                const existingFlatpickr = element._flatpickr;
+                
+                if (existingFlatpickr) {
+                    try {
+                        existingFlatpickr.destroy();
+                    } catch (e) {
+                    }
+                    element._flatpickr = null;
+                    $input.removeData('flatpickr');
+                    $input.removeData('fp-init');
+                }
+                
+                try {
+                    flatpickr(element, {
                         dateFormat: 'Y-m-d',
                         locale: locale,
                         clickOpens: true,
                         allowInput: true
                     });
+                    $input.data('fp-init', true);
+                } catch (e) {
+                    console.warn('Ошибка инициализации flatpickr:', e);
+                    $input.data('fp-init', false);
                 }
             });
         },
