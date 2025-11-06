@@ -89,7 +89,8 @@
                 <table id="applications-table" class="display" style="width:100%">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>is_called</th>
+                            <th>№</th>
                             <th>Name</th>
                             <th>Hash</th>
                             <th>Template</th>
@@ -112,7 +113,8 @@
                     data: function(d) {
                         d.action = 'jbi_get_applications';
                         d.nonce = jbiAjax.nonce;
-                        d.user_id = $('#filter-user').val();
+                        const userId = $('#filter-user').val();
+                        d.user_id = userId ? userId : '';
                     },
                     dataSrc: function(json) {
                         console.log('Applications response:', json);
@@ -135,9 +137,7 @@
                     { 
                         data: 'name',
                         render: function(data, type, row) {
-                            const isCalled = row.is_called == 1 || row.is_called === true;
-                            const circle = isCalled ? '<span class="badge bg-warning rounded-circle me-2" style="width: 12px; height: 12px; display: inline-block;" title="Es gab einen Anruf"></span>' : '';
-                            return circle + (data || '-');
+                            return data || '-';
                         }
                     },
                     { 
@@ -154,8 +154,14 @@
                     },
                     { 
                         data: 'is_active',
-                        render: function(data) {
-                            return data == 1 ? '<span class="badge bg-success">Aktiv</span>' : '<span class="badge bg-secondary">Inaktiv</span>';
+                        render: function(data, type, row) {
+                            if (row.sync_status === 'active') {
+                                return '<span class="badge bg-success">Aktiv</span>';
+                            } else if (row.sync_status === 'unsynced') {
+                                return '<span class="badge bg-warning">Несинхронизирован</span>';
+                            } else {
+                                return '<span class="badge bg-secondary">Inaktiv</span>';
+                            }
                         }
                     },
                     { 
@@ -172,13 +178,25 @@
                                 return '';
                             }
                             
-                            const activeIcon = row.is_active == 1 ? 'bi-eye' : 'bi-eye-slash';
-                            const activeTitle = row.is_active == 1 ? 'Deaktivieren' : 'Aktivieren';
+                            const syncStatus = row.sync_status || 'unsynced';
+                            const isActive = row.is_active == 1;
+                            const isCalled = row.is_called == 1 || row.is_called === true;
+                            
+                            if (syncStatus === 'unsynced') {
+                                return `
+                                    <button class="btn btn-sm btn-warning" onclick="JBIApplications.syncApplication(${row.id})" title="Synchronisieren"><i class="bi bi-arrow-repeat"></i></button>
+                                `;
+                            }
+                            
+                            const activeIcon = isActive ? 'bi-eye' : 'bi-eye-slash';
+                            const activeTitle = isActive ? 'Deaktivieren' : 'Aktivieren';
+                            const notificationBtnClass = isCalled ? 'btn-warning' : 'btn-secondary';
+                            const notificationIcon = isCalled ? 'bi-bell-fill' : 'bi-bell';
                             
                             return `
                                 <button class="btn btn-sm btn-info me-1" onclick="JBIApplications.editApplication(${row.id})" title="Bearbeiten"><i class="bi bi-pencil"></i></button>
-                                <button class="btn btn-sm btn-${row.is_active == 1 ? 'success' : 'secondary'} me-1" onclick="JBIApplications.toggleActive(${row.id}, ${row.is_active == 1 ? 0 : 1})" title="${activeTitle}"><i class="bi ${activeIcon}"></i></button>
-                                <button class="btn btn-sm btn-warning me-1" onclick="JBIApplications.syncApplication(${row.id})" title="Synchronisieren"><i class="bi bi-arrow-repeat"></i></button>
+                                <button class="btn btn-sm btn-${isActive ? 'success' : 'secondary'} me-1" onclick="JBIApplications.toggleActive(${row.id}, ${isActive ? 0 : 1})" title="${activeTitle}"><i class="bi ${activeIcon}"></i></button>
+                                <button class="btn btn-sm ${notificationBtnClass} me-1" onclick="JBIApplications.showNotification(${row.id})" title="Benachrichtigung ansehen"><i class="bi ${notificationIcon}"></i></button>
                                 <button class="btn btn-sm btn-danger" onclick="JBIApplications.deleteApplication(${row.id})" title="Löschen"><i class="bi bi-trash"></i></button>
                             `;
                         }
@@ -1157,6 +1175,120 @@
                         NeoDash.toastError(response.data?.message || 'Fehler beim Synchronisieren');
                     } else {
                         alert(response.data?.message || 'Fehler beim Synchronisieren');
+                    }
+                }
+            });
+        },
+
+        showNotification: function(applicationId) {
+            $.post(jbiAjax.ajaxurl, {
+                action: 'jbi_get_contact_request',
+                nonce: jbiAjax.nonce,
+                application_id: applicationId
+            }, (response) => {
+                if (response.success && response.data && response.data.contact_requests && response.data.contact_requests.length > 0) {
+                    const contactRequests = response.data.contact_requests;
+                    
+                    const escapeHtml = (text) => {
+                        const map = {
+                            '&': '&amp;',
+                            '<': '&lt;',
+                            '>': '&gt;',
+                            '"': '&quot;',
+                            "'": '&#039;'
+                        };
+                        return (text || '').replace(/[&<>"']/g, m => map[m]);
+                    };
+                    
+                    let requestsHtml = '';
+                    contactRequests.forEach((cr, index) => {
+                        const name = escapeHtml(cr.name || '-');
+                        const email = escapeHtml(cr.email || '-');
+                        const phone = cr.phone ? escapeHtml(cr.phone) : null;
+                        const message = cr.message ? escapeHtml(cr.message) : null;
+                        const createdAt = new Date(cr.created_at).toLocaleString('de-DE');
+                        const isViewed = cr.notification_viewed == 1;
+                        
+                        requestsHtml += `
+                            <div class="card mb-3 ${isViewed ? 'border-secondary' : 'border-warning'}">
+                                <div class="card-header ${isViewed ? 'bg-light' : 'bg-warning'}">
+                                    <h6 class="mb-0">${index === 0 ? 'Neueste Anfrage' : 'Anfrage #' + (contactRequests.length - index)}</h6>
+                                    <small class="text-muted">${createdAt}</small>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <strong>Name:</strong>
+                                        <span>${name}</span>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>E-Mail:</strong>
+                                        <span><a href="mailto:${email}">${email}</a></span>
+                                    </div>
+                                    ${phone ? `
+                                    <div class="mb-2">
+                                        <strong>Telefon:</strong>
+                                        <span><a href="tel:${phone}">${phone}</a></span>
+                                    </div>
+                                    ` : ''}
+                                    ${message ? `
+                                    <div class="mb-2">
+                                        <strong>Nachricht:</strong>
+                                        <p class="mb-0" style="white-space: pre-wrap;">${message}</p>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    let modalHtml = `
+                        <div class="modal fade" id="contactRequestModal" tabindex="-1" aria-labelledby="contactRequestModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-warning">
+                                        <h5 class="modal-title" id="contactRequestModalLabel"><i class="bi bi-bell-fill me-2"></i>Kontaktanfragen (${contactRequests.length})</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                                        ${requestsHtml}
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Schließen</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    const existingModal = document.getElementById('contactRequestModal');
+                    if (existingModal) {
+                        existingModal.remove();
+                    }
+                    
+                    document.body.insertAdjacentHTML('beforeend', modalHtml);
+                    const modalElement = document.getElementById('contactRequestModal');
+                    const bsModal = new bootstrap.Modal(modalElement);
+                    
+                    modalElement.addEventListener('hidden.bs.modal', () => {
+                        $.post(jbiAjax.ajaxurl, {
+                            action: 'jbi_mark_notification_viewed',
+                            nonce: jbiAjax.nonce,
+                            application_id: applicationId
+                        }, () => {
+                            $('#applications-table').DataTable().ajax.reload();
+                            if (typeof checkNotifications === 'function') {
+                                checkNotifications();
+                            }
+                        });
+                        modalElement.remove();
+                    }, { once: true });
+                    
+                    bsModal.show();
+                } else {
+                    if (window.NeoDash && window.NeoDash.toastError) {
+                        NeoDash.toastError(response.data?.message || 'Fehler beim Laden der Kontaktanfrage');
+                    } else {
+                        alert(response.data?.message || 'Fehler beim Laden der Kontaktanfrage');
                     }
                 }
             });

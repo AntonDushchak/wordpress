@@ -8,19 +8,30 @@
         },
 
         bindEvents: function() {
-            $('#jbi-settings-form').on('submit', this.saveSettings.bind(this));
-            $('#test-connection-btn').on('click', this.testConnection.bind(this));
+            $(document).off('click', '#test-connection-btn').on('click', '#test-connection-btn', this.testConnection.bind(this));
+            $(document).off('click', '#save-settings-btn').on('click', '#save-settings-btn', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                this.saveSettings(e);
+            });
+            $(document).off('click', '#manual-sync-btn').on('click', '#manual-sync-btn', this.manualSync.bind(this));
         },
 
         saveSettings: function(e) {
-            e.preventDefault();
+            if (e && e.preventDefault) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            const selectedInterval = $('#sync_interval').val();
 
             const formData = {
                 action: 'jbi_save_settings',
                 nonce: jbiAjax.nonce,
                 api_url: $('input[name="api_url"]').val(),
                 api_key: $('input[name="api_key"]').val(),
-                auto_send: $('#auto_send').is(':checked') ? 1 : 0
+                auto_send: $('#auto_send').is(':checked') ? 1 : 0,
+                sync_interval: selectedInterval
             };
 
             $.post(jbiAjax.ajaxurl, formData, function(response) {
@@ -30,6 +41,9 @@
                     } else {
                         alert(jbiAjax.strings.success + ': ' + response.data.message);
                     }
+                    
+                    const intervalToSet = response.data.sync_interval || selectedInterval;
+                    $('#sync_interval').val(intervalToSet);
                 } else {
                     if (window.NeoDash && window.NeoDash.toastError) {
                         NeoDash.toastError(jbiAjax.strings.error + ': ' + response.data.message);
@@ -37,7 +51,15 @@
                         alert(jbiAjax.strings.error + ': ' + response.data.message);
                     }
                 }
+            }).fail(function(xhr, status, error) {
+                if (window.NeoDash && window.NeoDash.toastError) {
+                    NeoDash.toastError('Fehler beim Speichern: ' + error);
+                } else {
+                    alert('Fehler beim Speichern: ' + error);
+                }
             });
+            
+            return false;
         },
 
         testConnection: function() {
@@ -90,6 +112,39 @@
             });
         },
 
+        manualSync: function() {
+            const $btn = $('#manual-sync-btn');
+            const originalText = $btn.text();
+            $btn.prop('disabled', true).text('Synchronisierung läuft...');
+
+            $.post(jbiAjax.ajaxurl, {
+                action: 'jbi_manual_sync',
+                nonce: jbiAjax.nonce
+            }, (response) => {
+                $btn.prop('disabled', false).text(originalText);
+                if (response.success) {
+                    if (window.NeoDash && window.NeoDash.toastSuccess) {
+                        NeoDash.toastSuccess(response.data.message);
+                    } else {
+                        alert(response.data.message);
+                    }
+                } else {
+                    if (window.NeoDash && window.NeoDash.toastError) {
+                        NeoDash.toastError(response.data.message || 'Fehler bei der Synchronisierung');
+                    } else {
+                        alert(response.data.message || 'Fehler bei der Synchronisierung');
+                    }
+                }
+            }).fail(function() {
+                $btn.prop('disabled', false).text(originalText);
+                if (window.NeoDash && window.NeoDash.toastError) {
+                    NeoDash.toastError('Fehler bei der Synchronisierung');
+                } else {
+                    alert('Fehler bei der Synchronisierung');
+                }
+            });
+        },
+
         loadStats: function() {
             
         },
@@ -123,7 +178,7 @@
     };
 
     $(document).ready(function() {
-        JBI.bindEvents();
+        JBI.init();
     });
 
 })(jQuery);

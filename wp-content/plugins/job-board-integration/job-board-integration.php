@@ -44,6 +44,10 @@ class Job_Board_Integration {
         add_action('wp_ajax_jbi_toggle_application_active', [$this, 'ajax_toggle_application_active']);
         add_action('wp_ajax_jbi_delete_application', [$this, 'ajax_delete_application']);
         add_action('wp_ajax_jbi_get_found_jobs_stats', [$this, 'ajax_get_found_jobs_stats']);
+        add_action('wp_ajax_jbi_check_notifications', [$this, 'ajax_check_notifications']);
+        add_action('wp_ajax_jbi_manual_sync', [$this, 'ajax_manual_sync']);
+        add_action('wp_ajax_jbi_get_contact_request', [$this, 'ajax_get_contact_request']);
+        add_action('wp_ajax_jbi_mark_notification_viewed', [$this, 'ajax_mark_notification_viewed']);
         
         add_action('wp_ajax_nopriv_jbi_get_templates', [$this, 'ajax_get_templates']);
         add_action('wp_ajax_nopriv_jbi_get_template', [$this, 'ajax_get_template']);
@@ -51,7 +55,10 @@ class Job_Board_Integration {
         
         add_action('init', [$this, 'init']);
         
-        add_action('jbi_sync_contact_requests', [\NeoJobBoard\Core\Sync::class, 'sync_contact_requests']);
+        add_action('jbi_sync_contact_requests', function() {
+            error_log('JBI: Action jbi_sync_contact_requests triggered at ' . date('Y-m-d H:i:s'));
+            \NeoJobBoard\Core\Sync::sync_contact_requests();
+        });
         
         register_activation_hook(__FILE__, [$this, 'activate_plugin']);
         register_deactivation_hook(__FILE__, [$this, 'deactivate_plugin']);
@@ -116,14 +123,14 @@ class Job_Board_Integration {
                 'label' => 'Job Board Integration',
                 'callback' => [$this, 'render_templates_page'],
             ]);
-
-            do_action('neo_dashboard_register_widget', [
-                'id' => 'job-board-integration-widget',
-                'title' => 'Job Board Integration',
-                'callback' => [$this, 'render_widget'],
-                'priority' => 10,
-            ]);
         }
+
+        do_action('neo_dashboard_register_widget', [
+            'id' => 'job-board-integration-widget',
+            'title' => 'Job Board Integration',
+            'callback' => [$this, 'render_widget'],
+            'priority' => 10,
+        ]);
 
         do_action('neo_dashboard_register_plugin_assets', 'job-board-integration', [
             'css' => [
@@ -171,7 +178,7 @@ class Job_Board_Integration {
                 ],
                 'jbi-js' => [
                     'src' => plugin_dir_url(__FILE__) . 'assets/js/admin.js',
-                    'deps' => ['jquery', 'datatables-js'],
+                    'deps' => ['jquery'],
                     'version' => '1.0.0',
                     'contexts' => ['job-board-integration', 'job-board-integration/templates', 'job-board-integration/applications', 'job-board-integration/settings', 'dashboard-home']
                 ],
@@ -242,6 +249,8 @@ class Job_Board_Integration {
         
         global $wpdb;
         $table_name = $wpdb->prefix . 'neo_job_board_templates';
+        $contact_requests_table = $wpdb->prefix . 'neo_job_board_contact_requests';
+        
         if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") !== $table_name) {
             \NeoJobBoard\Core\Database::create_tables();
         } else {
@@ -249,8 +258,27 @@ class Job_Board_Integration {
             \NeoJobBoard\Core\Database::migrate_add_is_called_column();
         }
         
-        if (!wp_next_scheduled('jbi_sync_contact_requests')) {
-            wp_schedule_event(time(), 'jbi_custom_sync_interval', 'jbi_sync_contact_requests');
+        if ($wpdb->get_var("SHOW TABLES LIKE '$contact_requests_table'") !== $contact_requests_table) {
+            \NeoJobBoard\Core\Database::create_tables();
+        } else {
+            \NeoJobBoard\Core\Database::migrate_add_notification_viewed_column();
+        }
+        
+        $next_scheduled = wp_next_scheduled('jbi_sync_contact_requests');
+        if (!$next_scheduled) {
+            $scheduled = wp_schedule_event(time(), 'jbi_custom_sync_interval', 'jbi_sync_contact_requests');
+            error_log('JBI: Scheduled sync event in init, result: ' . ($scheduled === false ? 'failed' : 'success'));
+        } else {
+            $current_time = time();
+            if ($next_scheduled <= $current_time) {
+                error_log('JBI: Sync event is overdue (scheduled: ' . date('Y-m-d H:i:s', $next_scheduled) . ', current: ' . date('Y-m-d H:i:s', $current_time) . '), executing now...');
+                wp_unschedule_event($next_scheduled, 'jbi_sync_contact_requests');
+                do_action('jbi_sync_contact_requests');
+                $new_scheduled = wp_schedule_event($current_time, 'jbi_custom_sync_interval', 'jbi_sync_contact_requests');
+                error_log('JBI: Executed overdue sync and rescheduled for: ' . date('Y-m-d H:i:s', wp_next_scheduled('jbi_sync_contact_requests')));
+            } else {
+                error_log('JBI: Sync event already scheduled in init for: ' . date('Y-m-d H:i:s', $next_scheduled));
+            }
         }
     }
 
@@ -468,6 +496,9 @@ class Job_Board_Integration {
         $api_key = get_option('jbi_api_key', '');
         $auto_send = get_option('jbi_auto_send', 1);
         $sync_interval = get_option('jbi_sync_interval', 600);
+        $next_scheduled = wp_next_scheduled('jbi_sync_contact_requests');
+        $last_sync_formatted = $next_scheduled ? date('d.m.Y H:i:s', $next_scheduled - $sync_interval + (get_option('gmt_offset') * HOUR_IN_SECONDS)) : 'Nie';
+        $next_sync_formatted = $next_scheduled ? date('d.m.Y H:i:s', $next_scheduled + (get_option('gmt_offset') * HOUR_IN_SECONDS)) : 'Nicht geplant';
         $nonce = wp_create_nonce('jbi_nonce');
         ?>
         <script type="text/javascript">
@@ -510,6 +541,7 @@ class Job_Board_Integration {
                         <div class="mb-3">
                             <label class="form-label">Intervall für Kontaktanfragen-Synchronisierung</label>
                             <select class="form-control" name="sync_interval" id="sync_interval">
+                                <option value="60" <?php selected($sync_interval, 60); ?>>1 Minute</option>
                                 <option value="300" <?php selected($sync_interval, 300); ?>>5 Minuten</option>
                                 <option value="600" <?php selected($sync_interval, 600); ?>>10 Minuten</option>
                                 <option value="900" <?php selected($sync_interval, 900); ?>>15 Minuten</option>
@@ -522,8 +554,16 @@ class Job_Board_Integration {
                             <small class="form-text text-muted">Wie oft sollen Kontaktanfragen vom anderen Server synchronisiert werden?</small>
                         </div>
                         <div class="mb-3">
+                            <div class="alert alert-info">
+                                <strong>Status der Synchronisierung:</strong><br>
+                                <small>Letzte Synchronisierung: <span id="last-sync-time"><?php echo esc_html($last_sync_formatted); ?></span></small><br>
+                                <small>Nächste Synchronisierung: <span id="next-sync-time"><?php echo esc_html($next_sync_formatted); ?></span></small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
                             <button type="button" class="btn btn-secondary" id="test-connection-btn">Verbindung testen</button>
-                            <button type="submit" class="btn btn-primary">Einstellungen speichern</button>
+                            <button type="button" class="btn btn-primary" id="save-settings-btn">Einstellungen speichern</button>
+                            <button type="button" class="btn btn-info" id="manual-sync-btn">Manuelle Synchronisierung</button>
                         </div>
                         <div id="connection-result"></div>
                     </form>
@@ -535,19 +575,61 @@ class Job_Board_Integration {
 
     public function render_widget() {
         $nonce = wp_create_nonce('jbi_nonce');
+        $applications_url = home_url('/neo-dashboard/job-board-integration/applications');
         ?>
         <script type="text/javascript">
             window.jbiAjax = {
                 ajaxurl: "<?php echo admin_url('admin-ajax.php'); ?>",
-                nonce: "<?php echo $nonce; ?>"
+                nonce: "<?php echo $nonce; ?>",
+                applicationsUrl: "<?php echo esc_js($applications_url); ?>"
             };
         </script>
         <div class="jbi-widget">
             <div class="jbi-widget-body">
-                <p>Integration Status</p>
                 <div id="widget-status"></div>
+                <div class="jbi-widget-actions mt-3">
+                    <button type="button" class="btn btn-primary btn-sm w-100 mb-2" id="jbi-widget-add-candidate">
+                        <i class="bi bi-person-plus me-1"></i> Kandidat hinzufügen
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm w-100" id="jbi-widget-view-notification" disabled>
+                        <i class="bi bi-bell me-1"></i> Benachrichtigung ansehen
+                    </button>
+                </div>
             </div>
         </div>
+        <script type="text/javascript">
+        (function($) {
+            'use strict';
+            
+            function checkNotifications() {
+                $.post(jbiAjax.ajaxurl, {
+                    action: 'jbi_check_notifications',
+                    nonce: jbiAjax.nonce
+                }, function(response) {
+                    if (response.success && response.data && response.data.has_notification) {
+                        const $btn = $('#jbi-widget-view-notification');
+                        $btn.prop('disabled', false).removeClass('btn-secondary').addClass('btn-success');
+                        if (response.data.count > 0) {
+                            $btn.html('<i class="bi bi-bell-fill me-1"></i> Benachrichtigung ansehen (' + response.data.count + ')');
+                        }
+                    }
+                });
+            }
+            
+            $('#jbi-widget-add-candidate').on('click', function() {
+                window.location.href = jbiAjax.applicationsUrl;
+            });
+            
+            $('#jbi-widget-view-notification').on('click', function() {
+                if (!$(this).prop('disabled')) {
+                    window.location.href = jbiAjax.applicationsUrl;
+                }
+            });
+            
+            checkNotifications();
+            setInterval(checkNotifications, 30000);
+        })(jQuery);
+        </script>
         <?php
     }
 
@@ -578,34 +660,45 @@ class Job_Board_Integration {
         $api_url = sanitize_text_field($_POST['api_url'] ?? '');
         $api_key = sanitize_text_field($_POST['api_key'] ?? '');
         $auto_send = isset($_POST['auto_send']) ? 1 : 0;
-        $sync_interval = absint($_POST['sync_interval'] ?? 600);
+        
+        $sync_interval_raw = isset($_POST['sync_interval']) ? $_POST['sync_interval'] : 600;
+        $sync_interval = absint($sync_interval_raw);
 
-        $valid_intervals = [300, 600, 900, 1800, 3600, 7200, 14400, 86400];
+        $valid_intervals = [60, 300, 600, 900, 1800, 3600, 7200, 14400, 86400];
         if (!in_array($sync_interval, $valid_intervals)) {
+            error_log('JBI: Invalid sync_interval received: ' . var_export($sync_interval_raw, true) . ' (type: ' . gettype($sync_interval_raw) . ', converted to: ' . $sync_interval . ')');
             $sync_interval = 600;
         }
+        
+        error_log('JBI: Saving sync_interval: ' . $sync_interval . ' (raw: ' . var_export($sync_interval_raw, true) . ')');
 
         $old_interval = get_option('jbi_sync_interval', 600);
         
         update_option('jbi_api_url', $api_url);
         update_option('jbi_api_key', $api_key);
         update_option('jbi_auto_send', $auto_send);
-        update_option('jbi_sync_interval', $sync_interval);
+        $saved = update_option('jbi_sync_interval', $sync_interval);
+        error_log('JBI: update_option result for sync_interval: ' . ($saved ? 'true' : 'false') . ', value: ' . $sync_interval);
 
         if ($old_interval != $sync_interval) {
+            error_log('JBI: Interval changed from ' . $old_interval . ' to ' . $sync_interval . ', rescheduling...');
+            
             $timestamp = wp_next_scheduled('jbi_sync_contact_requests');
             if ($timestamp) {
                 wp_unschedule_event($timestamp, 'jbi_sync_contact_requests');
+                error_log('JBI: Unscheduled old event at ' . date('Y-m-d H:i:s', $timestamp));
             }
             
             add_filter('cron_schedules', [$this, 'add_custom_sync_schedule']);
             
-            if (!wp_next_scheduled('jbi_sync_contact_requests')) {
-                wp_schedule_event(time(), 'jbi_custom_sync_interval', 'jbi_sync_contact_requests');
-            }
+            $new_timestamp = wp_schedule_event(time(), 'jbi_custom_sync_interval', 'jbi_sync_contact_requests');
+            error_log('JBI: Scheduled new event, result: ' . ($new_timestamp === false ? 'failed' : 'success') . ', next run: ' . date('Y-m-d H:i:s', wp_next_scheduled('jbi_sync_contact_requests')));
         }
 
-        wp_send_json_success(['message' => 'Einstellungen erfolgreich gespeichert']);
+        wp_send_json_success([
+            'message' => 'Einstellungen erfolgreich gespeichert',
+            'sync_interval' => $sync_interval
+        ]);
     }
 
     public function ajax_get_templates() {
@@ -869,7 +962,23 @@ class Job_Board_Integration {
                         ['%d', '%s'],
                         ['%d']
                     );
+                } else {
+                    $wpdb->update(
+                        $wpdb->prefix . 'neo_job_board_applications',
+                        ['updated_at' => current_time('mysql')],
+                        ['id' => $application_id],
+                        ['%s'],
+                        ['%d']
+                    );
                 }
+            } else {
+                $wpdb->update(
+                    $wpdb->prefix . 'neo_job_board_applications',
+                    ['is_active' => 0, 'updated_at' => current_time('mysql')],
+                    ['id' => $application_id],
+                    ['%d', '%s'],
+                    ['%d']
+                );
             }
 
             $message = 'Bewerbung erfolgreich erstellt';
@@ -915,7 +1024,7 @@ class Job_Board_Integration {
         $where_clauses = [];
         $where_values = [];
         
-        $requested_user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
+        $requested_user_id = isset($_POST['user_id']) && $_POST['user_id'] !== '' ? intval($_POST['user_id']) : 0;
         
         if ($requested_user_id > 0) {
             $where_clauses[] = "a.responsible_employee = %d";
@@ -975,6 +1084,20 @@ class Job_Board_Integration {
                 }
             } else {
                 $application['name'] = null;
+            }
+            
+            $created_at = strtotime($application['created_at'] ?? '');
+            $updated_at = strtotime($application['updated_at'] ?? '');
+            $time_diff = abs($updated_at - $created_at);
+            
+            if ($application['is_active'] == 1) {
+                $application['sync_status'] = 'active';
+            } else {
+                if ($time_diff < 60) {
+                    $application['sync_status'] = 'unsynced';
+                } else {
+                    $application['sync_status'] = 'inactive';
+                }
             }
         }
         unset($application);
@@ -1392,6 +1515,173 @@ class Job_Board_Integration {
         } else {
             wp_send_json_error(['message' => 'Fehler beim Senden: ' . $send_result['message']]);
         }
+    }
+
+    public function ajax_check_notifications() {
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'jbi_nonce')) {
+            wp_send_json_error(['message' => 'Security check failed']);
+            return;
+        }
+
+        global $wpdb;
+        $current_user_id = get_current_user_id();
+        
+        if (!$current_user_id) {
+            wp_send_json_success(['has_notification' => false, 'count' => 0]);
+            return;
+        }
+
+        // Проверяем наличие контактных запросов для резюме, где текущий пользователь является ответственным
+        $contact_requests_table = $wpdb->prefix . 'neo_job_board_contact_requests';
+        $applications_table = $wpdb->prefix . 'neo_job_board_applications';
+        
+        $count = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(DISTINCT cr.id)
+             FROM {$contact_requests_table} cr
+             INNER JOIN {$applications_table} a ON cr.application_id = a.id
+             WHERE a.responsible_employee = %d
+             AND cr.notification_viewed = 0
+             AND cr.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)",
+            $current_user_id
+        ));
+
+        $has_notification = $count > 0;
+        
+        wp_send_json_success([
+            'has_notification' => $has_notification,
+            'count' => intval($count)
+        ]);
+    }
+
+    public function ajax_manual_sync() {
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'jbi_nonce')) {
+            wp_send_json_error(['message' => 'Security check failed']);
+            return;
+        }
+
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error(['message' => 'Insufficient permissions']);
+            return;
+        }
+
+        try {
+            \NeoJobBoard\Core\Sync::sync_contact_requests();
+            wp_send_json_success(['message' => 'Synchronisierung erfolgreich abgeschlossen']);
+        } catch (\Exception $e) {
+            wp_send_json_error(['message' => 'Fehler bei der Synchronisierung: ' . $e->getMessage()]);
+        }
+    }
+
+    public function ajax_get_contact_request() {
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'jbi_nonce')) {
+            wp_send_json_error(['message' => 'Security check failed']);
+            return;
+        }
+
+        global $wpdb;
+        $application_id = intval($_POST['application_id'] ?? 0);
+        
+        if (!$application_id) {
+            wp_send_json_error(['message' => 'Application ID fehlt']);
+            return;
+        }
+
+        $current_user_id = get_current_user_id();
+        $user = wp_get_current_user();
+        
+        $application = $wpdb->get_row($wpdb->prepare(
+            "SELECT responsible_employee FROM {$wpdb->prefix}neo_job_board_applications WHERE id = %d",
+            $application_id
+        ));
+        
+        if (!$application) {
+            wp_send_json_error(['message' => 'Bewerbung nicht gefunden']);
+            return;
+        }
+        
+        if (!in_array('administrator', $user->roles) && !in_array('neo_editor', $user->roles)) {
+            if ($application->responsible_employee != $current_user_id) {
+                wp_send_json_error(['message' => 'Sie haben keine Berechtigung, auf diese Bewerbung zuzugreifen.']);
+                return;
+            }
+        }
+
+        $contact_requests = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}neo_job_board_contact_requests 
+             WHERE application_id = %d 
+             ORDER BY created_at DESC",
+            $application_id
+        ), ARRAY_A);
+
+        if (empty($contact_requests)) {
+            wp_send_json_error(['message' => 'Kontaktanfragen nicht gefunden']);
+            return;
+        }
+
+        wp_send_json_success(['contact_requests' => $contact_requests]);
+    }
+
+    public function ajax_mark_notification_viewed() {
+        if (!wp_verify_nonce($_POST['nonce'] ?? '', 'jbi_nonce')) {
+            wp_send_json_error(['message' => 'Security check failed']);
+            return;
+        }
+
+        global $wpdb;
+        $application_id = intval($_POST['application_id'] ?? 0);
+        
+        if (!$application_id) {
+            wp_send_json_error(['message' => 'Application ID fehlt']);
+            return;
+        }
+
+        $current_user_id = get_current_user_id();
+        $user = wp_get_current_user();
+        
+        $application = $wpdb->get_row($wpdb->prepare(
+            "SELECT responsible_employee FROM {$wpdb->prefix}neo_job_board_applications WHERE id = %d",
+            $application_id
+        ));
+        
+        if (!$application) {
+            wp_send_json_error(['message' => 'Bewerbung nicht gefunden']);
+            return;
+        }
+        
+        if (!in_array('administrator', $user->roles) && !in_array('neo_editor', $user->roles)) {
+            if ($application->responsible_employee != $current_user_id) {
+                wp_send_json_error(['message' => 'Sie haben keine Berechtigung, auf diese Bewerbung zuzugreifen.']);
+                return;
+            }
+        }
+
+        $wpdb->query('START TRANSACTION');
+
+        $result1 = $wpdb->update(
+            $wpdb->prefix . 'neo_job_board_contact_requests',
+            ['notification_viewed' => 1],
+            ['application_id' => $application_id],
+            ['%d'],
+            ['%d']
+        );
+
+        $result2 = $wpdb->update(
+            $wpdb->prefix . 'neo_job_board_applications',
+            ['is_called' => 0],
+            ['id' => $application_id],
+            ['%d'],
+            ['%d']
+        );
+
+        if ($result1 === false || $result2 === false) {
+            $wpdb->query('ROLLBACK');
+            wp_send_json_error(['message' => 'Fehler beim Aktualisieren']);
+            return;
+        }
+
+        $wpdb->query('COMMIT');
+
+        wp_send_json_success(['message' => 'Benachrichtigung als gelesen markiert']);
     }
 
     public function ajax_send_template() {

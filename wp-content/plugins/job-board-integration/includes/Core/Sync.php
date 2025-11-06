@@ -9,12 +9,16 @@ if (!defined('ABSPATH')) {
 class Sync {
     
     public static function sync_contact_requests() {
+        error_log('JBI Sync: sync_contact_requests() called at ' . date('Y-m-d H:i:s'));
+        
         $api_url = get_option('jbi_api_url');
         
         if (empty($api_url)) {
-            error_log('JBI Sync: API URL не настроен');
+            error_log('JBI Sync: API URL is not configured');
             return;
         }
+        
+        error_log('JBI Sync: API URL = ' . $api_url);
 
         $base_url = rtrim($api_url, '/');
         if (strpos($base_url, '/wp-json/bewerberboerse/v1') !== false) {
@@ -31,22 +35,27 @@ class Sync {
         ]);
 
         if (is_wp_error($check_response)) {
-            error_log('JBI Sync: Ошибка проверки наличия данных - ' . $check_response->get_error_message());
+            error_log('JBI Sync: Error checking for data - ' . $check_response->get_error_message());
             return;
         }
 
         $check_code = wp_remote_retrieve_response_code($check_response);
         if ($check_code !== 200) {
-            error_log('JBI Sync: Неверный код ответа при проверке - ' . $check_code);
+            error_log('JBI Sync: Invalid response code when checking - ' . $check_code);
             return;
         }
 
         $check_body = wp_remote_retrieve_body($check_response);
         $check_data = json_decode($check_body, true);
+        
+        error_log('JBI Sync: Check response - ' . print_r($check_data, true));
 
         if (!isset($check_data['has_data']) || !$check_data['has_data']) {
+            error_log('JBI Sync: No data to sync');
             return;
         }
+        
+        error_log('JBI Sync: Has data to sync, count: ' . ($check_data['count'] ?? 0));
 
         $limit = $check_data['count'] ?? 100;
         $fetch_endpoint = $api_base . '/wp-json/bewerberboerse/v1/contact-requests?limit=' . $limit;
@@ -57,13 +66,13 @@ class Sync {
         ]);
 
         if (is_wp_error($fetch_response)) {
-            error_log('JBI Sync: Ошибка получения данных - ' . $fetch_response->get_error_message());
+            error_log('JBI Sync: Error getting data - ' . $fetch_response->get_error_message());
             return;
         }
 
         $fetch_code = wp_remote_retrieve_response_code($fetch_response);
         if ($fetch_code !== 200) {
-            error_log('JBI Sync: Неверный код ответа при получении данных - ' . $fetch_code);
+            error_log('JBI Sync: Invalid response code when getting data - ' . $fetch_code);
             return;
         }
 
@@ -131,9 +140,10 @@ class Sync {
                     'email' => $email,
                     'phone' => $phone,
                     'message' => $message,
+                    'notification_viewed' => 0,
                     'created_at' => $created_at
                 ],
-                ['%s', '%d', '%s', '%s', '%s', '%s', '%s']
+                ['%s', '%d', '%s', '%s', '%s', '%s', '%d', '%s']
             );
 
             if ($result !== false) {
@@ -141,6 +151,8 @@ class Sync {
             }
         }
 
+        error_log('JBI Sync: Saved ' . $saved_count . ' contact requests');
+        
         if ($saved_count > 0) {
             $delete_endpoint = $api_base . '/wp-json/bewerberboerse/v1/contact-requests/delete-all';
 
@@ -153,12 +165,12 @@ class Sync {
             if (!is_wp_error($delete_response)) {
                 $delete_code = wp_remote_retrieve_response_code($delete_response);
                 if ($delete_code === 200) {
-                    error_log("JBI Sync: Успешно синхронизировано $saved_count контактных запросов и удалено на удаленном сайте");
+                    error_log("JBI Sync: Successfully synchronized $saved_count contact requests and deleted on the remote site");
                 } else {
-                    error_log("JBI Sync: Сохранено $saved_count запросов, но не удалось удалить на удаленном сайте (код: $delete_code)");
+                    error_log("JBI Sync: Saved $saved_count requests, but failed to delete on the remote site (code: $delete_code)");
                 }
             } else {
-                error_log("JBI Sync: Сохранено $saved_count запросов, но ошибка при удалении: " . $delete_response->get_error_message());
+                error_log("JBI Sync: Saved $saved_count requests, but error when deleting: " . $delete_response->get_error_message());
             }
         }
     }

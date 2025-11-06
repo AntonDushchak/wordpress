@@ -116,11 +116,13 @@ class Database {
             email varchar(255) NOT NULL,
             phone varchar(50) DEFAULT NULL,
             message longtext DEFAULT NULL,
+            notification_viewed tinyint(1) DEFAULT 0,
             created_at datetime DEFAULT CURRENT_TIMESTAMP,
             PRIMARY KEY (id),
             KEY idx_application_hash (application_hash),
             KEY idx_application_id (application_id),
-            KEY idx_created_at (created_at)
+            KEY idx_created_at (created_at),
+            KEY idx_notification_viewed (notification_viewed)
         ) $charset_collate;";
 
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -149,6 +151,25 @@ class Database {
         if (empty($column_exists)) {
             $wpdb->query("ALTER TABLE $table_name ADD COLUMN is_called tinyint(1) DEFAULT 0");
             $wpdb->query("ALTER TABLE $table_name ADD INDEX idx_is_called (is_called)");
+        }
+    }
+
+    public static function migrate_add_notification_viewed_column() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'neo_job_board_contact_requests';
+        
+        $column_exists = $wpdb->get_results($wpdb->prepare(
+            "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+             WHERE TABLE_SCHEMA = %s 
+             AND TABLE_NAME = %s 
+             AND COLUMN_NAME = 'notification_viewed'",
+            DB_NAME,
+            $table_name
+        ));
+        
+        if (empty($column_exists)) {
+            $wpdb->query("ALTER TABLE $table_name ADD COLUMN notification_viewed tinyint(1) DEFAULT 0");
+            $wpdb->query("ALTER TABLE $table_name ADD INDEX idx_notification_viewed (notification_viewed)");
         }
     }
     
