@@ -1170,6 +1170,16 @@ class Job_Board_Integration {
             return;
         }
 
+        $active_template = $wpdb->get_row(
+            "SELECT id, name, fields FROM {$wpdb->prefix}neo_job_board_templates WHERE is_active = 1 LIMIT 1",
+            ARRAY_A
+        );
+
+        if (!$active_template) {
+            wp_send_json_error(['message' => 'Aktives Template nicht gefunden']);
+            return;
+        }
+
         $application_data = $wpdb->get_results($wpdb->prepare(
             "SELECT * FROM {$wpdb->prefix}neo_job_board_application_data WHERE application_id = %d",
             $application_id
@@ -1182,7 +1192,9 @@ class Job_Board_Integration {
         }
 
         $application['fields_data'] = $fields_data;
-        $application['template_fields'] = json_decode($application['template_fields'] ?? '[]', true);
+        $application['template_fields'] = json_decode($active_template['fields'] ?? '[]', true);
+        $application['active_template_id'] = $active_template['id'];
+        $application['original_template_id'] = $application['template_id'];
 
         wp_send_json_success(['application' => $application]);
     }
@@ -1216,8 +1228,21 @@ class Job_Board_Integration {
 
         $responsible_employee = isset($_POST['responsible_employee']) ? intval($_POST['responsible_employee']) : null;
         
+        $existing_application_data = $wpdb->get_results($wpdb->prepare(
+            "SELECT * FROM {$wpdb->prefix}neo_job_board_application_data WHERE application_id = %d",
+            $application_id
+        ), ARRAY_A);
+
+        $existing_fields_data = [];
+        foreach ($existing_application_data as $row) {
+            $decoded = json_decode($row['field_value'], true);
+            $existing_fields_data[$row['field_name']] = $decoded !== null ? $decoded : $row['field_value'];
+        }
+
+        $merged_fields_data = array_merge($existing_fields_data, $fields_data);
+
         $update_data = [
-            'application_data' => json_encode($fields_data, JSON_UNESCAPED_UNICODE),
+            'application_data' => json_encode($merged_fields_data, JSON_UNESCAPED_UNICODE),
             'updated_at' => current_time('mysql')
         ];
         $update_format = ['%s', '%s'];
@@ -1243,13 +1268,12 @@ class Job_Board_Integration {
             return;
         }
 
-        $application = $wpdb->get_row($wpdb->prepare(
-            "SELECT fields FROM {$wpdb->prefix}neo_job_board_templates WHERE id = (SELECT template_id FROM {$wpdb->prefix}neo_job_board_applications WHERE id = %d)",
-            $application_id
-        ));
+        $active_template = $wpdb->get_row(
+            "SELECT fields FROM {$wpdb->prefix}neo_job_board_templates WHERE is_active = 1 LIMIT 1"
+        );
 
-        if ($application) {
-            $template_fields = json_decode($application->fields ?? '[]', true);
+        if ($active_template) {
+            $template_fields = json_decode($active_template->fields ?? '[]', true);
             $private_field_map = [];
             foreach ($template_fields as $tf) {
                 $field_name_in_template = strtolower(trim($tf['name'] ?? $tf['field_name'] ?? ''));
@@ -1269,7 +1293,7 @@ class Job_Board_Integration {
                 $application_id
             ));
 
-            foreach ($fields_data as $field_name => $field_value) {
+            foreach ($merged_fields_data as $field_name => $field_value) {
                 $field_value_to_save = is_array($field_value) ? json_encode($field_value, JSON_UNESCAPED_UNICODE) : $field_value;
                 $field_name_lower = strtolower(trim($field_name));
                 $is_personal = isset($private_field_map[$field_name_lower]) && $private_field_map[$field_name_lower] ? 1 : 0;

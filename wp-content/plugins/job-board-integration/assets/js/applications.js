@@ -933,6 +933,8 @@
             this.currentTemplateId = null;
             this.currentTemplateFields = [];
             this.currentApplicationId = null;
+            this.originalTemplateId = null;
+            this.allFieldsData = {};
         },
 
         editApplication: function(applicationId) {
@@ -943,12 +945,14 @@
             }, (response) => {
                 if (response.success && response.data.application) {
                     const app = response.data.application;
-                    this.currentTemplateId = app.template_id;
+                    this.currentTemplateId = app.active_template_id || app.template_id;
                     this.currentTemplateFields = app.template_fields || [];
                     this.currentApplicationId = applicationId;
+                    this.originalTemplateId = app.original_template_id || app.template_id;
+                    this.allFieldsData = app.fields_data || {};
 
                     this.renderFields(this.currentTemplateFields);
-                    this.fillFieldsFromData(app.fields_data || {});
+                    this.fillFieldsFromData(this.allFieldsData, this.currentTemplateFields);
                     this.renderResponsibleEmployeeField(app.responsible_employee);
                     
                     setTimeout(() => {
@@ -1011,8 +1015,22 @@
             });
         },
 
-        fillFieldsFromData: function(fieldsData) {
+        fillFieldsFromData: function(fieldsData, templateFields) {
+            const templateFieldNames = new Set();
+            if (templateFields && Array.isArray(templateFields)) {
+                templateFields.forEach(field => {
+                    const fieldName = this.getFieldName(field);
+                    if (fieldName) {
+                        templateFieldNames.add(fieldName.toLowerCase());
+                    }
+                });
+            }
+            
             for (let [fieldName, fieldValue] of Object.entries(fieldsData)) {
+                const fieldNameLower = fieldName.toLowerCase();
+                if (templateFields && templateFieldNames.size > 0 && !templateFieldNames.has(fieldNameLower)) {
+                    continue;
+                }
                 if (Array.isArray(fieldValue)) {
                     const fieldType = this.getFieldTypeByName(fieldName);
                     if (fieldType === 'liste') {
