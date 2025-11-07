@@ -186,7 +186,15 @@
 
 
         deleteSurvey: function (surveyId) {
-            if (confirm('Sind Sie sicher, dass Sie diese Umfrage löschen möchten?')) {
+            const self = this;
+            if (window.NeoDash && window.NeoDash.confirm) {
+                NeoDash.confirm('Sind Sie sicher, dass Sie diese Umfrage löschen möchten?', {
+                    type: 'danger',
+                    title: 'Bestätigung des Löschens',
+                    confirmText: 'Löschen',
+                    cancelText: 'Abbrechen'
+                }).then((confirmed) => {
+                    if (!confirmed) return;
                 $.ajax({
                     url: neoUmfrageAjax.ajaxurl,
                     type: 'POST',
@@ -213,6 +221,36 @@
                         NeoUmfrage.showMessage('error', 'Fehler beim Löschen der Umfrage');
                     }
                 });
+                });
+            } else {
+                if (confirm('Sind Sie sicher, dass Sie diese Umfrage löschen möchten?')) {
+                    $.ajax({
+                        url: neoUmfrageAjax.ajaxurl,
+                        type: 'POST',
+                        data: {
+                            action: 'neo_umfrage_delete_survey',
+                            nonce: neoUmfrageAjax.nonce,
+                            survey_id: surveyId
+                        },
+                        success: function (response) {
+                            if (response && response.success) {
+                                const message = (response.data && response.data.message) ? response.data.message : 'Umfrage erfolgreich gelöscht';
+                                NeoUmfrage.showMessage('success', message);
+                                if ($.fn.DataTable && $('#surveys-table').length) {
+                                    $('#surveys-table').DataTable().ajax.reload();
+                                } else {
+                                    NeoUmfrageSurveys.loadSurveys();
+                                }
+                            } else {
+                                const errorMessage = (response && response.data && response.data.message) ? response.data.message : 'Fehler beim Löschen der Umfrage';
+                                NeoUmfrage.showMessage('error', errorMessage);
+                            }
+                        },
+                        error: function () {
+                            NeoUmfrage.showMessage('error', 'Fehler beim Löschen der Umfrage');
+                        }
+                    });
+                }
             }
         },
 

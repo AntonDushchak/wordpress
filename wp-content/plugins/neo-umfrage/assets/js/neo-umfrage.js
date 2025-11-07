@@ -266,12 +266,20 @@
                 return;
             }
 
-            if (confirm(neoUmfrageAjax.strings.confirm_delete)) {
-                $.ajax({
-                    url: neoUmfrageAjax.ajaxurl,
-                    type: 'POST',
-                    data: {
-                        action: 'neo_umfrage_delete_survey',
+            const self = this;
+            if (window.NeoDash && window.NeoDash.confirm) {
+                NeoDash.confirm(neoUmfrageAjax.strings.confirm_delete, {
+                    type: 'danger',
+                    title: 'Bestätigung des Löschens',
+                    confirmText: 'Löschen',
+                    cancelText: 'Abbrechen'
+                }).then((confirmed) => {
+                    if (!confirmed) return;
+                    $.ajax({
+                        url: neoUmfrageAjax.ajaxurl,
+                        type: 'POST',
+                        data: {
+                            action: 'neo_umfrage_delete_survey',
                         nonce: neoUmfrageAjax.nonce,
                         survey_id: surveyId
                     },
@@ -287,7 +295,32 @@
                             NeoUmfrage.showMessage('error', response.data.message || neoUmfrageAjax.strings.error);
                         }
                     }
+                    });
                 });
+            } else {
+                if (confirm(neoUmfrageAjax.strings.confirm_delete)) {
+                    $.ajax({
+                        url: neoUmfrageAjax.ajaxurl,
+                        type: 'POST',
+                        data: {
+                            action: 'neo_umfrage_delete_survey',
+                            nonce: neoUmfrageAjax.nonce,
+                            survey_id: surveyId
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                NeoUmfrage.showMessage('success', response.data.message);
+                                if ($.fn.DataTable && $('#surveys-table').length) {
+                                    $('#surveys-table').DataTable().ajax.reload();
+                                } else if (window.NeoUmfrageSurveys && NeoUmfrageSurveys.loadSurveys) {
+                                    NeoUmfrageSurveys.loadSurveys();
+                                }
+                            } else {
+                                NeoUmfrage.showMessage('error', response.data.message || neoUmfrageAjax.strings.error);
+                            }
+                        }
+                    });
+                }
             }
         },
 

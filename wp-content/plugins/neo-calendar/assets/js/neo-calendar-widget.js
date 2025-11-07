@@ -1,6 +1,24 @@
 (function ($) {
     'use strict';
 
+    function initWidgetPickers() {
+        const from = document.getElementById("widget-work-time-from");
+        const to = document.getElementById("widget-work-time-to");
+    
+        if (from && to) {
+            window.NeoCalendar.initTimePicker("widget-work-time-from");
+            window.NeoCalendar.initTimePicker("widget-work-time-to");
+        }
+
+        if (window.NeoCalendar && window.NeoCalendar.initDatePicker) {
+            window.NeoCalendar.initDatePicker("widget-work-date");
+        }
+
+        if (window.NeoCalendar && window.NeoCalendar.initDateRangePicker) {
+            window.NeoCalendar.initDateRangePicker("widget-vacation-date-range");
+        }
+    }
+
     $(document).ready(function () {
         const addWorkTimeBtn = document.getElementById('widget-add-work-time-btn');
         if (addWorkTimeBtn) {
@@ -26,26 +44,13 @@
         if (showVacationBtn) {
             showVacationBtn.addEventListener('click', function () {
                 window.NeoCalendar.toggleWidgetForms();
+                setTimeout(() => {
+                    initWidgetPickers();
+                }, 100);
             });
         }
 
-        const from = document.getElementById("widget-work-time-from");
-        const to = document.getElementById("widget-work-time-to");
-    
-        if (from && to) {
-            window.NeoCalendar.initTimePicker("widget-work-time-from");
-            window.NeoCalendar.initTimePicker("widget-work-time-to");
-        } else {
-            console.log("Time-Picker-Elemente nicht gefunden:", { from, to });
-        }
-
-        if (window.NeoCalendar && window.NeoCalendar.initDatePicker) {
-            window.NeoCalendar.initDatePicker("widget-work-date");
-        }
-
-        if (window.NeoCalendar && window.NeoCalendar.initDateRangePicker) {
-            window.NeoCalendar.initDateRangePicker("widget-vacation-date-range");
-        }
+        initWidgetPickers();
     });
 
     window.NeoCalendar = {

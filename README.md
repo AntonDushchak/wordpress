@@ -259,4 +259,12 @@ wp_neo_calendar_events          # Kalender-Events
 - Testen Sie das Skript manuell
 - Prüfen Sie `error_log` für Details
 
+### SSL-Fehler bei localhost (SSL_ERROR_RX_RECORD_TOO_LONG)
+Wenn Firefox versucht, HTTPS zu verwenden und den Fehler `SSL_ERROR_RX_RECORD_TOO_LONG` anzeigt:
+1. **Firefox**: Öffnen Sie `about:config` und suchen Sie nach `security.tls.insecure_fallback_hosts`
+2. Fügen Sie `localhost` zur Liste hinzu (oder bearbeiten Sie direkt: `localhost,localhost:8080`)
+3. Alternative: Löschen Sie den HSTS-Cache: `about:config` → `security.tls.insecure_fallback_hosts` → Zurücksetzen
+4. Chrome: Geben Sie `chrome://net-internals/#hsts` ein, scrollen Sie zu "Delete domain security policies" und löschen Sie `localhost`
+5. **Einfachste Lösung**: Nutzen Sie Incognito/Private-Fenster mit `http://localhost:8080`
+
 

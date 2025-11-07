@@ -49,7 +49,11 @@
                     if (props.can_manage || props.is_owner) {
                         editEvent(info.event);
                     } else {
-                        alert('Sie haben keine Berechtigung, dieses Ereignis zu bearbeiten.');
+                        if (window.NeoDash && window.NeoDash.toastError) {
+                            NeoDash.toastError('Sie haben keine Berechtigung, dieses Ereignis zu bearbeiten.');
+                        } else {
+                            alert('Sie haben keine Berechtigung, dieses Ereignis zu bearbeiten.');
+                        }
                     }
                 },
                 dateClick: function (info) {
@@ -100,10 +104,27 @@
         if (deleteEventBtn) {
             deleteEventBtn.addEventListener('click', function () {
                 const eventId = document.getElementById('edit-event-id').value;
-                if (eventId && confirm('Ereignis wirklich löschen?')) {
-                    deleteEventFromDB(eventId);
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('editEventModal'));
-                    modal.hide();
+                if (eventId) {
+                    if (window.NeoDash && window.NeoDash.confirm) {
+                        NeoDash.confirm('Ereignis wirklich löschen?', {
+                            type: 'danger',
+                            title: 'Bestätigung des Löschens',
+                            confirmText: 'Löschen',
+                            cancelText: 'Abbrechen'
+                        }).then((confirmed) => {
+                            if (confirmed) {
+                                deleteEventFromDB(eventId);
+                                const modal = bootstrap.Modal.getInstance(document.getElementById('editEventModal'));
+                                modal.hide();
+                            }
+                        });
+                    } else {
+                        if (confirm('Ereignis wirklich löschen?')) {
+                            deleteEventFromDB(eventId);
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('editEventModal'));
+                            modal.hide();
+                        }
+                    }
                 }
             });
         }
@@ -223,10 +244,16 @@
         }
         modal.show();
 
-        if (window.NeoCalendar && window.NeoCalendar.initTimePicker) {
-            window.NeoCalendar.initTimePicker('edit-event-start-time');
-            window.NeoCalendar.initTimePicker('edit-event-end-time');
-        }
+        setTimeout(() => {
+            if (window.NeoCalendar && window.NeoCalendar.initTimePicker) {
+                window.NeoCalendar.initTimePicker('edit-event-start-time');
+                window.NeoCalendar.initTimePicker('edit-event-end-time');
+            }
+            if (window.NeoCalendar && window.NeoCalendar.initDatePicker) {
+                window.NeoCalendar.initDatePicker('edit-event-start-date');
+                window.NeoCalendar.initDatePicker('edit-event-end-date');
+            }
+        }, 100);
 
         const typeSelect = document.getElementById('edit-event-type');
         typeSelect.addEventListener('change', handleEventTypeChange);
@@ -347,7 +374,11 @@
         const description = document.getElementById('edit-event-description').value;
 
         if (!startDate) {
-            alert('Bitte geben Sie ein Startdatum ein.');
+            if (window.NeoDash && window.NeoDash.toastWarning) {
+                NeoDash.toastWarning('Bitte geben Sie ein Startdatum ein.');
+            } else {
+                alert('Bitte geben Sie ein Startdatum ein.');
+            }
             return;
         }
 
@@ -376,26 +407,42 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    alert(isNewEvent ? 'Ereignis erfolgreich erstellt!' : 'Ereignis erfolgreich aktualisiert!');
+                    if (window.NeoDash && window.NeoDash.toastSuccess) {
+                        NeoDash.toastSuccess(isNewEvent ? 'Ereignis erfolgreich erstellt!' : 'Ereignis erfolgreich aktualisiert!');
+                    } else {
+                        alert(isNewEvent ? 'Ereignis erfolgreich erstellt!' : 'Ereignis erfolgreich aktualisiert!');
+                    }
                     const modal = bootstrap.Modal.getInstance(document.getElementById('editEventModal'));
                     modal.hide();
                     if (window.neoCalendar) {
                         window.neoCalendar.refetchEvents();
                     }
                 } else {
-                    alert((isNewEvent ? 'Fehler beim Erstellen' : 'Fehler beim Aktualisieren') + ' des Ereignisses: ' + data.data);
+                    if (window.NeoDash && window.NeoDash.toastError) {
+                        NeoDash.toastError((isNewEvent ? 'Fehler beim Erstellen' : 'Fehler beim Aktualisieren') + ' des Ereignisses: ' + data.data);
+                    } else {
+                        alert((isNewEvent ? 'Fehler beim Erstellen' : 'Fehler beim Aktualisieren') + ' des Ereignisses: ' + data.data);
+                    }
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Fehler beim Aktualisieren des Ereignisses');
+                if (window.NeoDash && window.NeoDash.toastError) {
+                    NeoDash.toastError('Fehler beim Aktualisieren des Ereignisses');
+                } else {
+                    alert('Fehler beim Aktualisieren des Ereignisses');
+                }
             });
     }
 
     function deleteEventFromDB(eventId) {
         const event = window.neoCalendar.getEventById(eventId);
         if (!event || (!event.extendedProps.is_owner && !event.extendedProps.can_manage)) {
-            alert('Sie können nur Ihre eigenen Ereignisse löschen.');
+            if (window.NeoDash && window.NeoDash.toastError) {
+                NeoDash.toastError('Sie können nur Ihre eigenen Ereignisse löschen.');
+            } else {
+                alert('Sie können nur Ihre eigenen Ereignisse löschen.');
+            }
             return;
         }
 
@@ -407,18 +454,29 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
+                    if (window.NeoDash && window.NeoDash.toastSuccess) {
+                        NeoDash.toastSuccess('Ereignis erfolgreich gelöscht');
+                    }
                     window.neoCalendar.refetchEvents();
                 } else {
-                    alert('Fehler beim Löschen des Ereignisses: ' + data.data);
+                    if (window.NeoDash && window.NeoDash.toastError) {
+                        NeoDash.toastError('Fehler beim Löschen des Ereignisses: ' + data.data);
+                    } else {
+                        alert('Fehler beim Löschen des Ereignisses: ' + data.data);
+                    }
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Fehler beim Löschen des Ereignisses');
+                if (window.NeoDash && window.NeoDash.toastError) {
+                    NeoDash.toastError('Fehler beim Löschen des Ereignisses');
+                } else {
+                    alert('Fehler beim Löschen des Ereignisses');
+                }
             });
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
+    function initCalendarPickers() {
         const from = document.getElementById("work-time-from");
         const to = document.getElementById("work-time-to");
         const eventTime = document.getElementById("event-time");
@@ -442,9 +500,21 @@
             window.NeoCalendar.initDateRangePicker("vacation-date-range");
             window.NeoCalendar.initDateRangePicker("event-date-range");
         }
+    }
 
+    document.addEventListener("DOMContentLoaded", () => {
+        initCalendarPickers();
         initializeFormButtons();
     });
+
+    const editEventModal = document.getElementById('editEventModal');
+    if (editEventModal) {
+        editEventModal.addEventListener('shown.bs.modal', () => {
+            setTimeout(() => {
+                initCalendarPickers();
+            }, 100);
+        });
+    }
 
     window.NeoCalendar = {
         ...window.NeoCalendar,
