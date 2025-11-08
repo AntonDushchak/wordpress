@@ -184,6 +184,7 @@ class Neo_Umfrage {
                     'ajaxurl' => admin_url('admin-ajax.php'),
                     'nonce' => wp_create_nonce('neo_umfrage_nonce'),
                     'currentUserId' => get_current_user_id(),
+                    'userRoles' => wp_get_current_user()->roles,
                     'strings' => [
                         'error' => 'Ein Fehler ist aufgetreten',
                         'success' => 'Operation erfolgreich ausgeführt',
@@ -201,6 +202,7 @@ class Neo_Umfrage {
                     'ajaxurl' => admin_url('admin-ajax.php'),
                     'nonce' => wp_create_nonce('neo_umfrage_nonce'),
                     'currentUserId' => get_current_user_id(),
+                    'userRoles' => wp_get_current_user()->roles,
                     'strings' => [
                         'error' => 'Ein Fehler ist aufgetreten',
                         'success' => 'Operation erfolgreich ausgeführt',
@@ -225,6 +227,7 @@ class Neo_Umfrage {
                 ajaxurl: "<?php echo admin_url('admin-ajax.php'); ?>",
                 nonce: "<?php echo $nonce; ?>",
                 currentUserId: <?php echo get_current_user_id(); ?>,
+                userRoles: <?php echo wp_json_encode(wp_get_current_user()->roles); ?>,
                 strings: {
                     error: "Ein Fehler ist aufgetreten",
                     success: "Operation erfolgreich ausgeführt",
@@ -270,6 +273,7 @@ class Neo_Umfrage {
                 ajaxurl: "<?php echo admin_url('admin-ajax.php'); ?>",
                 nonce: "<?php echo $nonce; ?>",
                 currentUserId: <?php echo get_current_user_id(); ?>,
+                userRoles: <?php echo wp_json_encode(wp_get_current_user()->roles); ?>,
                 strings: {
                     error: "Ein Fehler ist aufgetreten",
                     success: "Operation erfolgreich ausgeführt",
@@ -303,6 +307,7 @@ class Neo_Umfrage {
                 ajaxurl: "<?php echo admin_url('admin-ajax.php'); ?>",
                 nonce: "<?php echo $nonce; ?>",
                 currentUserId: <?php echo get_current_user_id(); ?>,
+                userRoles: <?php echo wp_json_encode(wp_get_current_user()->roles); ?>,
                 strings: {
                     error: "Ein Fehler ist aufgetreten",
                     success: "Operation erfolgreich ausgeführt",
@@ -336,6 +341,7 @@ class Neo_Umfrage {
                 ajaxurl: "<?php echo admin_url('admin-ajax.php'); ?>",
                 nonce: "<?php echo $nonce; ?>",
                 currentUserId: <?php echo get_current_user_id(); ?>,
+                userRoles: <?php echo wp_json_encode(wp_get_current_user()->roles); ?>,
                 strings: {
                     error: "Ein Fehler ist aufgetreten",
                     success: "Operation erfolgreich ausgeführt",
@@ -1097,6 +1103,11 @@ class Neo_Umfrage {
         }
         
         $template_fields = json_decode($template->fields, true);
+
+        if (!is_array($template_fields)) {
+            wp_send_json_error(['message' => 'Vorlage ist beschädigt oder hat keine Felder']);
+            return;
+        }
         
         $total_responses = $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM $surveys_table WHERE template_id = %d",
@@ -1106,6 +1117,9 @@ class Neo_Umfrage {
         $fields_statistics = [];
         
         foreach ($template_fields as $field) {
+            if (empty($field['label'])) {
+                continue;
+            }
             $field_label = $field['label'];
             $field_type = $field['type'];
             
