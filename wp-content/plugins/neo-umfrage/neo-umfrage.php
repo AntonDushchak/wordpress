@@ -1165,10 +1165,14 @@ class Neo_Umfrage {
                 ", $template_id, $field_label));
                 
                 if ($stats) {
+                    $min_val = is_numeric($stats->min_val) ? (float) $stats->min_val : null;
+                    $avg_val = is_numeric($stats->avg_val) ? (float) $stats->avg_val : null;
+                    $max_val = is_numeric($stats->max_val) ? (float) $stats->max_val : null;
+
                     $field_stat['statistics'] = [
-                        'min' => $stats->min_val ? round($stats->min_val, 2) : null,
-                        'avg' => $stats->avg_val ? round($stats->avg_val, 2) : null,
-                        'max' => $stats->max_val ? round($stats->max_val, 2) : null
+                        'min' => $min_val !== null ? round($min_val, 2) : null,
+                        'avg' => $avg_val !== null ? round($avg_val, 2) : null,
+                        'max' => $max_val !== null ? round($max_val, 2) : null
                     ];
                 }
                 
