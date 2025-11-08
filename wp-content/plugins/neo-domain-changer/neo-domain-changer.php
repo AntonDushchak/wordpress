@@ -156,9 +156,15 @@ class Neo_Domain_Changer {
             exit;
         }
         
-        $command = "/usr/bin/sudo /usr/local/bin/set_domain.sh " . escapeshellarg($new_domain);
+        $script = '/usr/local/bin/set_domain.sh';
+        $command = escapeshellarg($script) . ' ' . escapeshellarg($new_domain);
+
+        if (!is_executable($script)) {
+            $command = 'sh ' . $command;
+        }
+
         error_log("Domain change command: " . $command);
-        
+
         exec($command . " 2>&1", $output, $return_code);
         error_log("Output: " . implode(" ", $output));
         error_log("Return: " . $return_code);
