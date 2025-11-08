@@ -1117,11 +1117,14 @@ class Neo_Umfrage {
         $fields_statistics = [];
         
         foreach ($template_fields as $field) {
-            if (empty($field['label'])) {
+            if (!is_array($field)) {
                 continue;
             }
-            $field_label = $field['label'];
-            $field_type = $field['type'];
+            $field_label = isset($field['label']) ? trim((string) $field['label']) : '';
+            if ($field_label === '') {
+                continue;
+            }
+            $field_type = isset($field['type']) ? $field['type'] : 'text';
             
             $field_stat = [
                 'label' => $field_label,
