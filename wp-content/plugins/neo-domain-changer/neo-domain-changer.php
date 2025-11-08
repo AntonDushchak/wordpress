@@ -160,7 +160,7 @@ class Neo_Domain_Changer {
         $command = escapeshellarg($script) . ' ' . escapeshellarg($new_domain);
 
         if (!is_executable($script)) {
-            $command = 'sh ' . $command;
+            $command = 'bash ' . $command;
         }
 
         error_log("Domain change command: " . $command);
