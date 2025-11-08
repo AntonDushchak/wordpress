@@ -157,13 +157,12 @@ class Neo_Domain_Changer {
         }
         
         $script = '/usr/local/bin/set_domain.sh';
+        $command = escapeshellarg($script) . ' ' . escapeshellarg($new_domain);
 
         if (!is_executable($script)) {
-            wp_redirect(admin_url('admin.php?page=neo-domain-changer&error=script_not_executable'));
-            exit;
+            $command = 'sh ' . $command;
         }
 
-        $command = escapeshellcmd($script) . ' ' . escapeshellarg($new_domain);
         error_log("Domain change command: " . $command);
 
         exec($command . " 2>&1", $output, $return_code);
