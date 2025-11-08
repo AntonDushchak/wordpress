@@ -495,10 +495,19 @@ class Job_Board_Integration {
         $api_url = get_option('jbi_api_url', '');
         $api_key = get_option('jbi_api_key', '');
         $auto_send = get_option('jbi_auto_send', 1);
-        $sync_interval = get_option('jbi_sync_interval', 600);
+        $sync_interval = (int) get_option('jbi_sync_interval', 600);
         $next_scheduled = wp_next_scheduled('jbi_sync_contact_requests');
-        $last_sync_formatted = $next_scheduled ? date('d.m.Y H:i:s', $next_scheduled - $sync_interval + (get_option('gmt_offset') * HOUR_IN_SECONDS)) : 'Nie';
-        $next_sync_formatted = $next_scheduled ? date('d.m.Y H:i:s', $next_scheduled + (get_option('gmt_offset') * HOUR_IN_SECONDS)) : 'Nicht geplant';
+
+        if ($next_scheduled) {
+            $offset = (float) get_option('gmt_offset', 0) * HOUR_IN_SECONDS;
+            $last_timestamp = (int) round($next_scheduled - $sync_interval + $offset);
+            $next_timestamp = (int) round($next_scheduled + $offset);
+            $last_sync_formatted = date('d.m.Y H:i:s', $last_timestamp);
+            $next_sync_formatted = date('d.m.Y H:i:s', $next_timestamp);
+        } else {
+            $last_sync_formatted = 'Nie';
+            $next_sync_formatted = 'Nicht geplant';
+        }
         $nonce = wp_create_nonce('jbi_nonce');
         ?>
         <script type="text/javascript">
