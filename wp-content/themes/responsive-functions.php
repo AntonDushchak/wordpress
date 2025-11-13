@@ -4,6 +4,10 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+if (!function_exists('is_plugin_active')) {
+    require_once ABSPATH . 'wp-admin/includes/plugin.php';
+}
+
 function enqueue_responsive_styles() {
     if (!is_plugin_active('neo-dashboard/neo-dashboard-core.php')) {
         $version = '1.2.0';
